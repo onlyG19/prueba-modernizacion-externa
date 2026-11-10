@@ -3,14 +3,41 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 // [ANTES] import { NotFoundException } from '@nestjs/common';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 // [ANTES] import { ObjectLiteral, Repository } from 'typeorm';
-import { ObjectLiteral, QueryFailedError, Repository } from 'typeorm';
+// [ANTES] import { ObjectLiteral, QueryFailedError, Repository } from 'typeorm';
+import {
+  Brackets,
+  ObjectLiteral,
+  QueryFailedError,
+  Repository,
+  WhereExpressionBuilder,
+} from 'typeorm';
 import { UsuariosService } from './usuarios.service';
 // [ANTES] import { Usuario } from './usuario.entity';
 import { Usuario } from './entities/usuario.entity';
 
 // Fábrica de mocks para Repository<Usuario>
+/** QueryBuilder simulado: cada método devuelve el mismo objeto (encadenable). */
+const mockQueryBuilder = () => {
+  const qb = {
+    orderBy: jest.fn(),
+    addOrderBy: jest.fn(),
+    skip: jest.fn(),
+    take: jest.fn(),
+    where: jest.fn(),
+    orWhere: jest.fn(),
+    getManyAndCount: jest.fn(),
+  };
+  for (const metodo of Object.keys(qb) as (keyof typeof qb)[]) {
+    if (metodo !== 'getManyAndCount') {
+      qb[metodo].mockReturnValue(qb);
+    }
+  }
+  return qb;
+};
+
 const mockRepository = () => ({
-  find: jest.fn(),
+  // [ANTES] find: jest.fn(),
+  createQueryBuilder: jest.fn(),
   findOneBy: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
@@ -54,16 +81,94 @@ describe('UsuariosService', () => {
 
   // ── findAll ──────────────────────────────────────────────────────────────
   describe('findAll', () => {
-    it('debe retornar un arreglo de usuarios', async () => {
-      repo.find!.mockResolvedValue([usuarioBase]);
-      const result = await service.findAll();
-      expect(result).toEqual([usuarioBase]);
-      expect(repo.find).toHaveBeenCalledTimes(1);
+    // [ANTES] it('debe retornar un arreglo de usuarios', async () => {
+    // [ANTES]   repo.find!.mockResolvedValue([usuarioBase]);
+    // [ANTES]   const result = await service.findAll();
+    // [ANTES]   expect(result).toEqual([usuarioBase]);
+    // [ANTES]   expect(repo.find).toHaveBeenCalledTimes(1);
+    // [ANTES] });
+    // [ANTES]
+    // [ANTES] it('debe retornar arreglo vacío cuando no hay usuarios', async () => {
+    // [ANTES]   repo.find!.mockResolvedValue([]);
+    // [ANTES]   expect(await service.findAll()).toEqual([]);
+    // [ANTES] });
+    let qb: ReturnType<typeof mockQueryBuilder>;
+
+    beforeEach(() => {
+      qb = mockQueryBuilder();
+      repo.createQueryBuilder!.mockReturnValue(qb);
     });
 
-    it('debe retornar arreglo vacío cuando no hay usuarios', async () => {
-      repo.find!.mockResolvedValue([]);
-      expect(await service.findAll()).toEqual([]);
+    /** Ejecuta la condición agrupada (Brackets) para ver qué filtros arma. */
+    const filtrosAplicados = () => {
+      const [brackets] = qb.where.mock.calls[0] as [Brackets];
+      const condicion = { where: jest.fn(), orWhere: jest.fn() };
+      condicion.where.mockReturnValue(condicion);
+      condicion.orWhere.mockReturnValue(condicion);
+      brackets.whereFactory(condicion as unknown as WhereExpressionBuilder);
+      return condicion;
+    };
+
+    it('debe devolver la página pedida con sus metadatos', async () => {
+      qb.getManyAndCount.mockResolvedValue([[usuarioBase], 41]);
+
+      const pagina = await service.findAll({ page: 3, limit: 20 });
+
+      expect(qb.skip).toHaveBeenCalledWith(40);
+      expect(qb.take).toHaveBeenCalledWith(20);
+      expect(qb.orderBy).toHaveBeenCalledWith('usuario.nombre', 'ASC');
+      expect(pagina).toEqual({
+        data: [usuarioBase],
+        meta: { page: 3, limit: 20, total: 41, totalPages: 3 },
+      });
+    });
+
+    it('no debe filtrar si no hay texto de búsqueda', async () => {
+      qb.getManyAndCount.mockResolvedValue([[], 0]);
+
+      const pagina = await service.findAll({
+        page: 1,
+        limit: 20,
+        buscar: '  ',
+      });
+
+      expect(qb.where).not.toHaveBeenCalled();
+      expect(pagina.meta.totalPages).toBe(0);
+    });
+
+    it('debe buscar por nombre sin tildes y por RUT sin puntos ni guion', async () => {
+      qb.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ page: 1, limit: 20, buscar: '12.345.678-k' });
+
+      const condicion = filtrosAplicados();
+      expect(condicion.where).toHaveBeenCalledWith(
+        'unaccent(usuario.nombre) ILIKE unaccent(:nombre)',
+        { nombre: '%12.345.678-k%' },
+      );
+      expect(condicion.orWhere).toHaveBeenCalledWith(
+        "replace(usuario.rut, '-', '') ILIKE :rut",
+        { rut: '%12345678K%' },
+      );
+    });
+
+    it('debe escapar los comodines de LIKE del texto buscado', async () => {
+      qb.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ page: 1, limit: 20, buscar: '100%_x' });
+
+      expect(filtrosAplicados().where).toHaveBeenCalledWith(
+        expect.any(String),
+        { nombre: '%100\\%\\_x%' },
+      );
+    });
+
+    it('no debe filtrar por RUT si el texto no tiene caracteres útiles', async () => {
+      qb.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ page: 1, limit: 20, buscar: '.' });
+
+      expect(filtrosAplicados().orWhere).not.toHaveBeenCalled();
     });
   });
 

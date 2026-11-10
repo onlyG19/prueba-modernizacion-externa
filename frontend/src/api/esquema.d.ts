@@ -65,7 +65,6 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Lista todos los usuarios. */
     get: operations['UsuariosController_findAll'];
     put?: never;
     /** Crea un usuario. El RUT se acepta con o sin puntos y se guarda normalizado. */
@@ -201,6 +200,33 @@ export interface components {
        * @example 12345678-5
        */
       rut: string;
+    };
+    PaginationMetaDto: {
+      /**
+       * @description Página devuelta.
+       * @example 1
+       */
+      page: number;
+      /**
+       * @description Elementos por página.
+       * @example 20
+       */
+      limit: number;
+      /**
+       * @description Total de elementos que cumplen el filtro (en todas las páginas).
+       * @example 42
+       */
+      total: number;
+      /**
+       * @description Total de páginas (0 si no hay elementos).
+       * @example 3
+       */
+      totalPages: number;
+    };
+    PaginaUsuariosDto: {
+      /** @description Usuarios de la página, ordenados por nombre. */
+      data: components['schemas']['Usuario'][];
+      meta: components['schemas']['PaginationMetaDto'];
     };
     CreateUsuarioDto: {
       /**
@@ -359,7 +385,17 @@ export interface operations {
   };
   UsuariosController_findAll: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description Número de página, desde 1. */
+        page?: number;
+        /** @description Elementos por página (máximo 100). */
+        limit?: number;
+        /**
+         * @description Texto a buscar en el nombre (sin distinguir tildes ni mayúsculas) o en el
+         *     RUT (con o sin puntos y guion).
+         */
+        buscar?: string;
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -371,7 +407,16 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['Usuario'][];
+          'application/json': components['schemas']['PaginaUsuariosDto'];
+        };
+      };
+      /** @description Parámetros de paginación o búsqueda inválidos */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
       /** @description Falta el token de acceso, o es inválido o expiró */

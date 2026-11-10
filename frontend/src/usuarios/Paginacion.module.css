@@ -1,0 +1,12 @@
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+}
+
+.posicion {
+  color: var(--color-tinta-suave);
+  font-variant-numeric: tabular-nums;
+}

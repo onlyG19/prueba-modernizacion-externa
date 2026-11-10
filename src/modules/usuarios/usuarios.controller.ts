@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -22,6 +23,8 @@ import { ProblemDetailsDto } from '../../common/dto/problem-details.dto';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
+import { PaginaUsuariosDto } from './dto/pagina-usuarios.dto';
 // [ANTES] import { Usuario } from './usuario.entity';
 import { Usuario } from './entities/usuario.entity';
 
@@ -34,10 +37,19 @@ import { Usuario } from './entities/usuario.entity';
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
-  /** Lista todos los usuarios. */
+  // [ANTES] /** Lista todos los usuarios. */
+  // [ANTES] @Get()
+  // [ANTES] findAll(): Promise<Usuario[]> {
+  // [ANTES]   return this.usuariosService.findAll();
+  // [ANTES] }
+  /** Lista los usuarios por páginas, ordenados por nombre, con búsqueda opcional. */
+  @ApiBadRequestResponse({
+    description: 'Parámetros de paginación o búsqueda inválidos',
+    type: ProblemDetailsDto,
+  })
   @Get()
-  findAll(): Promise<Usuario[]> {
-    return this.usuariosService.findAll();
+  findAll(@Query() query: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
+    return this.usuariosService.findAll(query);
   }
 
   /** Obtiene un usuario por su id. */

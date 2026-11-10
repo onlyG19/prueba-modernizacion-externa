@@ -70,6 +70,13 @@ test('ciclo completo: registrar, editar, buscar, recargar y eliminar', async ({
     page.getByRole('row', { name: /Ana María Rojas/ }),
   ).toBeVisible();
 
+  // La búsqueda la resuelve Postgres: sin tildes también encuentra (unaccent).
+  await page.getByLabel('Buscar por nombre o RUT').fill('ana maria');
+  await expect(page.getByText('1 usuario encontrado')).toBeVisible();
+  await expect(
+    page.getByRole('row', { name: /Ana María Rojas/ }),
+  ).toBeVisible();
+
   await page
     .getByRole('button', { name: 'Eliminar a Ana María Rojas' })
     .click();

@@ -18,6 +18,21 @@ async function filas() {
   return within(tabla).getAllByRole('row').slice(1);
 }
 
+/**
+ * Las filas que se ven ahora mismo. Tras buscar o paginar la tabla anterior
+ * sigue a la vista hasta que responde el servidor: se usa dentro de `waitFor`.
+ */
+function filasVisibles() {
+  return within(screen.getByRole('table')).getAllByRole('row').slice(1);
+}
+
+/** 25 usuarios: más de una página (20 por página). */
+const VEINTICINCO_USUARIOS = Array.from({ length: 25 }, (_, i) => ({
+  id: i + 1,
+  nombre: `Persona ${String(i + 1).padStart(2, '0')}`,
+  rut: `${10_000_000 + i}-0`,
+}));
+
 describe('Encabezado de la consola', () => {
   it('debe mostrar el logo, el usuario y el total de visitas', async () => {
     prepararApi({ visitas: 41 });
@@ -79,13 +94,19 @@ describe('Lista de usuarios', () => {
     const buscador = screen.getByLabelText('Buscar por nombre o RUT');
 
     await usuario.type(buscador, 'perez');
-    expect(await filas()).toHaveLength(1);
-    expect(screen.getByText('1 de 2 usuarios')).toBeInTheDocument();
+    // [ANTES] expect(await filas()).toHaveLength(1);
+    // [ANTES] expect(screen.getByText('1 de 2 usuarios')).toBeInTheDocument();
+    expect(await screen.findByText('1 usuario encontrado')).toBeInTheDocument();
+    expect(filasVisibles()).toHaveLength(1);
 
     await usuario.clear(buscador);
     await usuario.type(buscador, '9.876.543');
-    const [fila] = await filas();
-    expect(fila).toHaveTextContent('María López');
+    // [ANTES] const [fila] = await filas();
+    // [ANTES] expect(fila).toHaveTextContent('María López');
+    await waitFor(() =>
+      expect(filasVisibles()[0]).toHaveTextContent('María López'),
+    );
+    expect(filasVisibles()).toHaveLength(1);
 
     await usuario.clear(buscador);
     await usuario.type(buscador, 'nadie');
@@ -109,6 +130,49 @@ describe('Lista de usuarios', () => {
     expect(window.location.search).toBe('?buscar=juan');
   });
 
+  it('debe paginar de a 20, recordar la página en la URL y volver a la primera al buscar', async () => {
+    prepararApi({ usuarios: VEINTICINCO_USUARIOS });
+    const { usuario } = renderizarConSesion();
+
+    expect(await filas()).toHaveLength(20);
+    expect(screen.getByText('25 usuarios')).toBeInTheDocument();
+    expect(screen.getByText('Página 1 de 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Anterior' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+
+    const siguiente = screen.getByRole('button', { name: 'Siguiente' });
+    await usuario.click(siguiente);
+
+    await waitFor(() => expect(filasVisibles()).toHaveLength(5));
+    expect(filasVisibles()[0]).toHaveTextContent('Persona 21');
+    expect(screen.getByText('Página 2 de 2')).toBeInTheDocument();
+    expect(window.location.search).toBe('?pagina=2');
+    // En la última página el botón queda inactivo, pero no pierde el foco.
+    expect(siguiente).toHaveAttribute('aria-disabled', 'true');
+    expect(siguiente).toHaveFocus();
+    expect(await violacionesDeAccesibilidad()).toEqual([]);
+
+    await usuario.type(
+      screen.getByLabelText('Buscar por nombre o RUT'),
+      'Persona 2',
+    );
+    expect(
+      await screen.findByText('6 usuarios encontrados'),
+    ).toBeInTheDocument();
+    expect(window.location.search).toBe('?buscar=Persona+2');
+  });
+
+  it('debe corregir una página fuera de rango que venga en la URL', async () => {
+    prepararApi();
+    window.history.replaceState(null, '', '/?pagina=7');
+    renderizarConSesion();
+
+    expect(await filas()).toHaveLength(2);
+    expect(window.location.search).toBe('');
+  });
+
   it('debe invitar a registrar el primero cuando no hay usuarios', async () => {
     prepararApi({ usuarios: [] });
     renderizarConSesion();
@@ -119,13 +183,20 @@ describe('Lista de usuarios', () => {
   });
 
   it('debe permitir reintentar si la lista no carga', async () => {
-    const api = prepararApi();
+    // [ANTES] const api = prepararApi();
+    prepararApi();
     let fallar = true;
     servidor.use(
+      // [ANTES] http.get('/api/usuarios', () =>
+      // [ANTES]   fallar
+      // [ANTES]     ? HttpResponse.json({ statusCode: 500 }, { status: 500 })
+      // [ANTES]     : HttpResponse.json(api.estado.usuarios),
+      // [ANTES] ),
+      // Sin respuesta (undefined), MSW pasa la petición a la API falsa.
       http.get('/api/usuarios', () =>
         fallar
           ? HttpResponse.json({ statusCode: 500 }, { status: 500 })
-          : HttpResponse.json(api.estado.usuarios),
+          : undefined,
       ),
     );
     const { usuario } = renderizarConSesion();
@@ -172,7 +243,8 @@ describe('Registrar usuario', () => {
     expect(
       await screen.findByText('Usuario registrado: Ana Rojas.'),
     ).toBeInTheDocument();
-    expect(await filas()).toHaveLength(3);
+    // [ANTES] expect(await filas()).toHaveLength(3);
+    await waitFor(() => expect(filasVisibles()).toHaveLength(3));
     // Se envía el RUT en forma canónica, sin puntos.
     expect(api.estado.recibidos.creaciones).toEqual([
       { nombre: 'Ana Rojas', rut: '11111111-1' },
@@ -331,7 +403,8 @@ describe('Eliminar usuario', () => {
     expect(
       await screen.findByText('Usuario eliminado: María López.'),
     ).toBeInTheDocument();
-    expect(await filas()).toHaveLength(1);
+    // [ANTES] expect(await filas()).toHaveLength(1);
+    await waitFor(() => expect(filasVisibles()).toHaveLength(1));
     expect(api.estado.usuarios.map((u) => u.nombre)).toEqual(['Juan Pérez']);
   });
 });

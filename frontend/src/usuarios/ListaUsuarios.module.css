@@ -67,6 +67,21 @@
   outline: none;
 }
 
+.resultados {
+  display: grid;
+  gap: var(--esp-4);
+  min-width: 0;
+}
+
+/*
+ * Mientras llega la búsqueda o la página nueva se sigue viendo la anterior,
+ * atenuada. El retraso evita un parpadeo si el servidor responde al instante.
+ */
+.actualizando {
+  opacity: 0.6;
+  transition: opacity 0.2s 0.15s;
+}
+
 .estado {
   max-width: 60ch;
   color: var(--color-tinta-suave);

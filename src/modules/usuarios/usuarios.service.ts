@@ -5,12 +5,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+// [ANTES] import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 // [ANTES] import { Usuario } from './usuario.entity';
 import { Usuario } from './entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
+import { PaginaUsuariosDto } from './dto/pagina-usuarios.dto';
 import { isUniqueViolation } from '../../infrastructure/database/postgres-errors';
+import { escaparLike } from '../../infrastructure/database/like';
+
+/** Puntos, guiones y espacios: se ignoran al buscar por RUT. */
+const SEPARADORES_RUT = /[.\-\s]/g;
 
 @Injectable()
 export class UsuariosService {
@@ -19,8 +26,52 @@ export class UsuariosService {
     private readonly usuarioRepository: Repository<Usuario>,
   ) {}
 
-  findAll(): Promise<Usuario[]> {
-    return this.usuarioRepository.find();
+  // [ANTES] findAll(): Promise<Usuario[]> {
+  // [ANTES]   return this.usuarioRepository.find();
+  // [ANTES] }
+  /**
+   * Una página de usuarios ordenados por nombre, opcionalmente filtrada.
+   *
+   * @remarks El nombre se compara sin tildes ni mayúsculas (`unaccent` +
+   * `ILIKE`); el RUT, sin puntos ni guion. Los comodines del texto buscado se
+   * escapan para que se busque literal.
+   */
+  async findAll({
+    page,
+    limit,
+    buscar,
+  }: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
+    const consulta = this.usuarioRepository
+      .createQueryBuilder('usuario')
+      .orderBy('usuario.nombre', 'ASC')
+      // Desempate estable: la misma fila no salta entre páginas.
+      .addOrderBy('usuario.id', 'ASC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const texto = buscar?.trim();
+    if (texto) {
+      const rut = texto.replace(SEPARADORES_RUT, '').toUpperCase();
+      consulta.where(
+        new Brackets((condicion) => {
+          condicion.where('unaccent(usuario.nombre) ILIKE unaccent(:nombre)', {
+            nombre: `%${escaparLike(texto)}%`,
+          });
+          // Sin caracteres útiles (p. ej. buscar "."), no se filtra por RUT.
+          if (rut) {
+            condicion.orWhere("replace(usuario.rut, '-', '') ILIKE :rut", {
+              rut: `%${escaparLike(rut)}%`,
+            });
+          }
+        }),
+      );
+    }
+
+    const [data, total] = await consulta.getManyAndCount();
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async findOne(id: number): Promise<Usuario> {

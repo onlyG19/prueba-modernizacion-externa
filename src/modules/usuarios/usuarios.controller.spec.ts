@@ -38,10 +38,21 @@ describe('UsuariosController', () => {
 
   // ── findAll ──────────────────────────────────────────────────────────────
   describe('findAll', () => {
-    it('debe retornar el arreglo de usuarios del service', async () => {
-      service.findAll.mockResolvedValue([usuarioBase]);
-      expect(await controller.findAll()).toEqual([usuarioBase]);
-      expect(service.findAll).toHaveBeenCalledTimes(1);
+    // [ANTES] it('debe retornar el arreglo de usuarios del service', async () => {
+    // [ANTES]   service.findAll.mockResolvedValue([usuarioBase]);
+    // [ANTES]   expect(await controller.findAll()).toEqual([usuarioBase]);
+    // [ANTES]   expect(service.findAll).toHaveBeenCalledTimes(1);
+    // [ANTES] });
+    it('debe pasar la paginación y la búsqueda al service', async () => {
+      const pagina = {
+        data: [usuarioBase],
+        meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
+      };
+      service.findAll.mockResolvedValue(pagina);
+      const query = { page: 1, limit: 20, buscar: 'juan' };
+
+      expect(await controller.findAll(query)).toEqual(pagina);
+      expect(service.findAll).toHaveBeenCalledWith(query);
     });
   });
 

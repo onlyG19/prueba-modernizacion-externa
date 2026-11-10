@@ -3,6 +3,7 @@ import type {
   CambiosUsuario,
   Credenciales,
   NuevoUsuario,
+  PaginaUsuarios,
   Usuario,
 } from '../api/tipos';
 
@@ -17,6 +18,37 @@ export interface EstadoApiFalsa {
   redisDisponible: boolean;
   /** Cuerpos recibidos, para verificar qué envió el frontend. */
   recibidos: { creaciones: NuevoUsuario[]; cambios: CambiosUsuario[] };
+}
+
+const COLECCION = new Intl.Collator('es', { sensitivity: 'base' });
+const SIN_TILDES = /\p{Diacritic}/gu;
+const SEPARADORES_RUT = /[.\-\s]/g;
+
+const normalizar = (texto: string) =>
+  texto.normalize('NFD').replace(SIN_TILDES, '').toLowerCase();
+
+/**
+ * `GET /usuarios` como lo responde la API real: busca por nombre sin tildes o
+ * por RUT sin separadores, ordena por nombre y entrega una página con su `meta`.
+ */
+function paginar(usuarios: Usuario[], url: URL): PaginaUsuarios {
+  const page = Number(url.searchParams.get('page') ?? 1);
+  const limit = Number(url.searchParams.get('limit') ?? 20);
+  const texto = normalizar(url.searchParams.get('buscar')?.trim() ?? '');
+  const rut = texto.replace(SEPARADORES_RUT, '');
+  const coincidentes = usuarios
+    .filter(
+      (u) =>
+        !texto ||
+        normalizar(u.nombre).includes(texto) ||
+        (rut !== '' && u.rut.replace('-', '').toLowerCase().includes(rut)),
+    )
+    .toSorted((a, b) => COLECCION.compare(a.nombre, b.nombre) || a.id - b.id);
+  const total = coincidentes.length;
+  return {
+    data: coincidentes.slice((page - 1) * limit, page * limit),
+    meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  };
 }
 
 /** Errores con el mismo formato que la API real: Problem Details (RFC 9457). */
@@ -68,7 +100,10 @@ export function crearApiFalsa(inicial: Partial<EstadoApiFalsa> = {}) {
     }),
 
     http.get('/api/usuarios', ({ request }) =>
-      autorizado(request) ? HttpResponse.json(estado.usuarios) : noAutorizado(),
+      // [ANTES] autorizado(request) ? HttpResponse.json(estado.usuarios) : noAutorizado(),
+      autorizado(request)
+        ? HttpResponse.json(paginar(estado.usuarios, new URL(request.url)))
+        : noAutorizado(),
     ),
 
     http.post('/api/usuarios', async ({ request }) => {

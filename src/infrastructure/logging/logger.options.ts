@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { LevelWithSilent } from 'pino';
 import type { Options } from 'pino-http';
 import { Environment } from '../../config/env.validation';
+import { serializarPeticion } from './datos-personales';
 
 /** Cabecera con el identificador de la petición, de entrada y de salida. */
 export const CABECERA_REQUEST_ID = 'X-Request-Id';
@@ -64,6 +65,9 @@ export function crearOpcionesLog({ NODE_ENV, LOG_LEVEL }: EntornoLog): Options {
     genReqId: asignarRequestId,
     // El token y las cookies nunca llegan a los logs.
     redact: ['req.headers.authorization', 'req.headers.cookie'],
+    // Ni datos personales: el término buscado y cualquier RUT en la URL
+    // (Ley 19.628 y su reforma, Ley 21.719). Ver datos-personales.ts.
+    serializers: { req: serializarPeticion },
     // Docker consulta /health cada pocos segundos: registrarlo sería ruido.
     autoLogging: { ignore: (req) => req.url === '/health' },
     customLogLevel: nivelSegunRespuesta,

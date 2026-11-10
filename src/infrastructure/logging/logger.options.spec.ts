@@ -6,6 +6,7 @@ import {
   crearOpcionesLog,
   nivelSegunRespuesta,
 } from './logger.options';
+import { serializarPeticion } from './datos-personales';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -71,6 +72,7 @@ describe('crearOpcionesLog', () => {
     expect(opciones.level).toBe('info');
     expect(opciones.transport).toBeUndefined();
     expect(opciones.redact).toContain('req.headers.authorization');
+    expect(opciones.serializers?.req).toBe(serializarPeticion);
   });
 
   it('debe callar en los tests, salvo que LOG_LEVEL pida otra cosa', () => {

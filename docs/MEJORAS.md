@@ -33,8 +33,8 @@ Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unita
 - [x] **Autenticación con JWT.** `0d56fe2` `4c8ef3f`
   - **Qué:** `POST /auth/login` entrega un JWT y un guard global protege todas las rutas, salvo las marcadas con `@Public()`. La contraseña del administrador se guarda como hash scrypt.
   - **Por qué:** cualquiera podía listar, editar o borrar usuarios, y el RUT es un dato personal (Ley 19.628).
-- [x] **Cuentas creadas por el administrador, con roles.** `5c8776d` `a6425b1`
-  - **Qué:** tabla `cuentas` (usuario único en minúsculas y hash scrypt) y `POST /cuentas`, que solo acepta al administrador del `.env` (403 para el resto). El login acepta ambos tipos de cuenta y el JWT lleva el rol (`admin` u `operador`). Si el usuario no existe, el login igual verifica una contraseña contra un hash señuelo, así que la respuesta tarda lo mismo. En el panel, la página Cuentas (solo para el admin) tiene un formulario con las mismas reglas de la API, compartidas con el alias `@dominio-cuentas`, y genera contraseñas seguras.
+- [x] **Cuentas creadas por el administrador, con roles.** `5c8776d` `a6425b1` `657558a` `9ea3c31`
+  - **Qué:** tabla `cuentas` (usuario único en minúsculas y hash scrypt), y `GET` y `POST /cuentas`, que solo aceptan al administrador del `.env` (403 para el resto). El `GET` pagina, busca y ordena como `GET /usuarios`. El login acepta ambos tipos de cuenta y el JWT lleva el rol (`admin` u `operador`). Si el usuario no existe, el login igual verifica una contraseña contra un hash señuelo, así que la respuesta tarda lo mismo. En el panel, la página Cuentas (solo para el admin) tiene dos pestañas, como Usuarios: una tabla con búsqueda, orden y páginas en la URL, y un formulario con las mismas reglas de la API (compartidas con el alias `@dominio-cuentas`) que genera contraseñas seguras.
   - **Por qué:** con un solo usuario compartido no se puede dar acceso a otra persona sin entregarle la contraseña del administrador, ni quitárselo después.
 - [x] **CORS con lista de orígenes.** `6933168`
   - **Qué:** los orígenes permitidos vienen de la configuración, y `*` está prohibido en producción.

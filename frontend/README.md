@@ -64,8 +64,9 @@ src/
 ├── usuarios/     página con pestañas, tabla, ventana de detalle, registro, RUT
 │   ├── formulario/   piezas compuestas + variantes crear / editar
 │   └── rut/          formato y verificación mientras se escribe
-├── cuentas/      crear cuentas (solo el admin): formulario, reglas y generador de contraseñas
-├── ui/           botones, ventana modal (<dialog>), avisos, íconos, estilos de formulario
+├── cuentas/      tabla y alta de cuentas (solo el admin): reglas y generador de contraseñas
+├── ui/           botones, ventana modal (<dialog>), avisos, íconos, paginación,
+│                 estilos de listado y de formulario, filtro en la URL, fechas
 ├── estilos/      tokens de diseño y estilos base
 └── test/         API falsa (MSW), utilidades de render y de accesibilidad
 ```
@@ -79,7 +80,8 @@ Rutas:
 | `/panel` | Resumen: cifras, últimos registrados y accesos | Requerida |
 | `/panel/usuarios` | Tabla de usuarios; el ojo abre el detalle y el lápiz, la edición | Requerida |
 | `/panel/usuarios/registrar` | Registrar usuario | Requerida |
-| `/panel/cuentas` | Crear cuentas para otras personas | Requerida; solo el admin la ve en la barra lateral |
+| `/panel/cuentas` | Tabla de cuentas: búsqueda, orden y páginas en la URL | Requerida; solo el admin la ve en la barra lateral |
+| `/panel/cuentas/crear` | Crear cuenta | Requerida; solo el admin |
 
 Sin sesión, una ruta del panel lleva al login con `?volver=` y, tras ingresar,
 vuelve a esa página (solo se aceptan rutas del panel: sin redirección abierta).
@@ -97,6 +99,9 @@ Decisiones principales:
   sesión lo guarda: un operador no ve "Cuentas" en la barra lateral y, si llega
   por la URL, se le explica que la sección es del administrador. La barrera real
   es la API, que responde 403 a un token que no sea de admin.
+- **Un listado, dos tablas.** Usuarios y cuentas comparten la paginación, los
+  estilos del listado y `useFiltroEnUrl` (búsqueda con retraso, orden y página
+  guardados en la URL). Cada tabla solo define sus columnas y sus textos.
 - **Tipos de extremo a extremo.** `esquema.d.ts` se genera desde el documento
   OpenAPI de la API: si un contrato cambia y no se regenera, el frontend no
   compila.
@@ -106,7 +111,7 @@ Decisiones principales:
   la respuesta. Un 401 en cualquier consulta cierra la sesión.
 - **La consola se carga bajo demanda** (`lazy`): quien no ha iniciado sesión no
   descarga ese código, y se precarga al enfocar el formulario de login.
-- **Enrutador propio en vez de una librería**: son seis rutas fijas.
+- **Enrutador propio en vez de una librería**: son siete rutas fijas.
   `useSyncExternalStore` lee la URL (un sistema externo a React) y `navegar()`
   usa `pushState`; los enlaces siguen siendo `<a>` reales (abren en otra pestaña
   con Ctrl/⌘). Al cambiar de página el foco va a su título, salvo en las

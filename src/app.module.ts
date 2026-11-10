@@ -11,10 +11,12 @@ import { LogoModule } from './modules/logo/logo.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 // [ANTES] import { Usuario } from './usuarios/usuario.entity';
 import { Usuario } from './modules/usuarios/entities/usuario.entity';
+import { validateEnv } from './config/env.validation';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    // [ANTES] ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

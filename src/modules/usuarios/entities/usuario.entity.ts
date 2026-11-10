@@ -11,19 +11,19 @@ export class Usuario {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // [ANTES] @Column({ type: 'varchar', length: 45 })
   /**
    * Nombre del usuario.
    * @example 'Juan Pérez'
    */
+  // [ANTES] @Column({ type: 'varchar', length: 45 })
   @Column({ type: 'varchar', length: NOMBRE_MAX_LENGTH })
   nombre: string;
 
-  // [ANTES] @Column({ type: 'varchar', length: 12 })
   /**
    * RUT en forma canónica: sin puntos, con guion y DV en mayúscula.
    * @example '12345678-5'
    */
+  // [ANTES] @Column({ type: 'varchar', length: 12 })
   @Column({ type: 'varchar', length: RUT_MAX_LENGTH, unique: true })
   rut: string;
 }

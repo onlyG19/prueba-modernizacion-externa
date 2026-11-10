@@ -110,7 +110,8 @@ export function crearApiFalsa({
     error(401, 'Token inválido o expirado', 'Unauthorized');
 
   const handlers = [
-    http.post('/api/auth/login', async ({ request }) => {
+    // [ANTES] http.post('/api/auth/login', async ({ request }) => {
+    http.post('/api/v1/auth/login', async ({ request }) => {
       const { username, password } = (await request.json()) as Credenciales;
       if (
         username === CREDENCIALES_VALIDAS.username &&
@@ -125,14 +126,16 @@ export function crearApiFalsa({
       return error(401, 'Credenciales inválidas', 'Unauthorized');
     }),
 
-    http.get('/api/usuarios', ({ request }) =>
+    // [ANTES] http.get('/api/usuarios', ({ request }) =>
+    http.get('/api/v1/usuarios', ({ request }) =>
       // [ANTES] autorizado(request) ? HttpResponse.json(estado.usuarios) : noAutorizado(),
       autorizado(request)
         ? HttpResponse.json(paginar(estado.usuarios, new URL(request.url)))
         : noAutorizado(),
     ),
 
-    http.post('/api/usuarios', async ({ request }) => {
+    // [ANTES] http.post('/api/usuarios', async ({ request }) => {
+    http.post('/api/v1/usuarios', async ({ request }) => {
       if (!autorizado(request)) {
         return noAutorizado();
       }
@@ -157,7 +160,8 @@ export function crearApiFalsa({
       return HttpResponse.json(creado, { status: 201 });
     }),
 
-    http.patch('/api/usuarios/:id', async ({ request, params }) => {
+    // [ANTES] http.patch('/api/usuarios/:id', async ({ request, params }) => {
+    http.patch('/api/v1/usuarios/:id', async ({ request, params }) => {
       if (!autorizado(request)) {
         return noAutorizado();
       }
@@ -174,7 +178,8 @@ export function crearApiFalsa({
       return HttpResponse.json(usuario);
     }),
 
-    http.delete('/api/usuarios/:id', ({ request, params }) => {
+    // [ANTES] http.delete('/api/usuarios/:id', ({ request, params }) => {
+    http.delete('/api/v1/usuarios/:id', ({ request, params }) => {
       if (!autorizado(request)) {
         return noAutorizado();
       }
@@ -184,7 +189,8 @@ export function crearApiFalsa({
       return new HttpResponse(null, { status: 204 });
     }),
 
-    http.get('/api/logo', () => {
+    // [ANTES] http.get('/api/logo', () => {
+    http.get('/api/v1/logo', () => {
       const cabeceras: Record<string, string> = {
         'Content-Type': 'image/svg+xml',
       };

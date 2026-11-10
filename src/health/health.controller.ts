@@ -4,7 +4,15 @@
 // [ANTES]   Inject,
 // [ANTES]   ServiceUnavailableException,
 // [ANTES] } from '@nestjs/common';
-import { Controller, Get, HttpStatus, Inject, Res } from '@nestjs/common';
+// [ANTES] import { Controller, Get, HttpStatus, Inject, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Inject,
+  Res,
+  VERSION_NEUTRAL,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { ApiOkResponse, ApiServiceUnavailableResponse } from '@nestjs/swagger';
 import Redis from 'ioredis';
@@ -23,7 +31,9 @@ export const PROBE_TIMEOUT_MS = 3000;
 @Public()
 // Los healthchecks consultan seguido: no deben consumir el límite de nadie.
 @SkipThrottle()
-@Controller('health')
+// [ANTES] @Controller('health')
+// Sin prefijo ni versión: siempre en /health, para Docker y balanceadores.
+@Controller({ path: 'health', version: VERSION_NEUTRAL })
 export class HealthController {
   constructor(
     private readonly dataSource: DataSource,

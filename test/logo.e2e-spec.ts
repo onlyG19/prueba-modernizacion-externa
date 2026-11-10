@@ -2,6 +2,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
 import { LIMITE_LOGO, MENSAJE_LIMITE } from '../src/config/limites';
 import type { VisitCountDto } from '../src/modules/logo/dto/visit-count.dto';
+import { RUTA_API } from '../src/config/app-setup';
 import { crearAppE2e } from './utilidades/app-e2e';
 
 /** El logo y su contador de visitas, guardado en Redis (con contraseña). */
@@ -10,7 +11,8 @@ describe('/logo (e2e)', () => {
 
   async function visitas(servidor: NestExpressApplication): Promise<number> {
     const respuesta = await request(servidor.getHttpServer())
-      .get('/logo/count')
+      // [ANTES] .get('/logo/count')
+      .get(`${RUTA_API}/logo/count`)
       .expect(200);
     return (respuesta.body as VisitCountDto).count;
   }
@@ -27,7 +29,8 @@ describe('/logo (e2e)', () => {
     const antes = await visitas(app);
 
     const respuesta = await request(app.getHttpServer())
-      .get('/logo')
+      // [ANTES] .get('/logo')
+      .get(`${RUTA_API}/logo`)
       .expect(200)
       .expect('Content-Type', /^image\//);
 
@@ -38,7 +41,9 @@ describe('/logo (e2e)', () => {
   it(`aplica su propio límite: la visita ${LIMITE_LOGO.limit + 1} en un minuto responde 429 y no suma`, async () => {
     // App nueva: el conteo del límite (en memoria) parte de cero.
     const appNueva = await crearAppE2e();
-    const pedirLogo = () => request(appNueva.getHttpServer()).get('/logo');
+    // [ANTES] const pedirLogo = () => request(appNueva.getHttpServer()).get('/logo');
+    const pedirLogo = () =>
+      request(appNueva.getHttpServer()).get(`${RUTA_API}/logo`);
     try {
       for (let i = 0; i < LIMITE_LOGO.limit; i++) {
         await pedirLogo().expect(200);

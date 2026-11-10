@@ -107,7 +107,8 @@ test('un RUT duplicado lo rechaza Postgres (UNIQUE) y la interfaz lo explica', a
 });
 
 test('la API rechaza peticiones sin token (401)', async ({ request }) => {
-  const respuesta = await request.get('/api/usuarios');
+  // [ANTES] const respuesta = await request.get('/api/usuarios');
+  const respuesta = await request.get('/api/v1/usuarios');
 
   expect(respuesta.status()).toBe(401);
 });

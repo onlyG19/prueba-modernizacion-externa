@@ -2,7 +2,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../../src/app.module';
-import { configureApp } from '../../src/config/app-setup';
+import { configureApp, RUTA_API } from '../../src/config/app-setup';
 import type { AccessTokenDto } from '../../src/modules/auth/dto/access-token.dto';
 import { ADMIN_E2E } from '../setup/entorno-e2e';
 
@@ -28,7 +28,8 @@ export async function iniciarSesion(
   app: NestExpressApplication,
 ): Promise<string> {
   const respuesta = await request(app.getHttpServer())
-    .post('/auth/login')
+    // [ANTES] .post('/auth/login')
+    .post(`${RUTA_API}/auth/login`)
     .send(ADMIN_E2E)
     .expect(200);
   return (respuesta.body as AccessTokenDto).accessToken;

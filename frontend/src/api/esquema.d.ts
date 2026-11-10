@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-  '/logo': {
+  '/api/v1/logo': {
     parameters: {
       query?: never;
       header?: never;
@@ -16,7 +16,7 @@ export interface paths {
      * @description Si Redis no está disponible, igual devuelve el logo, sin el header
      *     `X-Request-Count`.
      */
-    get: operations['LogoController_getLogo'];
+    get: operations['LogoController_getLogo_v1'];
     put?: never;
     post?: never;
     delete?: never;
@@ -25,7 +25,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/logo/count': {
+  '/api/v1/logo/count': {
     parameters: {
       query?: never;
       header?: never;
@@ -33,7 +33,7 @@ export interface paths {
       cookie?: never;
     };
     /** Devuelve el total de visitas al logo. */
-    get: operations['LogoController_getCount'];
+    get: operations['LogoController_getCount_v1'];
     put?: never;
     post?: never;
     delete?: never;
@@ -42,24 +42,24 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/usuarios': {
+  '/api/v1/usuarios': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations['UsuariosController_findAll'];
+    get: operations['UsuariosController_findAll_v1'];
     put?: never;
     /** Crea un usuario. El RUT se acepta con o sin puntos y se guarda normalizado. */
-    post: operations['UsuariosController_create'];
+    post: operations['UsuariosController_create_v1'];
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  '/usuarios/{id}': {
+  '/api/v1/usuarios/{id}': {
     parameters: {
       query?: never;
       header?: never;
@@ -67,18 +67,18 @@ export interface paths {
       cookie?: never;
     };
     /** Obtiene un usuario por su id. */
-    get: operations['UsuariosController_findOne'];
+    get: operations['UsuariosController_findOne_v1'];
     put?: never;
     post?: never;
     /** Elimina un usuario. */
-    delete: operations['UsuariosController_remove'];
+    delete: operations['UsuariosController_remove_v1'];
     options?: never;
     head?: never;
     /** Actualiza parcialmente un usuario. */
-    patch: operations['UsuariosController_update'];
+    patch: operations['UsuariosController_update_v1'];
     trace?: never;
   };
-  '/auth/login': {
+  '/api/v1/auth/login': {
     parameters: {
       query?: never;
       header?: never;
@@ -91,7 +91,7 @@ export interface paths {
      * Intercambia usuario y contraseña por un token de acceso.
      * @description Responde 200 y no 201, porque no crea ningún recurso.
      */
-    post: operations['AuthController_login'];
+    post: operations['AuthController_login_v1'];
     delete?: never;
     options?: never;
     head?: never;
@@ -311,7 +311,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  LogoController_getLogo: {
+  LogoController_getLogo_v1: {
     parameters: {
       query?: never;
       header?: never;
@@ -334,7 +334,7 @@ export interface operations {
       };
     };
   };
-  LogoController_getCount: {
+  LogoController_getCount_v1: {
     parameters: {
       query?: never;
       header?: never;
@@ -362,7 +362,7 @@ export interface operations {
       };
     };
   };
-  UsuariosController_findAll: {
+  UsuariosController_findAll_v1: {
     parameters: {
       query?: {
         /** @description Número de página, desde 1. */
@@ -409,7 +409,7 @@ export interface operations {
       };
     };
   };
-  UsuariosController_create: {
+  UsuariosController_create_v1: {
     parameters: {
       query?: never;
       header?: never;
@@ -459,7 +459,7 @@ export interface operations {
       };
     };
   };
-  UsuariosController_findOne: {
+  UsuariosController_findOne_v1: {
     parameters: {
       query?: never;
       header?: never;
@@ -498,7 +498,7 @@ export interface operations {
       };
     };
   };
-  UsuariosController_remove: {
+  UsuariosController_remove_v1: {
     parameters: {
       query?: never;
       header?: never;
@@ -535,7 +535,7 @@ export interface operations {
       };
     };
   };
-  UsuariosController_update: {
+  UsuariosController_update_v1: {
     parameters: {
       query?: never;
       header?: never;
@@ -596,7 +596,7 @@ export interface operations {
       };
     };
   };
-  AuthController_login: {
+  AuthController_login_v1: {
     parameters: {
       query?: never;
       header?: never;

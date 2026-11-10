@@ -11,14 +11,17 @@ const DOMINIO = fileURLToPath(
   new URL('../src/modules/usuarios/domain', import.meta.url),
 );
 
-/** Backend al que se redirigen las llamadas a `/api` en desarrollo. */
+/**
+ * Backend al que se redirigen las llamadas a `/api` en desarrollo. La API ya
+ * sirve sus rutas bajo `/api/v1`: se reenvían tal cual, sin reescribirlas.
+ */
 const API_DESTINO = process.env.API_PROXY_TARGET ?? 'http://localhost:3000';
 
 const proxyApi = {
   '/api': {
     target: API_DESTINO,
     changeOrigin: true,
-    rewrite: (ruta: string) => ruta.replace(/^\/api/, ''),
+    // [ANTES] rewrite: (ruta: string) => ruta.replace(/^\/api/, ''),
   },
 };
 

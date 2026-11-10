@@ -5,6 +5,7 @@ import type { ProblemDetailsDto } from '../src/common/dto/problem-details.dto';
 import type { PaginaUsuariosDto } from '../src/modules/usuarios/dto/pagina-usuarios.dto';
 // [ANTES] import type { Usuario } from '../src/modules/usuarios/entities/usuario.entity';
 import type { UsuarioDto } from '../src/modules/usuarios/dto/usuario.dto';
+import { RUTA_API } from '../src/config/app-setup';
 import { crearAppE2e, iniciarSesion } from './utilidades/app-e2e';
 
 /** Un usuario tal como llega en el JSON: las fechas, como texto ISO 8601. */
@@ -21,16 +22,29 @@ describe('/usuarios (e2e)', () => {
   let app: NestExpressApplication;
   let token: string;
 
-  /** Petición autenticada como el administrador de los e2e. */
+  // [ANTES] /** Petición autenticada como el administrador de los e2e. */
+  /** Petición autenticada como el administrador; la ruta va bajo /api/v1. */
   const api = {
     get: (ruta: string) =>
-      request(app.getHttpServer()).get(ruta).auth(token, { type: 'bearer' }),
+      // [ANTES] request(app.getHttpServer()).get(ruta).auth(token, { type: 'bearer' }),
+      request(app.getHttpServer())
+        .get(`${RUTA_API}${ruta}`)
+        .auth(token, { type: 'bearer' }),
     post: (ruta: string) =>
-      request(app.getHttpServer()).post(ruta).auth(token, { type: 'bearer' }),
+      // [ANTES] request(app.getHttpServer()).post(ruta).auth(token, { type: 'bearer' }),
+      request(app.getHttpServer())
+        .post(`${RUTA_API}${ruta}`)
+        .auth(token, { type: 'bearer' }),
     patch: (ruta: string) =>
-      request(app.getHttpServer()).patch(ruta).auth(token, { type: 'bearer' }),
+      // [ANTES] request(app.getHttpServer()).patch(ruta).auth(token, { type: 'bearer' }),
+      request(app.getHttpServer())
+        .patch(`${RUTA_API}${ruta}`)
+        .auth(token, { type: 'bearer' }),
     delete: (ruta: string) =>
-      request(app.getHttpServer()).delete(ruta).auth(token, { type: 'bearer' }),
+      // [ANTES] request(app.getHttpServer()).delete(ruta).auth(token, { type: 'bearer' }),
+      request(app.getHttpServer())
+        .delete(`${RUTA_API}${ruta}`)
+        .auth(token, { type: 'bearer' }),
   };
 
   // [ANTES] async function crear(nombre: string, rut: string): Promise<Usuario> {

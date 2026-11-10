@@ -195,7 +195,8 @@ describe('Lista de usuarios', () => {
       // [ANTES]     : HttpResponse.json(api.estado.usuarios),
       // [ANTES] ),
       // Sin respuesta (undefined), MSW pasa la petición a la API falsa.
-      http.get('/api/usuarios', () =>
+      // [ANTES] http.get('/api/usuarios', () =>
+      http.get('/api/v1/usuarios', () =>
         fallar
           ? HttpResponse.json({ statusCode: 500 }, { status: 500 })
           : undefined,
@@ -215,7 +216,8 @@ describe('Lista de usuarios', () => {
   it('debe volver al login con un aviso si el token expiró', async () => {
     // MSW usa el primer handler que coincide: la sobrescritura va primero.
     servidor.use(
-      http.get('/api/usuarios', () =>
+      // [ANTES] http.get('/api/usuarios', () =>
+      http.get('/api/v1/usuarios', () =>
         HttpResponse.json({ statusCode: 401 }, { status: 401 }),
       ),
       ...crearApiFalsa().handlers,

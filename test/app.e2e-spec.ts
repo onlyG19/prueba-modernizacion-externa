@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
 // [ANTES] import { App } from 'supertest/types';
 // [ANTES] import { AppModule } from './../src/app.module';
+import { RUTA_API } from '../src/config/app-setup';
 import { ORIGEN_E2E } from './setup/entorno-e2e';
 import { crearAppE2e } from './utilidades/app-e2e';
 
@@ -58,7 +59,8 @@ describe('API (e2e)', () => {
   });
 
   it('GET /usuarios sin token responde 401', () => {
-    return request(app.getHttpServer()).get('/usuarios').expect(401);
+    // [ANTES] return request(app.getHttpServer()).get('/usuarios').expect(401);
+    return request(app.getHttpServer()).get(`${RUTA_API}/usuarios`).expect(401);
   });
 
   it('aplica la configuración de main.ts: cabeceras de seguridad y CORS', () => {

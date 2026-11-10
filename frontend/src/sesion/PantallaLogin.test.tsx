@@ -66,7 +66,8 @@ describe('Login', () => {
   });
 
   it('debe avisar cuando el servidor no responde', async () => {
-    servidor.use(http.post('/api/auth/login', () => HttpResponse.error()));
+    // [ANTES] servidor.use(http.post('/api/auth/login', () => HttpResponse.error()));
+    servidor.use(http.post('/api/v1/auth/login', () => HttpResponse.error()));
     const { usuario } = renderizarSinSesion();
 
     await usuario.type(screen.getByLabelText('Usuario'), 'admin');
@@ -80,7 +81,8 @@ describe('Login', () => {
 
   it('debe pedir esperar si la API limitó los intentos (429)', async () => {
     servidor.use(
-      http.post('/api/auth/login', () =>
+      // [ANTES] http.post('/api/auth/login', () =>
+      http.post('/api/v1/auth/login', () =>
         HttpResponse.json(
           { type: 'about:blank', title: 'Too Many Requests', status: 429 },
           { status: 429 },

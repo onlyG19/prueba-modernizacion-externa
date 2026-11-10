@@ -5,7 +5,8 @@ import type { components } from './esquema';
 type ErrorRespuesta = components['schemas']['ProblemDetailsDto'];
 
 /** URL base de la API (ver `VITE_API_URL` en env.d.ts). */
-const BASE = import.meta.env.VITE_API_URL ?? '/api';
+// [ANTES] const BASE = import.meta.env.VITE_API_URL ?? '/api';
+const BASE = import.meta.env.VITE_API_URL ?? '/api/v1';
 
 /** La API respondió con un código de error (4xx o 5xx). */
 export class ApiError extends Error {
@@ -44,7 +45,7 @@ export interface OpcionesSolicitud {
  * URL absoluta de un recurso de la API.
  *
  * @remarks Se resuelve contra el origen de la página para que funcione igual
- * con una base relativa (`/api`) o absoluta (`https://api.ejemplo.cl`).
+ * con una base relativa (`/api/v1`) o absoluta (`https://api.ejemplo.cl/api/v1`).
  */
 export function urlApi(ruta: string): string {
   return new URL(`${BASE}${ruta}`, window.location.origin).toString();

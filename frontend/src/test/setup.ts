@@ -25,3 +25,18 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
 
 // jsdom tampoco desplaza la página: al navegar, `scrollTo` no hace nada.
 window.scrollTo = () => {};
+
+// jsdom no implementa `showModal()` ni `close()` de <dialog>: basta con el
+// atributo `open` (lo que lo hace visible) y el evento `close`. El encierro
+// del foco y el fondo inerte los prueba el e2e en un navegador real.
+HTMLDialogElement.prototype.showModal = function showModal(
+  this: HTMLDialogElement,
+) {
+  this.setAttribute('open', '');
+};
+HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+  if (this.hasAttribute('open')) {
+    this.removeAttribute('open');
+    this.dispatchEvent(new Event('close'));
+  }
+};

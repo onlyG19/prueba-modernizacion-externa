@@ -54,3 +54,22 @@ export function BotonEnLinea({ className, ...props }: PropsBoton) {
     />
   );
 }
+
+/**
+ * Botón de solo ícono (ver, editar, cerrar). `etiqueta` es obligatoria: es el
+ * nombre que anuncia el lector de pantalla, ya que no hay texto visible.
+ */
+export function BotonIcono({
+  etiqueta,
+  className,
+  ...props
+}: Omit<PropsBoton, 'aria-label'> & { etiqueta: string }) {
+  return (
+    <button
+      type="button"
+      {...props}
+      aria-label={etiqueta}
+      className={clases(estilos.boton, estilos.icono, className)}
+    />
+  );
+}

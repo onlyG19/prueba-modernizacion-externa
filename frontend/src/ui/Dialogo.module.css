@@ -1,0 +1,49 @@
+.dialogo {
+  width: min(38rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  color: var(--color-tinta);
+  background: var(--color-hoja);
+  border: 0;
+  border-radius: var(--radio-destacado);
+  box-shadow: 0 24px 64px rgb(36 36 36 / 0.28);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* La franja con el degradado de la marca corona la ventana. */
+.dialogo::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: block;
+  height: 6px;
+  background: var(--degradado-marca);
+}
+
+.dialogo::backdrop {
+  background: rgb(46 22 54 / 0.55);
+}
+
+.contenido {
+  padding: var(--esp-5) var(--esp-5) var(--esp-6);
+}
+
+/* Movimiento en respuesta a abrir: muestra de dónde salió lo nuevo. */
+.dialogo[open] {
+  animation: entrar 200ms var(--curva);
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.98);
+  }
+}
+
+@media (max-width: 40rem) {
+  .contenido {
+    padding: var(--esp-4) var(--esp-4) var(--esp-5);
+  }
+}

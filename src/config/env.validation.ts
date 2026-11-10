@@ -8,6 +8,7 @@ import {
   Min,
   validateSync,
 } from 'class-validator';
+import { validateCorsOrigins } from './cors';
 
 /** Entornos de ejecución soportados. */
 export enum Environment {
@@ -83,11 +84,30 @@ export function validateEnv(
   });
   const errores = validateSync(env);
 
-  if (errores.length > 0) {
-    const detalle = errores
-      .flatMap((error) => Object.values(error.constraints ?? {}))
-      .map((mensaje) => `  - ${mensaje}`)
-      .join('\n');
+  // [ANTES] if (errores.length > 0) {
+  // [ANTES]   const detalle = errores
+  // [ANTES]     .flatMap((error) => Object.values(error.constraints ?? {}))
+  // [ANTES]     .map((mensaje) => `  - ${mensaje}`)
+  // [ANTES]     .join('\n');
+  // [ANTES]   throw new Error(`Variables de entorno inválidas:\n${detalle}`);
+  // [ANTES] }
+  const mensajes = errores.flatMap((error) =>
+    Object.values(error.constraints ?? {}),
+  );
+
+  // Reglas que dependen de más de una variable (CORS depende de NODE_ENV).
+  // Solo se evalúan si CORS_ORIGIN pasó las validaciones básicas.
+  if (!errores.some((error) => error.property === 'CORS_ORIGIN')) {
+    mensajes.push(
+      ...validateCorsOrigins(
+        env.CORS_ORIGIN,
+        env.NODE_ENV === Environment.Production,
+      ),
+    );
+  }
+
+  if (mensajes.length > 0) {
+    const detalle = mensajes.map((mensaje) => `  - ${mensaje}`).join('\n');
     throw new Error(`Variables de entorno inválidas:\n${detalle}`);
   }
   return env;

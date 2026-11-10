@@ -46,6 +46,28 @@ describe('validateEnv', () => {
     );
   });
 
+  it('debe rechazar CORS_ORIGIN="*" en producción', () => {
+    expect(() =>
+      validateEnv({ ...minimas, NODE_ENV: 'production', CORS_ORIGIN: '*' }),
+    ).toThrow('CORS_ORIGIN no puede ser "*" en producción');
+  });
+
+  it('debe aceptar una lista de orígenes en producción', () => {
+    const env = validateEnv({
+      ...minimas,
+      NODE_ENV: 'production',
+      CORS_ORIGIN: 'https://app.ejemplo.cl',
+    });
+
+    expect(env.CORS_ORIGIN).toBe('https://app.ejemplo.cl');
+  });
+
+  it('debe rechazar un origen de CORS con barra final', () => {
+    expect(() =>
+      validateEnv({ ...minimas, CORS_ORIGIN: 'http://localhost:5173/' }),
+    ).toThrow('origen inválido: "http://localhost:5173/"');
+  });
+
   it('debe listar todos los errores juntos, no solo el primero', () => {
     expect(() => validateEnv({})).toThrow(
       /DB_NAME[\s\S]*DB_USER[\s\S]*DB_PASSWORD/,

@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { AppConfigService } from './config/app-config';
+import { parseCorsOrigins } from './config/cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,7 +22,8 @@ async function bootstrap() {
   // ── CORS ───────────────────────────────────────────────────────────────────
   app.enableCors({
     // [ANTES] origin: process.env.CORS_ORIGIN ?? '*',
-    origin: config.get('CORS_ORIGIN', { infer: true }),
+    // [ANTES] origin: config.get('CORS_ORIGIN', { infer: true }),
+    origin: parseCorsOrigins(config.get('CORS_ORIGIN', { infer: true })),
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });

@@ -4,8 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+// [ANTES] import { AppController } from './app.controller';
+// [ANTES] import { AppService } from './app.service';
 // [ANTES] import { RedisModule } from './redis/redis.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 // [ANTES] import { LogoModule } from './logo/logo.module';
@@ -48,10 +48,12 @@ import { buildDataSourceOptions } from './infrastructure/database/database.optio
     AuthModule,
     HealthModule,
   ],
-  controllers: [AppController],
+  // [ANTES] controllers: [AppController],
   // [ANTES] providers: [AppService],
+  // Sin controlador raíz: el "Hello World" de la plantilla de Nest no aportaba
+  // nada, y para saber si la API está viva existe GET /health.
   providers: [
-    AppService,
+    // [ANTES] AppService,
     // Todas las respuestas de error en formato Problem Details (RFC 9457).
     { provide: APP_FILTER, useClass: ProblemDetailsFilter },
     // Límite de peticiones por IP en toda la API (ver config/limites.ts).

@@ -1,0 +1,16 @@
+.contenido {
+  width: 100%;
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: var(--esp-6) var(--esp-5) var(--esp-7);
+}
+
+.contenido:focus:not(:focus-visible) {
+  outline: none;
+}
+
+@media (max-width: 40rem) {
+  .contenido {
+    padding: var(--esp-5) var(--esp-4) var(--esp-7);
+  }
+}

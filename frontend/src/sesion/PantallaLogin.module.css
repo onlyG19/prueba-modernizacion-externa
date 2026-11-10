@@ -1,0 +1,71 @@
+.pagina {
+  display: grid;
+  align-items: center;
+  min-height: 100dvh;
+  padding: var(--esp-6) var(--esp-4);
+}
+
+/* Columna alineada a la izquierda, no una tarjeta centrada con sombra. */
+.columna {
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+}
+
+.logo {
+  display: block;
+  width: 134px;
+  height: 56px;
+}
+
+.titulo {
+  margin-top: var(--esp-6);
+  font-size: var(--texto-xl);
+}
+
+.bajada {
+  margin-top: var(--esp-2);
+  color: var(--color-tinta-suave);
+}
+
+.aviso {
+  margin-top: var(--esp-5);
+  padding: var(--esp-3) var(--esp-4);
+  background: var(--color-accion-tenue);
+  border-radius: var(--radio-control);
+}
+
+.formulario {
+  display: grid;
+  gap: var(--esp-4);
+  margin-top: var(--esp-5);
+}
+
+.campo {
+  display: grid;
+  gap: var(--esp-1);
+  font-weight: var(--peso-medio);
+}
+
+.entrada {
+  min-height: var(--alto-control);
+  padding: 0 var(--esp-3);
+  font-weight: var(--peso-normal);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-control);
+}
+
+.entrada[aria-invalid='true'] {
+  border: 2px solid var(--color-error);
+}
+
+.error {
+  font-weight: var(--peso-medio);
+  color: var(--color-error);
+}
+
+.ingresar {
+  justify-self: start;
+  min-width: 9rem;
+}

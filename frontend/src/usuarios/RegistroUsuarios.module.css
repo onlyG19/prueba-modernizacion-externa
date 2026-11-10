@@ -1,0 +1,17 @@
+.registro {
+  display: grid;
+  gap: var(--esp-6);
+  align-items: start;
+}
+
+@media (min-width: 56rem) {
+  .registro {
+    grid-template-columns: minmax(20rem, 24rem) minmax(0, 1fr);
+  }
+
+  /* El formulario acompaña al recorrer una lista larga. */
+  .columnaFormulario {
+    position: sticky;
+    top: var(--esp-5);
+  }
+}

@@ -1,0 +1,95 @@
+.campo {
+  display: grid;
+  gap: var(--esp-1);
+}
+
+.etiqueta {
+  font-weight: var(--peso-medio);
+}
+
+.ayuda {
+  max-width: 60ch;
+  font-size: var(--texto-sm);
+  color: var(--color-tinta-suave);
+}
+
+/*
+ * El RUT es el protagonista: cifras grandes y tabulares, como en la cédula.
+ * El sello de "RUT válido" vive dentro del mismo control.
+ */
+.control {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: 3.25rem;
+  margin-top: var(--esp-1);
+  padding: 0 var(--esp-2) 0 var(--esp-3);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-control);
+  transition: border-color var(--duracion-corta) var(--curva);
+}
+
+.control:focus-within {
+  outline: 3px solid var(--color-accion);
+  outline-offset: 2px;
+}
+
+.controlValido {
+  border-color: var(--color-ok);
+}
+
+.controlInvalido {
+  border-color: var(--color-error);
+  border-width: 2px;
+}
+
+.entrada {
+  /* Sin esto, el ancho intrínseco del input (≈20 caracteres) más el sello
+     desbordan la columna y arrastran al resto del formulario. */
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  padding: var(--esp-2) 0;
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-medio);
+  letter-spacing: 0.02em;
+  background: transparent;
+  border: 0;
+}
+
+/* El contorno de foco lo dibuja el control completo (:focus-within). */
+.entrada:focus-visible {
+  outline: none;
+}
+
+.estado {
+  flex-shrink: 0;
+}
+
+.sello {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-1);
+  padding: var(--esp-1) var(--esp-3) var(--esp-1) var(--esp-2);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+  color: var(--color-ok);
+  background: var(--color-ok-tenue);
+  border-radius: var(--radio-sello);
+  animation: sellar var(--duracion-corta) var(--curva);
+}
+
+.error {
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+  color: var(--color-error);
+}
+
+/* Responde a la acción de completar un RUT válido: un "timbrazo" breve. */
+@keyframes sellar {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}

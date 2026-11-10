@@ -1,0 +1,54 @@
+/*
+ * Tokens de diseño: la única fuente de verdad de color, tipografía y espacio.
+ * Los componentes usan estas variables, nunca valores sueltos.
+ *
+ * Paleta inspirada en la cédula de identidad chilena (donde vive el RUT): fondo
+ * azul grisáceo pálido y tinta azul profunda. La acción usa el cian de la
+ * marca, oscurecido para cumplir WCAG AA con texto blanco (5,6:1).
+ */
+:root {
+  /* ── Color ─────────────────────────────────────────────────────────────── */
+  --color-papel: #eef3f5; /* fondo de página */
+  --color-hoja: #ffffff; /* superficies de trabajo */
+  --color-tinta: #13293d; /* texto principal: 13,3:1 sobre papel */
+  --color-tinta-suave: #4f6476; /* texto secundario: 5,5:1 sobre papel */
+  --color-accion: #0a6f96; /* acción primaria y foco: 5,0:1 sobre papel */
+  --color-accion-hover: #085a7a;
+  --color-accion-tenue: #e3f1f7; /* resaltado de la fila recién creada */
+  --color-error: #b42318; /* 6,6:1 sobre hoja */
+  --color-error-tenue: #fdeceb;
+  --color-ok: #0f7b5f; /* 5,2:1 sobre hoja */
+  --color-ok-tenue: #e5f3ee;
+  --color-borde-control: #6f8494; /* contorno de campos: 3,9:1 (WCAG 1.4.11) */
+  --color-borde: #c9d5dd; /* separadores, no informativos */
+
+  /* ── Tipografía ────────────────────────────────────────────────────────── */
+  --fuente: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --texto-sm: 0.875rem; /* 14px: metadatos y ayudas */
+  --texto-base: 1rem; /* 16px: cuerpo */
+  --texto-lg: 1.25rem; /* 20px: títulos de panel y el RUT */
+  --texto-xl: 1.5625rem; /* 25px: título de página */
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-fuerte: 600;
+
+  /* ── Espacio (escala de 4px) ───────────────────────────────────────────── */
+  --esp-1: 0.25rem;
+  --esp-2: 0.5rem;
+  --esp-3: 0.75rem;
+  --esp-4: 1rem;
+  --esp-5: 1.5rem;
+  --esp-6: 2rem;
+  --esp-7: 3rem;
+
+  /* ── Forma: el radio crece con la jerarquía ────────────────────────────── */
+  --radio-control: 6px;
+  --radio-panel: 12px;
+  --radio-sello: 999px;
+  --alto-control: 2.75rem; /* 44px: área táctil mínima */
+
+  /* ── Movimiento: solo en respuesta a una acción ────────────────────────── */
+  --duracion-corta: 160ms;
+  --duracion-resaltado: 1600ms;
+  --curva: cubic-bezier(0.2, 0, 0, 1);
+}

@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "types": ["vite/client"],
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Dominio compartido con el backend (ver alias en vite.config.ts) */
+    "paths": {
+      "@dominio/*": ["../src/modules/usuarios/domain/*"]
+    },
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    /*
+     * Desactivado a propósito: el `Rut` compartido con el backend (NestJS) usa
+     * propiedades en el constructor, que no son "sintaxis borrable". Vite las
+     * transforma sin problema; la opción solo importa para ejecutar TypeScript
+     * sin compilar (type stripping de Node), que este proyecto no usa.
+     */
+    "erasableSyntaxOnly": false,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}

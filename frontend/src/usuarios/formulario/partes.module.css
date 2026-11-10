@@ -1,0 +1,64 @@
+/* El formulario es el único panel con superficie propia: es donde se trabaja. */
+.panel {
+  padding: var(--esp-5);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-panel);
+}
+
+.titulo {
+  font-size: var(--texto-lg);
+}
+
+.descripcion {
+  margin-top: var(--esp-1);
+  color: var(--color-tinta-suave);
+}
+
+.formulario {
+  display: grid;
+  /* minmax(0, 1fr): ningún campo puede ensanchar la columna del formulario. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--esp-5);
+  margin-top: var(--esp-5);
+}
+
+.campo {
+  display: grid;
+  gap: var(--esp-1);
+}
+
+.etiqueta {
+  font-weight: var(--peso-medio);
+}
+
+.entrada {
+  min-height: var(--alto-control);
+  padding: 0 var(--esp-3);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-control);
+}
+
+.entradaInvalida {
+  border: 2px solid var(--color-error);
+}
+
+.error {
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+  color: var(--color-error);
+}
+
+.errorGeneral {
+  padding: var(--esp-3) var(--esp-4);
+  color: var(--color-error);
+  background: var(--color-error-tenue);
+  border-radius: var(--radio-control);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+}

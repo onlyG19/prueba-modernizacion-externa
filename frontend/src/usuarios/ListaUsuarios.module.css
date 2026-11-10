@@ -1,0 +1,111 @@
+/* La lista no es una "tarjeta": vive sobre el papel, separada por líneas. */
+.lista {
+  display: grid;
+  gap: var(--esp-4);
+  min-width: 0;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-2) var(--esp-4);
+}
+
+.titulo {
+  font-size: var(--texto-lg);
+}
+
+/* Destino del foco tras eliminar una fila: sin contorno por clic, sí por teclado. */
+.titulo:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.conteo {
+  color: var(--color-tinta-suave);
+}
+
+.busqueda {
+  display: grid;
+  gap: var(--esp-1);
+  max-width: 26rem;
+}
+
+.etiqueta {
+  font-weight: var(--peso-medio);
+}
+
+.controlBusqueda {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: var(--alto-control);
+  padding: 0 var(--esp-3);
+  color: var(--color-tinta-suave);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-control);
+}
+
+.controlBusqueda:focus-within {
+  outline: 3px solid var(--color-accion);
+  outline-offset: 2px;
+}
+
+.entrada {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.5rem;
+  color: var(--color-tinta);
+  background: transparent;
+  border: 0;
+}
+
+.entrada:focus-visible {
+  outline: none;
+}
+
+.estado {
+  max-width: 60ch;
+  color: var(--color-tinta-suave);
+}
+
+.falla {
+  display: grid;
+  justify-items: start;
+  gap: var(--esp-3);
+  color: var(--color-error);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--color-borde-control);
+}
+
+.tabla thead th {
+  padding: var(--esp-2) var(--esp-3);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+  text-align: left;
+  color: var(--color-tinta-suave);
+  border-bottom: 1px solid var(--color-borde-control);
+}
+
+@media (max-width: 40rem) {
+  /* Con filas apiladas los encabezados sobran a la vista (no al lector). */
+  .tabla thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .tabla,
+  .tabla tbody {
+    display: block;
+  }
+}

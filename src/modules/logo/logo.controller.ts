@@ -1,5 +1,6 @@
 // [ANTES] import { Controller, Get, Res } from '@nestjs/common';
-import { Controller, Get, Res, StreamableFile } from '@nestjs/common';
+// [ANTES] import { Controller, Get, Res, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Header, Res, StreamableFile } from '@nestjs/common';
 import type { Response } from 'express';
 import { LogoService } from './logo.service';
 import { VisitCounterService } from './visit-counter.service';
@@ -27,8 +28,10 @@ export class LogoController {
   /**
    * Devuelve la imagen del logo e incrementa el contador de visitas.
    *
-   * @remarks Si Redis no está disponible, igual devuelve el logo, sin el header
-   * `X-Request-Count`.
+   * @remarks Efecto secundario a propósito: este GET suma una visita, así que
+   * no es idempotente. Por eso `Cache-Control: no-store`: un caché (navegador,
+   * proxy o CDN) que lo sirviera sin consultar a la API se comería visitas. Si
+   * Redis no está disponible, igual devuelve el logo, sin `X-Request-Count`.
    */
   @ApiProduces('image/svg+xml', 'image/png')
   @ApiOkResponse({
@@ -44,6 +47,7 @@ export class LogoController {
   })
   // Cada petición suma una visita: un límite propio evita inflar el contador.
   @Throttle({ default: LIMITE_LOGO })
+  @Header('Cache-Control', 'no-store')
   @Get()
   // [ANTES] async getLogo(@Res() res: Response): Promise<void> {
   async getLogo(
@@ -67,12 +71,16 @@ export class LogoController {
     });
   }
 
-  /** Devuelve el total de visitas al logo. */
+  // [ANTES] /** Devuelve el total de visitas al logo. */
+  /** Total de visitas al logo (el recurso `visitas` del logo). Solo lee. */
   @ApiServiceUnavailableResponse({
     description: 'Redis no está disponible',
     type: ProblemDetailsDto,
   })
-  @Get('count')
+  // [ANTES] @Get('count')
+  @Get('visitas')
+  // El total cambia con cada visita: siempre se consulta a la API.
+  @Header('Cache-Control', 'no-store')
   // [ANTES] async getCount(): Promise<{ count: number }> {
   async getCount(): Promise<VisitCountDto> {
     // [ANTES] const count = await this.logoService.getCounter();

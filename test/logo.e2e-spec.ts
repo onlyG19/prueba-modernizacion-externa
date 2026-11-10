@@ -12,7 +12,8 @@ describe('/logo (e2e)', () => {
   async function visitas(servidor: NestExpressApplication): Promise<number> {
     const respuesta = await request(servidor.getHttpServer())
       // [ANTES] .get('/logo/count')
-      .get(`${RUTA_API}/logo/count`)
+      // [ANTES] .get(`${RUTA_API}/logo/count`)
+      .get(`${RUTA_API}/logo/visitas`)
       .expect(200);
     return (respuesta.body as VisitCountDto).count;
   }
@@ -32,7 +33,9 @@ describe('/logo (e2e)', () => {
       // [ANTES] .get('/logo')
       .get(`${RUTA_API}/logo`)
       .expect(200)
-      .expect('Content-Type', /^image\//);
+      .expect('Content-Type', /^image\//)
+      // Cada GET suma una visita: ningún caché debe servirlo por su cuenta.
+      .expect('Cache-Control', 'no-store');
 
     expect(respuesta.headers['x-request-count']).toBe(String(antes + 1));
     expect(await visitas(app)).toBe(antes + 1);

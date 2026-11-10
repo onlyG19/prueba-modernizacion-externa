@@ -68,7 +68,8 @@ describe('createOpenApiDocument', () => {
   it.each([
     ['/auth/login', 'post'],
     ['/logo', 'get'],
-    ['/logo/count', 'get'],
+    // [ANTES] ['/logo/count', 'get'],
+    ['/logo/visitas', 'get'],
   ] as const)('debe dejar %s %s como público', (ruta, metodo) => {
     expect(operacion(ruta, metodo).security).toBeUndefined();
   });

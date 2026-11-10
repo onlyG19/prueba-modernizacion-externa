@@ -13,8 +13,10 @@ export interface paths {
     };
     /**
      * Devuelve la imagen del logo e incrementa el contador de visitas.
-     * @description Si Redis no está disponible, igual devuelve el logo, sin el header
-     *     `X-Request-Count`.
+     * @description Efecto secundario a propósito: este GET suma una visita, así que
+     *     no es idempotente. Por eso `Cache-Control: no-store`: un caché (navegador,
+     *     proxy o CDN) que lo sirviera sin consultar a la API se comería visitas. Si
+     *     Redis no está disponible, igual devuelve el logo, sin `X-Request-Count`.
      */
     get: operations['LogoController_getLogo_v1'];
     put?: never;
@@ -25,14 +27,13 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/v1/logo/count': {
+  '/api/v1/logo/visitas': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** Devuelve el total de visitas al logo. */
     get: operations['LogoController_getCount_v1'];
     put?: never;
     post?: never;

@@ -30,13 +30,14 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const iniciarSesion = useCallback(async (credenciales: Credenciales) => {
-    const { accessToken, expiresIn } = await solicitarJson<TokenAcceso>(
+    const { accessToken, expiresIn, rol } = await solicitarJson<TokenAcceso>(
       '/auth/login',
       { metodo: 'POST', cuerpo: credenciales },
     );
     const nueva: Sesion = {
       token: accessToken,
       usuario: credenciales.username,
+      rol,
       expiraEn: Date.now() + expiresIn * 1000,
     };
     guardarSesion(nueva);

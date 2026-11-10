@@ -10,10 +10,11 @@ declare global {
 /** Administrador de la base de datos e2e (ver playwright.config.ts). */
 const ADMIN = { usuario: 'admin', clave: 'e2e-clave-de-prueba' };
 
-async function ingresar(pagina: Page) {
+/** Ingresa con una cuenta (por defecto, la del administrador). */
+async function ingresar(pagina: Page, { usuario, clave } = ADMIN) {
   await pagina.goto('/ingresar');
-  await pagina.getByLabel('Usuario').fill(ADMIN.usuario);
-  await pagina.getByLabel('Contraseña').fill(ADMIN.clave);
+  await pagina.getByLabel('Usuario').fill(usuario);
+  await pagina.getByLabel('Contraseña').fill(clave);
   await pagina.getByRole('button', { name: 'Ingresar' }).click();
   await expect(pagina.getByRole('heading', { name: 'Resumen' })).toBeVisible();
 }
@@ -153,6 +154,57 @@ test('un RUT duplicado lo rechaza Postgres (UNIQUE) y la interfaz lo explica', a
   await expect(page.getByRole('row', { name: /Segunda Persona/ })).toHaveCount(
     0,
   );
+});
+
+test('el admin crea una cuenta, y quien ingresa con ella gestiona usuarios pero no crea cuentas', async ({
+  page,
+}) => {
+  await ingresar(page);
+  await page
+    .getByRole('navigation', { name: 'Panel' })
+    .getByRole('link', { name: 'Cuentas' })
+    .click();
+
+  await page.getByLabel('Usuario', { exact: true }).fill('Operador.E2E');
+  await page.getByRole('button', { name: 'Generar una segura' }).click();
+  const clave = await page
+    .getByLabel('Contraseña', { exact: true })
+    .inputValue();
+  expect(clave).toHaveLength(16);
+  await page.getByRole('button', { name: 'Crear cuenta' }).click();
+  // Postgres la guardó en minúsculas: el usuario no distingue mayúsculas.
+  await expect(
+    page
+      .getByRole('status')
+      .filter({ hasText: 'Cuenta creada: operador.e2e.' }),
+  ).toBeVisible();
+  expect(await violacionesDeAccesibilidad(page)).toEqual([]);
+
+  await page.getByRole('button', { name: 'Cerrar sesión' }).click();
+  await ingresar(page, { usuario: 'operador.e2e', clave });
+  const lateral = page.getByRole('navigation', { name: 'Panel' });
+  await expect(lateral.getByRole('link', { name: 'Usuarios' })).toBeVisible();
+  await expect(lateral.getByRole('link', { name: 'Cuentas' })).toHaveCount(0);
+
+  // Por la URL ve una explicación, no el formulario…
+  await page.goto('/panel/cuentas');
+  await expect(
+    page.getByRole('heading', { name: 'Esta sección es del administrador' }),
+  ).toBeVisible();
+  // …y aunque se saltara la interfaz, la API real le responde 403.
+  const token = await page.evaluate(
+    () =>
+      (
+        JSON.parse(
+          sessionStorage.getItem('consola-usuarios:sesion:v2') ?? '{}',
+        ) as { token?: string }
+      ).token,
+  );
+  const respuesta = await page.request.post('/api/v1/cuentas', {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { username: 'colada', password: 'una frase larga y secreta' },
+  });
+  expect(respuesta.status()).toBe(403);
 });
 
 test('la API rechaza peticiones sin token (401)', async ({ request }) => {

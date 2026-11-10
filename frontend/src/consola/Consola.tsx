@@ -1,5 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { PaginaCuentas } from '../cuentas/PaginaCuentas';
 import { Enlace } from '../rutas/Enlace';
 import { useRuta } from '../rutas/navegacion';
 import { RUTAS } from '../rutas/rutas';
@@ -23,6 +24,8 @@ function paginaDe(ruta: string): ReactNode {
       return <PaginaUsuarios seccion="tabla" />;
     case RUTAS.registrarUsuario:
       return <PaginaUsuarios seccion="registrar" />;
+    case RUTAS.cuentas:
+      return <PaginaCuentas />;
     default:
       return <SeccionNoEncontrada />;
   }

@@ -89,8 +89,7 @@ export function PantallaLogin() {
         />
         <h1 className={estilos.titulo}>Consola de usuarios</h1>
         <p className={estilos.bajada}>
-          Ingresa con la cuenta de administración para gestionar el registro de
-          usuarios.
+          Ingresa con tu cuenta para gestionar el registro de usuarios.
         </p>
 
         {aviso ? (

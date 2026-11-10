@@ -4,7 +4,7 @@
  *
  * 1. Crea `prueba_modernizacion_e2e` si no existe (con el driver `pg` del backend).
  * 2. Compila el backend y aplica las migraciones a esa base.
- * 3. Vacía la tabla de usuarios: cada corrida parte de cero.
+ * 3. Vacía las tablas de usuarios y de cuentas: cada corrida parte de cero.
  * 4. Arranca la API en este mismo proceso, así Playwright la detiene al terminar.
  *
  * Playwright lo ejecuta (ver `webServer` en playwright.config.ts) con el puerto,
@@ -52,10 +52,10 @@ ejecutar('pnpm migration:run');
 
 const bd = new Client({ ...conexion, database: BD_E2E });
 await bd.connect();
-await bd.query('TRUNCATE usuarios RESTART IDENTITY');
+await bd.query('TRUNCATE usuarios, cuentas RESTART IDENTITY');
 await bd.end();
 console.log(
-  `[e2e] Tabla usuarios vacía; arrancando la API en :${process.env.PORT}`,
+  `[e2e] Tablas usuarios y cuentas vacías; arrancando la API en :${process.env.PORT}`,
 );
 
 // La API lee su configuración (y el .env) desde la raíz del proyecto.

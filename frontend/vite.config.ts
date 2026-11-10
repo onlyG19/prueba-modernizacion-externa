@@ -11,6 +11,11 @@ const DOMINIO = fileURLToPath(
   new URL('../src/modules/usuarios/domain', import.meta.url),
 );
 
+/** Reglas de usuario y contraseña de las cuentas, también compartidas. */
+const DOMINIO_CUENTAS = fileURLToPath(
+  new URL('../src/modules/cuentas/domain', import.meta.url),
+);
+
 /**
  * Backend al que se redirigen las llamadas a `/api` en desarrollo. La API ya
  * sirve sus rutas bajo `/api/v1`: se reenvían tal cual, sin reescribirlas.
@@ -27,12 +32,12 @@ const proxyApi = {
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: { '@dominio': DOMINIO },
+    alias: { '@dominio': DOMINIO, '@dominio-cuentas': DOMINIO_CUENTAS },
   },
   server: {
     port: 5173,
     // Vite solo sirve archivos dentro del proyecto: se autoriza el dominio.
-    fs: { allow: ['.', DOMINIO] },
+    fs: { allow: ['.', DOMINIO, DOMINIO_CUENTAS] },
     // Mismo origen para el navegador: sin CORS en desarrollo.
     proxy: proxyApi,
   },

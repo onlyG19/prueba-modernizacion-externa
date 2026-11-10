@@ -1,7 +1,8 @@
 # Frontend: build de Vite servido por nginx sin privilegios.
 #
 # Contexto de build: la RAÍZ del repositorio, porque el frontend importa el
-# dominio compartido de src/modules/usuarios/domain (alias @dominio).
+# dominio compartido de src/modules/usuarios/domain (alias @dominio) y de
+# src/modules/cuentas/domain (alias @dominio-cuentas).
 #   docker build -f frontend/Dockerfile .
 
 # ── Etapa 1: compilar ─────────────────────────────────────────────────────────
@@ -14,6 +15,7 @@ COPY frontend/package.json frontend/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY src/modules/usuarios/domain /repo/src/modules/usuarios/domain
+COPY src/modules/cuentas/domain /repo/src/modules/cuentas/domain
 COPY frontend ./
 RUN pnpm build
 

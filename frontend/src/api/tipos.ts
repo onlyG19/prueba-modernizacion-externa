@@ -15,6 +15,10 @@ export type NuevoUsuario = Esquemas['CreateUsuarioDto'];
 export type CambiosUsuario = Esquemas['UpdateUsuarioDto'];
 export type Credenciales = Esquemas['LoginDto'];
 export type TokenAcceso = Esquemas['AccessTokenDto'];
+/** `admin` (el del `.env`, que además crea cuentas) u `operador`. */
+export type Rol = TokenAcceso['rol'];
+export type Cuenta = Esquemas['CuentaDto'];
+export type NuevaCuenta = Esquemas['CreateCuentaDto'];
 export type ConteoVisitas = Esquemas['VisitCountDto'];
 
 type ParametrosListado = NonNullable<

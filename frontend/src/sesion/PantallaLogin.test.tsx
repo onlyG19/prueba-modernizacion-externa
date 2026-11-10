@@ -47,7 +47,7 @@ describe('Login', () => {
       await screen.findByRole('heading', { name: 'Resumen' }),
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe(RUTAS.panel);
-    expect(sessionStorage.getItem('consola-usuarios:sesion:v1')).toContain(
+    expect(sessionStorage.getItem('consola-usuarios:sesion:v2')).toContain(
       'token-de-prueba',
     );
   });

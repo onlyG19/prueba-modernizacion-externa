@@ -37,6 +37,13 @@
   font-weight: var(--peso-medio);
 }
 
+/* Qué se espera en el campo; va antes del control, como en CampoRut. */
+.ayuda {
+  max-width: 60ch;
+  font-size: var(--texto-sm);
+  color: var(--color-tinta-suave);
+}
+
 .entrada {
   min-height: var(--alto-control);
   padding: 0 var(--esp-3);

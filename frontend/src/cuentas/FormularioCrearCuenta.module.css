@@ -1,0 +1,8 @@
+/* Mostrar y generar, pegados al campo de contraseña al que actúan. */
+.herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-1);
+  /* Los botones en línea tienen relleno propio: se alinean con el texto. */
+  margin-left: calc(-1 * var(--esp-3));
+}

@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw';
 import type {
   CambiosUsuario,
   Credenciales,
+  NuevaCuenta,
   NuevoUsuario,
   PaginaUsuarios,
   Usuario,
@@ -9,6 +10,13 @@ import type {
 
 export const TOKEN_PRUEBA = 'token-de-prueba';
 export const CREDENCIALES_VALIDAS = { username: 'admin', password: 'correcta' };
+
+/** Una cuenta creada por el admin: ingresa con rol operador. */
+export const TOKEN_OPERADOR = 'token-de-operador';
+export const CREDENCIALES_OPERADOR = {
+  username: 'operadora',
+  password: 'clave-de-la-operadora',
+};
 
 const LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
 
@@ -30,8 +38,14 @@ export interface EstadoApiFalsa {
   usuarios: Usuario[];
   visitas: number;
   redisDisponible: boolean;
+  /** Usuarios de las cuentas creadas (además de la operadora). */
+  cuentas: string[];
   /** Cuerpos recibidos, para verificar qué envió el frontend. */
-  recibidos: { creaciones: NuevoUsuario[]; cambios: CambiosUsuario[] };
+  recibidos: {
+    creaciones: NuevoUsuario[];
+    cambios: CambiosUsuario[];
+    cuentas: NuevaCuenta[];
+  };
 }
 
 const COLECCION = new Intl.Collator('es', { sensitivity: 'base' });
@@ -102,12 +116,16 @@ export function crearApiFalsa({
     usuarios: usuarios.map(conFechas),
     visitas: 41,
     redisDisponible: true,
-    recibidos: { creaciones: [], cambios: [] },
+    cuentas: [CREDENCIALES_OPERADOR.username],
+    recibidos: { creaciones: [], cambios: [], cuentas: [] },
     ...inicial,
   };
 
+  const tokenDe = (request: Request) =>
+    request.headers.get('Authorization')?.replace(/^Bearer /, '');
+  /** Admin u operador: ambos gestionan usuarios. */
   const autorizado = (request: Request) =>
-    request.headers.get('Authorization') === `Bearer ${TOKEN_PRUEBA}`;
+    [TOKEN_PRUEBA, TOKEN_OPERADOR].includes(tokenDe(request) ?? '');
   const noAutorizado = () =>
     error(401, 'Token inválido o expirado', 'Unauthorized');
 
@@ -122,9 +140,57 @@ export function crearApiFalsa({
           accessToken: TOKEN_PRUEBA,
           tokenType: 'Bearer',
           expiresIn: 3600,
+          rol: 'admin',
+        });
+      }
+      if (
+        username === CREDENCIALES_OPERADOR.username &&
+        password === CREDENCIALES_OPERADOR.password
+      ) {
+        return HttpResponse.json({
+          accessToken: TOKEN_OPERADOR,
+          tokenType: 'Bearer',
+          expiresIn: 3600,
+          rol: 'operador',
         });
       }
       return error(401, 'Credenciales inválidas', 'Unauthorized');
+    }),
+
+    // Como la API real: solo el admin crea cuentas, y el usuario no se repite
+    // (ni puede ser el del admin).
+    http.post('/api/v1/cuentas', async ({ request }) => {
+      if (!autorizado(request)) {
+        return noAutorizado();
+      }
+      if (tokenDe(request) !== TOKEN_PRUEBA) {
+        return error(
+          403,
+          'Solo el administrador puede hacer esto',
+          'Forbidden',
+        );
+      }
+      const datos = (await request.json()) as NuevaCuenta;
+      estado.recibidos.cuentas.push(datos);
+      if (
+        datos.username === CREDENCIALES_VALIDAS.username ||
+        estado.cuentas.includes(datos.username)
+      ) {
+        return error(
+          409,
+          `El usuario ${datos.username} ya está en uso`,
+          'Conflict',
+        );
+      }
+      estado.cuentas.push(datos.username);
+      return HttpResponse.json(
+        {
+          id: crypto.randomUUID(),
+          username: datos.username,
+          creadoEn: new Date().toISOString(),
+        },
+        { status: 201 },
+      );
     }),
 
     http.get('/api/v1/usuarios', ({ request }) =>

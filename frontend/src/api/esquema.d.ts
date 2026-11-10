@@ -104,6 +104,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/cuentas': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Crea una cuenta para ingresar a la consola, con rol `operador`. Solo el
+     *     administrador puede crear cuentas.
+     */
+    post: operations['CuentasController_create_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/health': {
     parameters: {
       query?: never;
@@ -278,6 +298,14 @@ export interface components {
     };
     AccessTokenDto: {
       /**
+       * @description Rol de la sesión: `admin` además puede crear cuentas. Va también dentro
+       *     del token, que es lo que la API verifica; aquí es para que el cliente
+       *     adapte su interfaz sin decodificar el JWT.
+       * @example admin
+       * @enum {string}
+       */
+      rol: 'admin' | 'operador';
+      /**
        * @description JWT a enviar en el header `Authorization: Bearer <token>`.
        * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiJ9.firma
        */
@@ -292,6 +320,37 @@ export interface components {
        * @example 3600
        */
       expiresIn: number;
+    };
+    CreateCuentaDto: {
+      /**
+       * @description Usuario con que se ingresará. Se guarda sin espacios en los extremos y en
+       *     minúsculas: `" Maria.Lopez "` queda `"maria.lopez"`.
+       * @example maria.lopez
+       */
+      username: string;
+      /**
+       * @description Contraseña de la cuenta. Solo se guarda su hash (scrypt).
+       * @example una frase larga y secreta
+       */
+      password: string;
+    };
+    CuentaDto: {
+      /**
+       * @description Identificador de la cuenta (UUID).
+       * @example 5d2c9e1a-3b7f-4c8d-9e6a-1f2b3c4d5e6f
+       */
+      id: string;
+      /**
+       * @description Usuario con que se ingresa, en minúsculas.
+       * @example maria.lopez
+       */
+      username: string;
+      /**
+       * Format: date-time
+       * @description Fecha de creación (ISO 8601).
+       * @example 2026-11-10T14:03:00.000Z
+       */
+      creadoEn: string;
     };
     HealthStatusDto: {
       /**
@@ -666,6 +725,66 @@ export interface operations {
       };
       /** @description Credenciales inválidas */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProblemDetailsDto'];
+        };
+      };
+    };
+  };
+  CuentasController_create_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateCuentaDto'];
+      };
+    };
+    responses: {
+      /** @description La cuenta creada */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CuentaDto'];
+        };
+      };
+      /** @description Datos inválidos (p. ej. una contraseña demasiado corta) */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProblemDetailsDto'];
+        };
+      };
+      /** @description Falta el token de acceso, o es inválido o expiró */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProblemDetailsDto'];
+        };
+      };
+      /** @description La sesión no es la del administrador */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProblemDetailsDto'];
+        };
+      };
+      /** @description Ese usuario ya está en uso */
+      409: {
         headers: {
           [name: string]: unknown;
         };

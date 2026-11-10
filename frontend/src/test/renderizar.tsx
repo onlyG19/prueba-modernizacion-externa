@@ -1,11 +1,16 @@
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { Rol } from '../api/tipos';
 import { App } from '../App';
 import { RUTAS } from '../rutas/rutas';
 import { guardarSesion } from '../sesion/almacen-sesion';
 import { SesionProvider } from '../sesion/SesionProvider';
 import { Avisos } from '../ui/Avisos';
-import { TOKEN_PRUEBA } from './api-falsa';
+import {
+  CREDENCIALES_OPERADOR,
+  TOKEN_OPERADOR,
+  TOKEN_PRUEBA,
+} from './api-falsa';
 
 /** La app completa, abierta en `ruta` (puede traer query: `/panel/usuarios?buscar=x`). */
 function renderizarApp(ruta: string) {
@@ -28,13 +33,26 @@ export function renderizarSinSesion(ruta: string = RUTAS.ingresar) {
 
 /**
  * La app con una sesión vigente ya guardada (como tras recargar la pestaña),
- * por defecto en la tabla de usuarios.
+ * por defecto la del administrador y en la tabla de usuarios.
  */
-export function renderizarConSesion(ruta: string = RUTAS.usuarios) {
-  guardarSesion({
-    token: TOKEN_PRUEBA,
-    usuario: 'admin',
-    expiraEn: Date.now() + 60 * 60 * 1000,
-  });
+export function renderizarConSesion(
+  ruta: string = RUTAS.usuarios,
+  rol: Rol = 'admin',
+) {
+  guardarSesion(
+    rol === 'admin'
+      ? {
+          token: TOKEN_PRUEBA,
+          usuario: 'admin',
+          rol,
+          expiraEn: Date.now() + 60 * 60 * 1000,
+        }
+      : {
+          token: TOKEN_OPERADOR,
+          usuario: CREDENCIALES_OPERADOR.username,
+          rol,
+          expiraEn: Date.now() + 60 * 60 * 1000,
+        },
+  );
   return renderizarApp(ruta);
 }

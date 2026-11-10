@@ -1,10 +1,19 @@
-/** Sesión iniciada: el token y cuándo expira. */
+import type { Rol } from '../api/tipos';
+
+/** Sesión iniciada: el token, de quién es y cuándo expira. */
 export interface Sesion {
   token: string;
   usuario: string;
+  /**
+   * Para adaptar la interfaz (p. ej. mostrar "Cuentas" solo al admin). No es
+   * una barrera de seguridad: la API verifica el rol dentro del token.
+   */
+  rol: Rol;
   /** Momento de expiración, en milisegundos desde epoch. */
   expiraEn: number;
 }
+
+const ROLES: readonly Rol[] = ['admin', 'operador'];
 
 /**
  * Clave versionada: si el formato cambia, se sube la versión y las sesiones
@@ -16,7 +25,7 @@ export interface Sesion {
  * navegador es legible por un script inyectado (XSS); la alternativa robusta
  * sería una cookie `httpOnly`, que requiere cambiar el backend.
  */
-const CLAVE = 'consola-usuarios:sesion:v1';
+const CLAVE = 'consola-usuarios:sesion:v2';
 
 /** Lee la sesión guardada; la descarta si está mal formada o expiró. */
 export function leerSesion(ahora: number = Date.now()): Sesion | null {
@@ -57,11 +66,12 @@ function esSesion(valor: unknown): valor is Sesion {
   if (typeof valor !== 'object' || valor === null) {
     return false;
   }
-  const { token, usuario, expiraEn } = valor as Record<string, unknown>;
+  const { token, usuario, rol, expiraEn } = valor as Record<string, unknown>;
   return (
     typeof token === 'string' &&
     token.length > 0 &&
     typeof usuario === 'string' &&
+    ROLES.includes(rol as Rol) &&
     typeof expiraEn === 'number'
   );
 }

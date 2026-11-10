@@ -18,7 +18,8 @@
 
     /* Dominio compartido con el backend (ver alias en vite.config.ts) */
     "paths": {
-      "@dominio/*": ["../src/modules/usuarios/domain/*"]
+      "@dominio/*": ["../src/modules/usuarios/domain/*"],
+      "@dominio-cuentas/*": ["../src/modules/cuentas/domain/*"]
     },
 
     /* Linting */

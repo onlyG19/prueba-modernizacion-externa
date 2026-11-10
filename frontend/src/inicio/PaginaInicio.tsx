@@ -41,7 +41,7 @@ const ACCESOS: Acceso[] = [
   {
     href: RUTAS.ingresar,
     titulo: 'Ingresa a la consola',
-    texto: 'Usa tu cuenta de administración para empezar a trabajar.',
+    texto: 'Usa tu cuenta para empezar a trabajar.',
     icono: <IconoEntrar tamano={22} />,
     tono: 'magenta',
   },

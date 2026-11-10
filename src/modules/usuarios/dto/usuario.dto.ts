@@ -27,8 +27,27 @@ export class UsuarioDto {
    */
   rut!: string;
 
+  /**
+   * Fecha de registro (ISO 8601).
+   * @example '2026-11-10T14:03:00.000Z'
+   */
+  creadoEn!: Date;
+
+  /**
+   * Fecha del último cambio (ISO 8601).
+   * @example '2026-11-10T15:20:00.000Z'
+   */
+  actualizadoEn!: Date;
+
   /** Convierte la entidad en la respuesta de la API. */
   static desde(usuario: Usuario): UsuarioDto {
-    return { id: usuario.id, nombre: usuario.nombre, rut: usuario.rut };
+    // [ANTES] return { id: usuario.id, nombre: usuario.nombre, rut: usuario.rut };
+    return {
+      id: usuario.id,
+      nombre: usuario.nombre,
+      rut: usuario.rut,
+      creadoEn: usuario.creadoEn,
+      actualizadoEn: usuario.actualizadoEn,
+    };
   }
 }

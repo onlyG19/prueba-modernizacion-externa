@@ -184,6 +184,18 @@ export interface components {
        * @example 12345678-5
        */
       rut: string;
+      /**
+       * Format: date-time
+       * @description Fecha de registro (ISO 8601).
+       * @example 2026-11-10T14:03:00.000Z
+       */
+      creadoEn: string;
+      /**
+       * Format: date-time
+       * @description Fecha del último cambio (ISO 8601).
+       * @example 2026-11-10T15:20:00.000Z
+       */
+      actualizadoEn: string;
     };
     PaginationMetaDto: {
       /**

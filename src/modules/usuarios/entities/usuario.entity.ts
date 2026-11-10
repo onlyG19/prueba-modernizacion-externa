@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+// [ANTES] import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { RUT_MAX_LENGTH } from '../domain/rut';
 import { NOMBRE_MAX_LENGTH } from '../domain/usuario.constants';
 
@@ -29,4 +36,12 @@ export class Usuario {
   @Column({ type: 'varchar', length: RUT_MAX_LENGTH, unique: true })
   // [ANTES] rut: string;
   rut!: string;
+
+  /** Fecha de registro; la pone Postgres al insertar. */
+  @CreateDateColumn({ name: 'creado_en', type: 'timestamptz' })
+  creadoEn!: Date;
+
+  /** Fecha del último cambio; TypeORM la actualiza en cada `save`. */
+  @UpdateDateColumn({ name: 'actualizado_en', type: 'timestamptz' })
+  actualizadoEn!: Date;
 }

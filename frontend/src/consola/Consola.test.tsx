@@ -2,11 +2,13 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { violacionesDeAccesibilidad } from '../test/accesibilidad';
-import { crearApiFalsa, type EstadoApiFalsa } from '../test/api-falsa';
+// [ANTES] import { crearApiFalsa, type EstadoApiFalsa } from '../test/api-falsa';
+import { crearApiFalsa, type EscenarioApiFalsa } from '../test/api-falsa';
 import { renderizarConSesion } from '../test/renderizar';
 import { servidor } from '../test/servidor';
 
-function prepararApi(inicial?: Partial<EstadoApiFalsa>) {
+// [ANTES] function prepararApi(inicial?: Partial<EstadoApiFalsa>) {
+function prepararApi(inicial?: EscenarioApiFalsa) {
   const api = crearApiFalsa(inicial);
   servidor.use(...api.handlers);
   return api;

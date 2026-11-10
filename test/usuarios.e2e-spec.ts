@@ -3,8 +3,15 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import type { ProblemDetailsDto } from '../src/common/dto/problem-details.dto';
 import type { PaginaUsuariosDto } from '../src/modules/usuarios/dto/pagina-usuarios.dto';
-import type { Usuario } from '../src/modules/usuarios/entities/usuario.entity';
+// [ANTES] import type { Usuario } from '../src/modules/usuarios/entities/usuario.entity';
+import type { UsuarioDto } from '../src/modules/usuarios/dto/usuario.dto';
 import { crearAppE2e, iniciarSesion } from './utilidades/app-e2e';
+
+/** Un usuario tal como llega en el JSON: las fechas, como texto ISO 8601. */
+type UsuarioJson = Omit<UsuarioDto, 'creadoEn' | 'actualizadoEn'> & {
+  creadoEn: string;
+  actualizadoEn: string;
+};
 
 /**
  * El CRUD de usuarios de punta a punta: HTTP, validación, guard JWT, servicio,
@@ -26,12 +33,14 @@ describe('/usuarios (e2e)', () => {
       request(app.getHttpServer()).delete(ruta).auth(token, { type: 'bearer' }),
   };
 
-  async function crear(nombre: string, rut: string): Promise<Usuario> {
+  // [ANTES] async function crear(nombre: string, rut: string): Promise<Usuario> {
+  async function crear(nombre: string, rut: string): Promise<UsuarioJson> {
     const respuesta = await api
       .post('/usuarios')
       .send({ nombre, rut })
       .expect(201);
-    return respuesta.body as Usuario;
+    // [ANTES] return respuesta.body as Usuario;
+    return respuesta.body as UsuarioJson;
   }
 
   async function buscar(texto: string): Promise<PaginaUsuariosDto> {
@@ -66,15 +75,28 @@ describe('/usuarios (e2e)', () => {
       id: expect.any(Number) as number,
       nombre: 'Ana Rojas',
       rut: '11111111-1',
+      creadoEn: expect.any(String) as string,
+      actualizadoEn: creado.creadoEn,
     });
 
     await api.get(`/usuarios/${creado.id}`).expect(200, creado);
 
-    const actualizado = await api
+    // [ANTES] const actualizado = await api
+    const respuesta = await api
       .patch(`/usuarios/${creado.id}`)
       .send({ nombre: 'Ana María Rojas' })
       .expect(200);
-    expect(actualizado.body).toEqual({ ...creado, nombre: 'Ana María Rojas' });
+    // [ANTES] expect(actualizado.body).toEqual({ ...creado, nombre: 'Ana María Rojas' });
+    const actualizado = respuesta.body as UsuarioJson;
+    expect(actualizado).toEqual({
+      ...creado,
+      nombre: 'Ana María Rojas',
+      actualizadoEn: expect.any(String) as string,
+    });
+    // La fecha de registro se conserva; la del último cambio avanza.
+    expect(Date.parse(actualizado.actualizadoEn)).toBeGreaterThan(
+      Date.parse(creado.actualizadoEn),
+    );
 
     await api.delete(`/usuarios/${creado.id}`).expect(204);
     await api

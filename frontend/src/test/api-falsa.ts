@@ -12,6 +12,19 @@ export const CREDENCIALES_VALIDAS = { username: 'admin', password: 'correcta' };
 
 const LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
 
+/** Un usuario para armar un escenario: las fechas se completan solas. */
+export type UsuarioDePrueba = Pick<Usuario, 'id' | 'nombre' | 'rut'> &
+  Partial<Usuario>;
+
+/** Fecha fija para los usuarios iniciales: los tests no dependen del reloj. */
+const FECHA_INICIAL = '2026-11-10T12:00:00.000Z';
+
+const conFechas = (usuario: UsuarioDePrueba): Usuario => ({
+  creadoEn: FECHA_INICIAL,
+  actualizadoEn: FECHA_INICIAL,
+  ...usuario,
+});
+
 export interface EstadoApiFalsa {
   usuarios: Usuario[];
   visitas: number;
@@ -51,6 +64,11 @@ function paginar(usuarios: Usuario[], url: URL): PaginaUsuarios {
   };
 }
 
+/** Escenario inicial de la API falsa; los usuarios pueden venir sin fechas. */
+export type EscenarioApiFalsa = Partial<Omit<EstadoApiFalsa, 'usuarios'>> & {
+  usuarios?: UsuarioDePrueba[];
+};
+
 /** Errores con el mismo formato que la API real: Problem Details (RFC 9457). */
 const error = (status: number, detail: string, title: string) =>
   HttpResponse.json(
@@ -65,12 +83,20 @@ const error = (status: number, detail: string, title: string) =>
  * Backend falso en memoria, con las mismas reglas que la API real: exige el
  * token, responde 409 ante un RUT duplicado y 204 al eliminar.
  */
-export function crearApiFalsa(inicial: Partial<EstadoApiFalsa> = {}) {
+// [ANTES] export function crearApiFalsa(inicial: Partial<EstadoApiFalsa> = {}) {
+export function crearApiFalsa({
+  usuarios = [
+    { id: 2, nombre: 'Juan Pérez', rut: '12345678-5' },
+    { id: 3, nombre: 'María López', rut: '9876543-3' },
+  ],
+  ...inicial
+}: EscenarioApiFalsa = {}) {
   const estado: EstadoApiFalsa = {
-    usuarios: [
-      { id: 2, nombre: 'Juan Pérez', rut: '12345678-5' },
-      { id: 3, nombre: 'María López', rut: '9876543-3' },
-    ],
+    // [ANTES] usuarios: [
+    // [ANTES]   { id: 2, nombre: 'Juan Pérez', rut: '12345678-5' },
+    // [ANTES]   { id: 3, nombre: 'María López', rut: '9876543-3' },
+    // [ANTES] ],
+    usuarios: usuarios.map(conFechas),
     visitas: 41,
     redisDisponible: true,
     recibidos: { creaciones: [], cambios: [] },
@@ -119,7 +145,14 @@ export function crearApiFalsa(inicial: Partial<EstadoApiFalsa> = {}) {
           'Conflict',
         );
       }
-      const creado = { id: siguienteId++, ...datos };
+      // [ANTES] const creado = { id: siguienteId++, ...datos };
+      const ahora = new Date().toISOString();
+      const creado = {
+        id: siguienteId++,
+        ...datos,
+        creadoEn: ahora,
+        actualizadoEn: ahora,
+      };
       estado.usuarios.push(creado);
       return HttpResponse.json(creado, { status: 201 });
     }),
@@ -134,7 +167,10 @@ export function crearApiFalsa(inicial: Partial<EstadoApiFalsa> = {}) {
       if (!usuario) {
         return error(404, 'Usuario no encontrado', 'Not Found');
       }
-      Object.assign(usuario, cambios);
+      // [ANTES] Object.assign(usuario, cambios);
+      Object.assign(usuario, cambios, {
+        actualizadoEn: new Date().toISOString(),
+      });
       return HttpResponse.json(usuario);
     }),
 

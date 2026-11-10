@@ -22,6 +22,8 @@ describe('UsuariosController', () => {
     nombre: 'Juan Pérez',
     // [ANTES] rut: '12345678-9', van a fallar los test si dejamos ese DV mal
     rut: '12345678-5',
+    creadoEn: new Date('2026-11-10T14:03:00.000Z'),
+    actualizadoEn: new Date('2026-11-10T14:03:00.000Z'),
   };
 
   beforeEach(async () => {
@@ -73,6 +75,8 @@ describe('UsuariosController', () => {
         id: 1,
         nombre: 'Juan Pérez',
         rut: '12345678-5',
+        creadoEn: usuarioBase.creadoEn,
+        actualizadoEn: usuarioBase.actualizadoEn,
       });
     });
 

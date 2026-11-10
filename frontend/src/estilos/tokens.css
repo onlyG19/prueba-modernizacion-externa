@@ -2,35 +2,56 @@
  * Tokens de diseño: la única fuente de verdad de color, tipografía y espacio.
  * Los componentes usan estas variables, nunca valores sueltos.
  *
- * Paleta inspirada en la cédula de identidad chilena (donde vive el RUT): fondo
- * azul grisáceo pálido y tinta azul profunda. La acción usa el cian de la
- * marca, oscurecido para cumplir WCAG AA con texto blanco (5,6:1).
+ * Paleta de la marca Uno (cian, magenta y morado), tomada de uno.cl. Los
+ * colores de marca que no alcanzan el contraste WCAG AA para texto chico se
+ * usan solo como decoración o en texto grande; para la acción se oscurece el
+ * cian hasta que cumple AA sobre todas las superficies.
  */
 :root {
-  /* ── Color ─────────────────────────────────────────────────────────────── */
-  --color-papel: #eef3f5; /* fondo de página */
-  --color-hoja: #ffffff; /* superficies de trabajo */
-  --color-tinta: #13293d; /* texto principal: 13,3:1 sobre papel */
-  --color-tinta-suave: #4f6476; /* texto secundario: 5,5:1 sobre papel */
-  --color-accion: #0a6f96; /* acción primaria y foco: 5,0:1 sobre papel */
-  --color-accion-hover: #085a7a;
-  --color-accion-tenue: #e3f1f7; /* resaltado de la fila recién creada */
+  /* ── Marca ─────────────────────────────────────────────────────────────── */
+  --marca-cian: #00a9df; /* logo y detalles; no para texto (2,7:1) */
+  --marca-magenta: #e3307d; /* títulos grandes: 4,2:1 (AA en texto grande) */
+  --marca-magenta-texto: #c8196a; /* magenta para texto chico: 5,5:1 */
+  --marca-morado: #784685; /* bandas y barra lateral: 7,0:1 con blanco */
+  --marca-morado-claro: #8e569e; /* tarjetas sobre el morado: 5,3:1 */
+  --marca-morado-tenue: #f3ebf5; /* fondo de íconos */
+  --marca-dorado: #fcd75a; /* círculo de íconos sobre el morado */
+  --degradado-marca: linear-gradient(
+    100deg,
+    #f833b8 0%,
+    #e033be 48%,
+    #c333c1 100%
+  );
+
+  /* ── Color de la interfaz ──────────────────────────────────────────────── */
+  --color-papel: #f6f4f8; /* fondo del panel: gris con un toque lila */
+  --color-hoja: #ffffff; /* superficies de trabajo y fondo del sitio */
+  --color-gris: #fafafa; /* bandas neutras (pie de página) */
+  --color-tinta: #242424; /* texto principal: 15,5:1 sobre hoja */
+  --color-tinta-suave: #5c5c66; /* texto secundario: 6,6:1 sobre hoja */
+  --color-accion: #00719c; /* acción y foco: 5,5:1 sobre hoja, 5,0:1 sobre papel */
+  --color-accion-hover: #005b7e;
+  --color-accion-tenue: #e3f4fb; /* fila seleccionada o recién creada */
   --color-error: #b42318; /* 6,6:1 sobre hoja */
   --color-error-tenue: #fdeceb;
   --color-ok: #0f7b5f; /* 5,2:1 sobre hoja */
   --color-ok-tenue: #e5f3ee;
-  --color-borde-control: #6f8494; /* contorno de campos: 3,9:1 (WCAG 1.4.11) */
-  --color-borde: #c9d5dd; /* separadores, no informativos */
+  --color-borde-control: #827b8c; /* contorno de campos: 4,0:1 (WCAG 1.4.11) */
+  --color-borde: #e4e0e8; /* separadores, no informativos */
 
   /* ── Tipografía ────────────────────────────────────────────────────────── */
-  --fuente: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fuente:
+    'Montserrat Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --texto-sm: 0.875rem; /* 14px: metadatos y ayudas */
   --texto-base: 1rem; /* 16px: cuerpo */
   --texto-lg: 1.25rem; /* 20px: títulos de panel y el RUT */
   --texto-xl: 1.5625rem; /* 25px: título de página */
+  --texto-2xl: 2.25rem; /* 36px: títulos de sección del sitio */
+  --texto-portada: clamp(2rem, 1.35rem + 2.4vw, 2.75rem); /* 32–44px */
   --peso-normal: 400;
   --peso-medio: 500;
   --peso-fuerte: 600;
+  --peso-negrita: 700;
 
   /* ── Espacio (escala de 4px) ───────────────────────────────────────────── */
   --esp-1: 0.25rem;
@@ -40,12 +61,17 @@
   --esp-5: 1.5rem;
   --esp-6: 2rem;
   --esp-7: 3rem;
+  --esp-8: 4.5rem;
 
   /* ── Forma: el radio crece con la jerarquía ────────────────────────────── */
   --radio-control: 6px;
-  --radio-panel: 12px;
+  --radio-panel: 10px;
+  --radio-destacado: 14px;
   --radio-sello: 999px;
   --alto-control: 2.75rem; /* 44px: área táctil mínima */
+  --ancho-sitio: 76rem;
+  --sombra-tarjeta:
+    0 1px 2px rgb(36 36 36 / 0.06), 0 4px 14px rgb(36 36 36 / 0.08);
 
   /* ── Movimiento: solo en respuesta a una acción ────────────────────────── */
   --duracion-corta: 160ms;

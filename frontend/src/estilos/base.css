@@ -9,7 +9,15 @@ html {
   color-scheme: light;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  -webkit-tap-highlight-color: rgb(10 111 150 / 0.15);
+  -webkit-tap-highlight-color: rgb(0 113 156 / 0.15);
+  /* Los anclas del sitio (#como-funciona) no quedan pegadas al borde. */
+  scroll-padding-top: var(--esp-5);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* Sin la demora del doble toque para hacer zoom. */
@@ -56,9 +64,22 @@ h3 {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
   color: inherit;
+}
+
+/*
+ * Listas usadas como estructura (tarjetas, pasos): sin viñetas. El
+ * `role="list"` se mantiene porque Safari deja de anunciarlas como lista al
+ * quitarles las viñetas. `:where()` no suma especificidad: el margen que pone
+ * cada componente siempre gana.
+ */
+:where(ul[role='list'], ol[role='list']) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 button {

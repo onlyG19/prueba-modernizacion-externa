@@ -1,8 +1,8 @@
-// Fuente servida desde el propio build (subconjunto latino: incluye á, é, ñ):
-// sin pedir nada a un CDN externo ni filtrarle la IP de quien visita.
-import '@fontsource/ibm-plex-sans/latin-400.css';
-import '@fontsource/ibm-plex-sans/latin-500.css';
-import '@fontsource/ibm-plex-sans/latin-600.css';
+// Fuente servida desde el propio build: sin pedir nada a un CDN externo ni
+// filtrarle la IP de quien visita. Montserrat, la tipografía de la marca Uno,
+// en versión variable: un solo archivo (subconjunto latino, ~38 KB) trae
+// todos los pesos; el navegador baja solo el subconjunto que usa la página.
+import '@fontsource-variable/montserrat/wght.css';
 import './estilos/tokens.css';
 import './estilos/base.css';
 import { StrictMode } from 'react';

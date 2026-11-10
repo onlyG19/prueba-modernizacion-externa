@@ -64,6 +64,18 @@ describe('UsuariosController', () => {
       expect(service.findOne).toHaveBeenCalledWith(1);
     });
 
+    it('no debe exponer campos de la entidad que el DTO no declara', async () => {
+      // Una columna interna que se agregue a la entidad no se publica sola.
+      const conColumnaInterna = { ...usuarioBase, notaInterna: 'privada' };
+      service.findOne.mockResolvedValue(conColumnaInterna);
+
+      expect(await controller.findOne(1)).toStrictEqual({
+        id: 1,
+        nombre: 'Juan Pérez',
+        rut: '12345678-5',
+      });
+    });
+
     it('debe propagar NotFoundException del service', async () => {
       service.findOne.mockRejectedValue(
         new NotFoundException('Usuario con id 99 no encontrado'),

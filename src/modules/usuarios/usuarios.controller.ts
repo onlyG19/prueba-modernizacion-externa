@@ -26,8 +26,9 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
 import { PaginaUsuariosDto } from './dto/pagina-usuarios.dto';
+import { UsuarioDto } from './dto/usuario.dto';
 // [ANTES] import { Usuario } from './usuario.entity';
-import { Usuario } from './entities/usuario.entity';
+// [ANTES] import { Usuario } from './entities/usuario.entity';
 
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({
@@ -49,8 +50,12 @@ export class UsuariosController {
     type: ProblemDetailsDto,
   })
   @Get()
-  findAll(@Query() query: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
-    return this.usuariosService.findAll(query);
+  // [ANTES] findAll(@Query() query: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
+  // [ANTES]   return this.usuariosService.findAll(query);
+  // [ANTES] }
+  async findAll(@Query() query: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
+    const { data, meta } = await this.usuariosService.findAll(query);
+    return { data: data.map((usuario) => UsuarioDto.desde(usuario)), meta };
   }
 
   /** Obtiene un usuario por su id. */
@@ -59,8 +64,11 @@ export class UsuariosController {
     type: ProblemDetailsDto,
   })
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
-    return this.usuariosService.findOne(id);
+  // [ANTES] findOne(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
+  // [ANTES]   return this.usuariosService.findOne(id);
+  // [ANTES] }
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UsuarioDto> {
+    return UsuarioDto.desde(await this.usuariosService.findOne(id));
   }
 
   /**
@@ -77,8 +85,11 @@ export class UsuariosController {
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: CreateUsuarioDto): Promise<Usuario> {
-    return this.usuariosService.create(dto);
+  // [ANTES] create(@Body() dto: CreateUsuarioDto): Promise<Usuario> {
+  // [ANTES]   return this.usuariosService.create(dto);
+  // [ANTES] }
+  async create(@Body() dto: CreateUsuarioDto): Promise<UsuarioDto> {
+    return UsuarioDto.desde(await this.usuariosService.create(dto));
   }
 
   /** Actualiza parcialmente un usuario. */
@@ -96,12 +107,15 @@ export class UsuariosController {
     type: ProblemDetailsDto,
   })
   @Patch(':id')
-  update(
+  // [ANTES] update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     // [ANTES] @Body() dto: UpdateUsuarioDto,
     @Body(NonEmptyBodyPipe) dto: UpdateUsuarioDto,
-  ): Promise<Usuario> {
-    return this.usuariosService.update(id, dto);
+    // [ANTES] ): Promise<Usuario> {
+    // [ANTES]   return this.usuariosService.update(id, dto);
+  ): Promise<UsuarioDto> {
+    return UsuarioDto.desde(await this.usuariosService.update(id, dto));
   }
 
   /** Elimina un usuario. */

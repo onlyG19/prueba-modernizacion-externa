@@ -9,7 +9,8 @@ import type { components } from './esquema';
 
 type Esquemas = components['schemas'];
 
-export type Usuario = Esquemas['Usuario'];
+// [ANTES] export type Usuario = Esquemas['Usuario'];
+export type Usuario = Esquemas['UsuarioDto'];
 export type PaginaUsuarios = Esquemas['PaginaUsuariosDto'];
 export type NuevoUsuario = Esquemas['CreateUsuarioDto'];
 export type CambiosUsuario = Esquemas['UpdateUsuarioDto'];

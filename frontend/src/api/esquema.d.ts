@@ -168,7 +168,7 @@ export interface components {
        */
       errors?: string[];
     };
-    Usuario: {
+    UsuarioDto: {
       /**
        * @description Identificador del usuario.
        * @example 2
@@ -209,7 +209,7 @@ export interface components {
     };
     PaginaUsuariosDto: {
       /** @description Usuarios de la página, ordenados por nombre. */
-      data: components['schemas']['Usuario'][];
+      data: components['schemas']['UsuarioDto'][];
       meta: components['schemas']['PaginationMetaDto'];
     };
     CreateUsuarioDto: {
@@ -415,7 +415,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['Usuario'];
+          'application/json': components['schemas']['UsuarioDto'];
         };
       };
       /** @description Datos inválidos (p. ej. RUT con dígito verificador incorrecto) */
@@ -463,7 +463,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['Usuario'];
+          'application/json': components['schemas']['UsuarioDto'];
         };
       };
       /** @description Falta el token de acceso, o es inválido o expiró */
@@ -543,7 +543,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['Usuario'];
+          'application/json': components['schemas']['UsuarioDto'];
         };
       };
       /** @description Datos inválidos, o ningún campo que actualizar */

@@ -12,7 +12,8 @@ import { Usuario } from './entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
-import { PaginaUsuariosDto } from './dto/pagina-usuarios.dto';
+// [ANTES] import { PaginaUsuariosDto } from './dto/pagina-usuarios.dto';
+import { Pagina } from '../../common/dto/pagina';
 import { isUniqueViolation } from '../../infrastructure/database/postgres-errors';
 import { escaparLike } from '../../infrastructure/database/like';
 
@@ -40,7 +41,8 @@ export class UsuariosService {
     page,
     limit,
     buscar,
-  }: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
+    // [ANTES] }: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
+  }: ListarUsuariosDto): Promise<Pagina<Usuario>> {
     const consulta = this.usuarioRepository
       .createQueryBuilder('usuario')
       .orderBy('usuario.nombre', 'ASC')

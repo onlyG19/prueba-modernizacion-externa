@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { UsuariosController } from './usuarios.controller';
 import { UsuariosService } from './usuarios.service';
-import { Usuario } from './usuario.entity';
+// [ANTES] import { Usuario } from './usuario.entity';
+import { Usuario } from './entities/usuario.entity';
 
 const mockUsuariosService = () => ({
   findAll: jest.fn(),

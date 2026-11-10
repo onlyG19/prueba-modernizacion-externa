@@ -13,7 +13,8 @@ import {
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
-import { Usuario } from './usuario.entity';
+// [ANTES] import { Usuario } from './usuario.entity';
+import { Usuario } from './entities/usuario.entity';
 
 @Controller('usuarios')
 export class UsuariosController {

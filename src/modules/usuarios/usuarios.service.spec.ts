@@ -3,7 +3,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { ObjectLiteral, Repository } from 'typeorm';
 import { UsuariosService } from './usuarios.service';
-import { Usuario } from './usuario.entity';
+// [ANTES] import { Usuario } from './usuario.entity';
+import { Usuario } from './entities/usuario.entity';
 
 // Fábrica de mocks para Repository<Usuario>
 const mockRepository = () => ({

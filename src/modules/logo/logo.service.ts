@@ -2,7 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { join } from 'path';
 import { createReadStream, ReadStream, existsSync } from 'fs';
 import Redis from 'ioredis';
-import { REDIS_CLIENT } from '../redis/redis.provider';
+// [ANTES] import { REDIS_CLIENT } from '../redis/redis.provider';
+import { REDIS_CLIENT } from '../../infrastructure/redis/redis.provider';
 
 const COUNTER_KEY = 'logo:request:count';
 

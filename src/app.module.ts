@@ -3,10 +3,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { RedisModule } from './redis/redis.module';
-import { LogoModule } from './logo/logo.module';
-import { UsuariosModule } from './usuarios/usuarios.module';
-import { Usuario } from './usuarios/usuario.entity';
+// [ANTES] import { RedisModule } from './redis/redis.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
+// [ANTES] import { LogoModule } from './logo/logo.module';
+import { LogoModule } from './modules/logo/logo.module';
+// [ANTES] import { UsuariosModule } from './usuarios/usuarios.module';
+import { UsuariosModule } from './modules/usuarios/usuarios.module';
+// [ANTES] import { Usuario } from './usuarios/usuario.entity';
+import { Usuario } from './modules/usuarios/entities/usuario.entity';
 
 @Module({
   imports: [

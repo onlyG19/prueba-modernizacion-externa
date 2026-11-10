@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LogoService } from './logo.service';
-import { REDIS_CLIENT } from '../redis/redis.provider';
+// [ANTES] import { REDIS_CLIENT } from '../redis/redis.provider';
+import { REDIS_CLIENT } from '../../infrastructure/redis/redis.provider';
 
 // Mock del módulo fs para controlar existsSync y createReadStream
 jest.mock('fs', () => ({

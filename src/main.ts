@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+// [ANTES] import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
@@ -38,4 +39,12 @@ async function bootstrap() {
   // [ANTES] await app.listen(process.env.PORT ?? 3000);
   await app.listen(config.get('PORT', { infer: true }));
 }
-bootstrap();
+// [ANTES] bootstrap();
+bootstrap().catch((error: unknown) => {
+  // Un error al arrancar (p. ej. puerto ocupado) se registra y termina el
+  // proceso con código 1, en vez de quedar como promesa rechazada sin manejar.
+  new Logger('Bootstrap').error(
+    error instanceof Error ? error.stack : String(error),
+  );
+  process.exit(1);
+});

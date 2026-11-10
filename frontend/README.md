@@ -64,7 +64,8 @@ src/
 ├── usuarios/     página con pestañas, tabla, ventana de detalle, registro, RUT
 │   ├── formulario/   piezas compuestas + variantes crear / editar
 │   └── rut/          formato y verificación mientras se escribe
-├── ui/           botones, ventana modal (<dialog>), avisos, íconos
+├── cuentas/      crear cuentas (solo el admin): formulario, reglas y generador de contraseñas
+├── ui/           botones, ventana modal (<dialog>), avisos, íconos, estilos de formulario
 ├── estilos/      tokens de diseño y estilos base
 └── test/         API falsa (MSW), utilidades de render y de accesibilidad
 ```
@@ -78,6 +79,7 @@ Rutas:
 | `/panel` | Resumen: cifras, últimos registrados y accesos | Requerida |
 | `/panel/usuarios` | Tabla de usuarios; el ojo abre el detalle y el lápiz, la edición | Requerida |
 | `/panel/usuarios/registrar` | Registrar usuario | Requerida |
+| `/panel/cuentas` | Crear cuentas para otras personas | Requerida; solo el admin la ve en la barra lateral |
 
 Sin sesión, una ruta del panel lleva al login con `?volver=` y, tras ingresar,
 vuelve a esa página (solo se aceptan rutas del panel: sin redirección abierta).
@@ -88,7 +90,13 @@ Decisiones principales:
 
 - **La regla del RUT se escribe una sola vez.** El alias `@dominio` apunta a
   `src/modules/usuarios/domain` del backend: el frontend usa la misma clase
-  `Rut` (módulo 11) y la misma constante de largo del nombre que la API.
+  `Rut` (módulo 11) y la misma constante de largo del nombre que la API. Con
+  `@dominio-cuentas` pasa lo mismo con el largo y los caracteres permitidos del
+  usuario y el largo de la contraseña.
+- **El rol adapta la interfaz; la API decide.** El login devuelve el rol y la
+  sesión lo guarda: un operador no ve "Cuentas" en la barra lateral y, si llega
+  por la URL, se le explica que la sección es del administrador. La barrera real
+  es la API, que responde 403 a un token que no sea de admin.
 - **Tipos de extremo a extremo.** `esquema.d.ts` se genera desde el documento
   OpenAPI de la API: si un contrato cambia y no se regenera, el frontend no
   compila.
@@ -98,7 +106,7 @@ Decisiones principales:
   la respuesta. Un 401 en cualquier consulta cierra la sesión.
 - **La consola se carga bajo demanda** (`lazy`): quien no ha iniciado sesión no
   descarga ese código, y se precarga al enfocar el formulario de login.
-- **Enrutador propio en vez de una librería**: son cinco rutas fijas.
+- **Enrutador propio en vez de una librería**: son seis rutas fijas.
   `useSyncExternalStore` lee la URL (un sistema externo a React) y `navegar()`
   usa `pushState`; los enlaces siguen siendo `<a>` reales (abren en otra pestaña
   con Ctrl/⌘). Al cambiar de página el foco va a su título, salvo en las

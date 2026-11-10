@@ -1,6 +1,6 @@
 # Mejoras
 
-Respuesta al punto 3 de la prueba: 45 mejoras hechas y 13 pendientes. Las tareas marcadas llevan los commits donde se ve el cambio (`git show <hash>`). Las que no están marcadas son lo que haría a continuación.
+Respuesta al punto 3 de la prueba: 46 mejoras hechas y 13 pendientes. Las tareas marcadas llevan los commits donde se ve el cambio (`git show <hash>`). Las que no están marcadas son lo que haría a continuación.
 
 Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unitarios pasaban, el lint fallaba con 22 errores, la API no tenía autenticación y no había frontend. Se priorizó por riesgo: primero los datos y la seguridad, después la operación, la calidad y el producto.
 
@@ -33,6 +33,9 @@ Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unita
 - [x] **Autenticación con JWT.** `0d56fe2` `4c8ef3f`
   - **Qué:** `POST /auth/login` entrega un JWT y un guard global protege todas las rutas, salvo las marcadas con `@Public()`. La contraseña del administrador se guarda como hash scrypt.
   - **Por qué:** cualquiera podía listar, editar o borrar usuarios, y el RUT es un dato personal (Ley 19.628).
+- [x] **Cuentas creadas por el administrador, con roles.** `5c8776d` `a6425b1`
+  - **Qué:** tabla `cuentas` (usuario único en minúsculas y hash scrypt) y `POST /cuentas`, que solo acepta al administrador del `.env` (403 para el resto). El login acepta ambos tipos de cuenta y el JWT lleva el rol (`admin` u `operador`). Si el usuario no existe, el login igual verifica una contraseña contra un hash señuelo, así que la respuesta tarda lo mismo. En el panel, la página Cuentas (solo para el admin) tiene un formulario con las mismas reglas de la API, compartidas con el alias `@dominio-cuentas`, y genera contraseñas seguras.
+  - **Por qué:** con un solo usuario compartido no se puede dar acceso a otra persona sin entregarle la contraseña del administrador, ni quitárselo después.
 - [x] **CORS con lista de orígenes.** `6933168`
   - **Qué:** los orígenes permitidos vienen de la configuración, y `*` está prohibido en producción.
   - **Por qué:** por defecto aceptaba peticiones desde cualquier sitio.
@@ -154,7 +157,7 @@ Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unita
   - **Qué:** `strict: true` en el backend; el frontend ya lo era.
   - **Por qué:** `noImplicitAny: false` dejaba pasar errores de tipo.
 - [x] **Tests e2e reales en el backend.** `d50317b` `443c5e8` `586e0c9`
-  - **Qué:** e2e de `/usuarios`, `/auth`, `/logo` y `/health` contra Postgres y Redis desechables (Testcontainers). Usan la misma configuración HTTP que producción (`configureApp()`).
+  - **Qué:** e2e de `/usuarios`, `/auth`, `/cuentas`, `/logo` y `/health` contra Postgres y Redis desechables (Testcontainers). Usan la misma configuración HTTP que producción (`configureApp()`).
   - **Por qué:** el único e2e probaba el "Hello World" y necesitaba una base de datos preparada a mano.
 - [x] **Tests del frontend y e2e de punta a punta.** `8334d2e` `e7b5cb0`
   - **Qué:** Vitest, Testing Library y MSW, con una API falsa que replica las reglas del backend. Playwright con un navegador real contra la API, Postgres y Redis, en una base de datos exclusiva para los tests.

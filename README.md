@@ -30,7 +30,7 @@ pnpm dev --seed
 
 `pnpm dev` levanta Postgres y Redis con Docker, aplica las migraciones, carga usuarios de demostración (`--seed`) y arranca la API y el frontend:
 
-- Frontend: http://localhost:5173 (usuario `admin` y la contraseña que elegiste)
+- Frontend: http://localhost:5173 (usuario `admin` y la contraseña que elegiste). Desde **Cuentas**, el admin crea cuentas para otras personas.
 - API: http://localhost:3000/api/v1, documentada con OpenAPI en http://localhost:3000/docs
 
 Con `docker compose up` se levanta el stack de producción: el frontend en http://localhost:8080 servido por nginx, la API, las migraciones, Postgres y Redis.
@@ -58,14 +58,15 @@ flowchart LR
     subgraph api["api: NestJS 11"]
         http["Capa HTTP<br/>helmet, CORS, rutas /api/v1,<br/>validación de DTOs y errores<br/>como Problem Details"]
         guards["Guards globales<br/>límite por IP y JWT"]
-        auth["auth<br/>POST /auth/login"]
+        auth["auth<br/>POST /auth/login<br/>JWT con rol"]
+        cuentas["cuentas<br/>POST /cuentas<br/>solo el admin"]
         logo["logo<br/>GET /logo y /logo/visitas"]
         health["health<br/>GET /health"]
         usuarios["usuarios<br/>CRUD, búsqueda, paginación<br/>y concurrencia con ETag"]
     end
 
     redis[("Redis 7<br/>contador de visitas<br/>con persistencia AOF")]
-    pg[("PostgreSQL 16<br/>usuarios: RUT único,<br/>id UUID y versión")]
+    pg[("PostgreSQL 16<br/>usuarios: RUT único,<br/>id UUID y versión<br/>cuentas: usuario único<br/>y hash scrypt")]
     migraciones["migraciones<br/>corre y termina<br/>antes de la API"]
 
     navegador -->|"páginas"| estaticos
@@ -73,6 +74,7 @@ flowchart LR
     proxy --> http
     http --> guards
     guards --> auth
+    guards --> cuentas
     guards --> logo
     guards --> health
     guards --> usuarios
@@ -80,12 +82,15 @@ flowchart LR
     health -.->|"verifica"| redis
     health -.->|"verifica"| pg
     usuarios -->|"TypeORM"| pg
+    auth -->|"verifica credenciales"| cuentas
+    cuentas -->|"TypeORM"| pg
     migraciones --> pg
 ```
 
 - **Un solo origen para el navegador.** nginx sirve el frontend y reenvía `/api/` a la API, así no hay CORS de por medio. En desarrollo, Vite cumple el mismo papel (`pnpm dev`).
 - **La API es privada por defecto.** Un guard JWT global protege todas las rutas; solo `auth`, `logo` y `health` están marcadas como públicas con `@Public()`.
-- **El RUT se valida con el mismo código en ambos lados.** El value object `Rut` vive en el dominio del backend (`src/modules/usuarios/domain`) y el frontend lo importa con el alias `@dominio`.
+- **Dos roles.** El administrador es el usuario del `.env`; las cuentas que él crea ingresan como `operador`, que gestiona usuarios pero no crea cuentas. El rol va dentro del JWT y `POST /cuentas` lo exige con `SoloAdminGuard` (403 si no es admin).
+- **El RUT se valida con el mismo código en ambos lados.** El value object `Rut` vive en el dominio del backend (`src/modules/usuarios/domain`) y el frontend lo importa con el alias `@dominio`. Las reglas de usuario y contraseña de las cuentas se comparten igual, con `@dominio-cuentas`.
 - **Redis es una dependencia secundaria.** Si cae, la API sigue registrando usuarios y sirviendo el logo; solo se pierde el conteo, y `/health` responde `degraded` en vez de error.
 - **El esquema cambia solo con migraciones**, que corren en su propio contenedor antes de que arranque la API. La API nunca altera tablas al iniciar.
 
@@ -215,7 +220,8 @@ src/                     API NestJS
 ├── infrastructure/      base de datos (migraciones, seed), Redis y logs
 ├── health/              GET /health
 └── modules/
-    ├── auth/            login con JWT y guard global
+    ├── auth/            login con JWT, guard global y roles
+    ├── cuentas/         cuentas de operador que crea el admin
     ├── usuarios/        dominio (Rut), entidad, DTOs, controller y service
     └── logo/            logo y contador de visitas
 test/                    tests e2e del backend

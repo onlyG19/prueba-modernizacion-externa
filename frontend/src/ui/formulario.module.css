@@ -1,3 +1,8 @@
+/*
+ * Aspecto común de los formularios de la consola (usuarios y cuentas): todos
+ * los campos se ven y se comportan igual.
+ */
+
 /* El formulario es el único panel con superficie propia: es donde se trabaja. */
 .panel {
   padding: var(--esp-5);

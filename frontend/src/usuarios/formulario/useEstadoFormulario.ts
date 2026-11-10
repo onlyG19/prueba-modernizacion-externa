@@ -1,5 +1,6 @@
 import { Rut } from '@dominio/rut';
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
+import { useAdvertirAlSalir } from '../../ui/useAdvertirAlSalir';
 import { erroresDeServidor, validarFormulario } from './errores-formulario';
 import type {
   Campo,
@@ -57,16 +58,9 @@ export function useEstadoFormulario({
     general: erroresServidor.general,
   };
 
-  // Con cambios sin guardar, el navegador pide confirmación antes de salir.
-  const sucio = datos.nombre !== inicial.nombre || datos.rut !== inicial.rut;
-  useEffect(() => {
-    if (!sucio) {
-      return;
-    }
-    const advertir = (evento: BeforeUnloadEvent) => evento.preventDefault();
-    window.addEventListener('beforeunload', advertir);
-    return () => window.removeEventListener('beforeunload', advertir);
-  }, [sucio]);
+  useAdvertirAlSalir(
+    datos.nombre !== inicial.nombre || datos.rut !== inicial.rut,
+  );
 
   const cambiar = useCallback((campo: Campo, valor: string) => {
     setDatos((actuales) => ({ ...actuales, [campo]: valor }));

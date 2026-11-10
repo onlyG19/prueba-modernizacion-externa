@@ -8,7 +8,7 @@ import { BotonPrimario } from '../../ui/botones';
 import { clases } from '../../ui/clases';
 import { CampoRut } from '../rut/CampoRut';
 import { useFormulario } from './formulario-contexto';
-import estilos from './partes.module.css';
+import estilos from '../../ui/formulario.module.css';
 
 interface PropsMarco {
   titulo: string;

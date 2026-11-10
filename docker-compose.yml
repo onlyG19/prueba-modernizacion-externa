@@ -111,6 +111,17 @@ services:
       postgres:
         condition: service_healthy
 
+  # Datos de demostración, opcional:  docker compose --profile demo run --rm seed
+  # (--forzar: este stack corre con NODE_ENV=production, y el seed lo exige).
+  seed:
+    <<: *api
+    profiles: ['demo']
+    command: ['node', 'dist/infrastructure/database/seed/seed.js', '--forzar']
+    restart: 'no'
+    depends_on:
+      migraciones:
+        condition: service_completed_successfully
+
   api:
     <<: *api
     # Sin puertos publicados: solo es accesible a través de nginx (web).

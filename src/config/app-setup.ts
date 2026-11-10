@@ -49,6 +49,8 @@ export function configureApp(app: NestExpressApplication): void {
     origin: parseCorsOrigins(config.get('CORS_ORIGIN', { infer: true })),
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    // Cabeceras propias que un frontend en otro origen necesita poder leer.
+    exposedHeaders: ['X-Request-Count', 'X-Request-Id'],
   });
 
   // ── Validación global de DTOs ──────────────────────────────────────────────

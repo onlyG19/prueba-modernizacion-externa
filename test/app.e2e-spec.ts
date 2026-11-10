@@ -70,9 +70,23 @@ describe('API (e2e)', () => {
         .set('Origin', ORIGEN_E2E)
         // helmet
         .expect('X-Content-Type-Options', 'nosniff')
-        // CORS: solo el origen configurado
+        // CORS: solo el origen configurado, y las cabeceras propias legibles
         .expect('Access-Control-Allow-Origin', ORIGEN_E2E)
+        .expect('Access-Control-Expose-Headers', 'X-Request-Count,X-Request-Id')
     );
+  });
+
+  it('identifica cada petición con X-Request-Id y respeta uno válido que ya venga', async () => {
+    const nueva = await request(app.getHttpServer()).get('/health').expect(200);
+    expect(nueva.headers['x-request-id']).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+
+    // nginx asigna el suyo: la API lo conserva para correlacionar ambos logs.
+    await request(app.getHttpServer())
+      .get('/health')
+      .set('X-Request-Id', 'b7e1c2d4f5a6')
+      .expect('X-Request-Id', 'b7e1c2d4f5a6');
   });
 
   // [ANTES] afterEach(async () => {

@@ -1,6 +1,7 @@
 import { plainToInstance } from 'class-transformer';
 import {
   IsEnum,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -11,6 +12,7 @@ import {
   MinLength,
   validateSync,
 } from 'class-validator';
+import type { LevelWithSilent } from 'pino';
 import { PASSWORD_HASH_FORMAT } from '../common/security/password';
 import { validateCorsOrigins } from './cors';
 
@@ -88,6 +90,13 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(0)
   TRUST_PROXY: number = 0;
+
+  /**
+   * Nivel mínimo de los logs. Omitido: `info`, y `silent` en los tests.
+   */
+  @IsOptional()
+  @IsIn(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
+  LOG_LEVEL?: LevelWithSilent;
 
   /** Secreto con que se firman los JWT. Sin valor por defecto, a propósito. */
   @IsString()

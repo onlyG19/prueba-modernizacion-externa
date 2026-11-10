@@ -3,6 +3,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 // [ANTES] import { ValidationPipe } from '@nestjs/common';
 // [ANTES] import { Logger, ValidationPipe } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
+import { Logger as PinoLogger } from 'nestjs-pino';
 // [ANTES] import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
@@ -15,7 +16,13 @@ import { setupSwagger } from './config/swagger';
 
 async function bootstrap() {
   // [ANTES] const app = await NestFactory.create(AppModule);
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // [ANTES] const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // bufferLogs: los logs del arranque esperan a que el logger de pino esté listo.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+  // Todos los logs de Nest (y los de cada Logger) salen por pino, en JSON.
+  app.useLogger(app.get(PinoLogger));
 
   const config = app.get<AppConfigService>(ConfigService);
 

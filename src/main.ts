@@ -6,6 +6,8 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { AppConfigService } from './config/app-config';
 import { parseCorsOrigins } from './config/cors';
+import { Environment } from './config/env.validation';
+import { setupSwagger } from './config/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -37,6 +39,13 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
+  // ── Documentación OpenAPI (/docs) ──────────────────────────────────────────
+  // Solo fuera de producción: en producción expondría el mapa completo de la
+  // API a cualquiera.
+  if (config.get('NODE_ENV', { infer: true }) !== Environment.Production) {
+    setupSwagger(app);
+  }
 
   // [ANTES] await app.listen(process.env.PORT ?? 3000);
   await app.listen(config.get('PORT', { infer: true }));

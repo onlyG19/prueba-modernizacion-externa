@@ -11,17 +11,20 @@ export class AccessTokenDto {
    * JWT a enviar en el header `Authorization: Bearer <token>`.
    * @example 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiJ9.firma'
    */
-  accessToken: string;
+  // [ANTES] accessToken: string;
+  accessToken!: string;
 
   /**
    * Tipo de token (siempre `Bearer`).
    * @example 'Bearer'
    */
-  tokenType: 'Bearer';
+  // [ANTES] tokenType: 'Bearer';
+  tokenType!: 'Bearer';
 
   /**
    * Segundos de vigencia del token.
    * @example 3600
    */
-  expiresIn: number;
+  // [ANTES] expiresIn: number;
+  expiresIn!: number;
 }

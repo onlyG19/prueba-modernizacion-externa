@@ -8,17 +8,20 @@ export class HealthStatusDto {
    * contador de visitas). `error`: sin base de datos (la API no puede operar).
    * @example 'ok'
    */
-  status: 'ok' | 'degraded' | 'error';
+  // [ANTES] status: 'ok' | 'degraded' | 'error';
+  status!: 'ok' | 'degraded' | 'error';
 
   /**
    * Postgres.
    * @example 'up'
    */
-  database: DependencyStatus;
+  // [ANTES] database: DependencyStatus;
+  database!: DependencyStatus;
 
   /**
    * Redis.
    * @example 'up'
    */
-  redis: DependencyStatus;
+  // [ANTES] redis: DependencyStatus;
+  redis!: DependencyStatus;
 }

@@ -9,7 +9,8 @@ export class Usuario {
    * @example 2
    */
   @PrimaryGeneratedColumn()
-  id: number;
+  // [ANTES] id: number;
+  id!: number;
 
   /**
    * Nombre del usuario.
@@ -17,7 +18,8 @@ export class Usuario {
    */
   // [ANTES] @Column({ type: 'varchar', length: 45 })
   @Column({ type: 'varchar', length: NOMBRE_MAX_LENGTH })
-  nombre: string;
+  // [ANTES] nombre: string;
+  nombre!: string;
 
   /**
    * RUT en forma canónica: sin puntos, con guion y DV en mayúscula.
@@ -25,5 +27,6 @@ export class Usuario {
    */
   // [ANTES] @Column({ type: 'varchar', length: 12 })
   @Column({ type: 'varchar', length: RUT_MAX_LENGTH, unique: true })
-  rut: string;
+  // [ANTES] rut: string;
+  rut!: string;
 }

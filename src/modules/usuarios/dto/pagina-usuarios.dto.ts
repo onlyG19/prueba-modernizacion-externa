@@ -7,7 +7,9 @@ import { Usuario } from '../entities/usuario.entity';
  */
 export class PaginaUsuariosDto {
   /** Usuarios de la página, ordenados por nombre. */
-  data: Usuario[];
+  // [ANTES] data: Usuario[];
+  data!: Usuario[];
 
-  meta: PaginationMetaDto;
+  // [ANTES] meta: PaginationMetaDto;
+  meta!: PaginationMetaDto;
 }

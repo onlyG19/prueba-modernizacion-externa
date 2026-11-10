@@ -21,7 +21,8 @@ export class CreateUsuarioDto {
   @MaxLength(NOMBRE_MAX_LENGTH, {
     message: `El nombre no puede superar los ${NOMBRE_MAX_LENGTH} caracteres`,
   })
-  nombre: string;
+  // [ANTES] nombre: string;
+  nombre!: string;
 
   /**
    * RUT chileno con dígito verificador válido. Se acepta con o sin puntos,
@@ -39,5 +40,6 @@ export class CreateUsuarioDto {
   // [ANTES]   message: 'El RUT debe tener el formato válido chileno (ej: 12345678-9)',
   // [ANTES] })
   @IsRut()
-  rut: string;
+  // [ANTES] rut: string;
+  rut!: string;
 }

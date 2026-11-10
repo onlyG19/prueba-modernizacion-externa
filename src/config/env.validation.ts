@@ -53,15 +53,18 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  DB_NAME: string;
+  // [ANTES] DB_NAME: string;
+  DB_NAME!: string;
 
   @IsString()
   @IsNotEmpty()
-  DB_USER: string;
+  // [ANTES] DB_USER: string;
+  DB_USER!: string;
 
   @IsString()
   @IsNotEmpty()
-  DB_PASSWORD: string;
+  // [ANTES] DB_PASSWORD: string;
+  DB_PASSWORD!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -89,7 +92,8 @@ export class EnvironmentVariables {
   /** Secreto con que se firman los JWT. Sin valor por defecto, a propósito. */
   @IsString()
   @MinLength(32, { message: 'JWT_SECRET debe tener al menos 32 caracteres' })
-  JWT_SECRET: string;
+  // [ANTES] JWT_SECRET: string;
+  JWT_SECRET!: string;
 
   @IsInt()
   @Min(60)
@@ -98,14 +102,16 @@ export class EnvironmentVariables {
   /** Usuario administrador de la API. */
   @IsString()
   @IsNotEmpty()
-  AUTH_USER: string;
+  // [ANTES] AUTH_USER: string;
+  AUTH_USER!: string;
 
   /** Hash scrypt de la contraseña del administrador (nunca la contraseña). */
   @Matches(PASSWORD_HASH_FORMAT, {
     message:
       'AUTH_PASSWORD_HASH debe generarse con: pnpm auth:hash-password <contraseña>',
   })
-  AUTH_PASSWORD_HASH: string;
+  // [ANTES] AUTH_PASSWORD_HASH: string;
+  AUTH_PASSWORD_HASH!: string;
 }
 
 /**

@@ -9,32 +9,37 @@ export class ProblemDetailsDto {
    * el código HTTP: el `title` es entonces la frase estándar de ese código.
    * @example 'about:blank'
    */
-  type: string;
+  // [ANTES] type: string;
+  type!: string;
 
   /**
    * Resumen del problema (la frase estándar del código HTTP).
    * @example 'Conflict'
    */
-  title: string;
+  // [ANTES] title: string;
+  title!: string;
 
   /**
    * Código de estado HTTP.
    * @example 409
    */
-  status: number;
+  // [ANTES] status: number;
+  status!: number;
 
   /**
    * Explicación de esta ocurrencia del problema.
    * @example 'Ya existe un usuario con el RUT 12345678-5'
    */
-  detail: string;
+  // [ANTES] detail: string;
+  detail!: string;
 
   /**
    * Ruta de la petición que falló (sin query string, para no repetir datos
    * personales como un RUT buscado).
    * @example '/usuarios'
    */
-  instance: string;
+  // [ANTES] instance: string;
+  instance!: string;
 
   /**
    * Reglas de validación incumplidas, una por elemento (solo en errores 400).

@@ -7,7 +7,8 @@ export class LoginDto {
    */
   @IsString()
   @IsNotEmpty({ message: 'El usuario no puede estar vacío' })
-  username: string;
+  // [ANTES] username: string;
+  username!: string;
 
   /**
    * Contraseña del administrador.
@@ -15,5 +16,6 @@ export class LoginDto {
    */
   @IsString()
   @IsNotEmpty({ message: 'La contraseña no puede estar vacía' })
-  password: string;
+  // [ANTES] password: string;
+  password!: string;
 }

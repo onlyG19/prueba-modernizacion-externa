@@ -4,23 +4,27 @@ export class PaginationMetaDto {
    * Página devuelta.
    * @example 1
    */
-  page: number;
+  // [ANTES] page: number;
+  page!: number;
 
   /**
    * Elementos por página.
    * @example 20
    */
-  limit: number;
+  // [ANTES] limit: number;
+  limit!: number;
 
   /**
    * Total de elementos que cumplen el filtro (en todas las páginas).
    * @example 42
    */
-  total: number;
+  // [ANTES] total: number;
+  total!: number;
 
   /**
    * Total de páginas (0 si no hay elementos).
    * @example 3
    */
-  totalPages: number;
+  // [ANTES] totalPages: number;
+  totalPages!: number;
 }

@@ -2,10 +2,15 @@
 import { Controller, Get, Res, StreamableFile } from '@nestjs/common';
 import type { Response } from 'express';
 import { LogoService } from './logo.service';
+import { VisitCounterService } from './visit-counter.service';
 
 @Controller('logo')
 export class LogoController {
-  constructor(private readonly logoService: LogoService) {}
+  // [ANTES] constructor(private readonly logoService: LogoService) {}
+  constructor(
+    private readonly logoService: LogoService,
+    private readonly visitCounter: VisitCounterService,
+  ) {}
 
   /**
    * GET /logo
@@ -16,7 +21,8 @@ export class LogoController {
   async getLogo(
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const count = await this.logoService.incrementCounter();
+    // [ANTES] const count = await this.logoService.incrementCounter();
+    const count = await this.visitCounter.increment();
     // [ANTES] const { stream, contentType } = this.logoService.getLogoStream();
     const { content, contentType } = this.logoService.getLogo();
 
@@ -36,7 +42,8 @@ export class LogoController {
    */
   @Get('count')
   async getCount(): Promise<{ count: number }> {
-    const count = await this.logoService.getCounter();
+    // [ANTES] const count = await this.logoService.getCounter();
+    const count = await this.visitCounter.getCount();
     return { count };
   }
 }

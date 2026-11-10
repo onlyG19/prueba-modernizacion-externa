@@ -1,14 +1,15 @@
 // [ANTES] import { Inject, Injectable } from '@nestjs/common';
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+// [ANTES] import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { join } from 'path';
 // [ANTES] import { createReadStream, ReadStream, existsSync } from 'fs';
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
-import Redis from 'ioredis';
+// [ANTES] import Redis from 'ioredis';
 // [ANTES] import { REDIS_CLIENT } from '../redis/redis.provider';
-import { REDIS_CLIENT } from '../../infrastructure/redis/redis.provider';
+// [ANTES] import { REDIS_CLIENT } from '../../infrastructure/redis/redis.provider';
 
-const COUNTER_KEY = 'logo:request:count';
+// [ANTES] const COUNTER_KEY = 'logo:request:count';
 
 /**
  * Carpeta del logo, resuelta respecto de este archivo (no del directorio desde
@@ -33,7 +34,7 @@ export interface Logo {
 export class LogoService implements OnModuleInit {
   private logo!: Logo;
 
-  constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {}
+  // [ANTES] constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {}
 
   /**
    * Carga el logo en memoria al iniciar el módulo, una sola vez.
@@ -44,14 +45,14 @@ export class LogoService implements OnModuleInit {
     this.logo = await this.loadLogo();
   }
 
-  async incrementCounter(): Promise<number> {
-    return this.redis.incr(COUNTER_KEY);
-  }
-
-  async getCounter(): Promise<number> {
-    const value = await this.redis.get(COUNTER_KEY);
-    return value ? parseInt(value, 10) : 0;
-  }
+  // [ANTES] async incrementCounter(): Promise<number> {
+  // [ANTES]   return this.redis.incr(COUNTER_KEY);
+  // [ANTES] }
+  // [ANTES]
+  // [ANTES] async getCounter(): Promise<number> {
+  // [ANTES]   const value = await this.redis.get(COUNTER_KEY);
+  // [ANTES]   return value ? parseInt(value, 10) : 0;
+  // [ANTES] }
 
   // [ANTES] getLogoStream(): { stream: ReadStream; contentType: string } {
   // [ANTES]   const pngPath = join(process.cwd(), 'src', 'assets', 'logo.png');

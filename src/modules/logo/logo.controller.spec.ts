@@ -3,12 +3,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import type { Response } from 'express';
 import { LogoController } from './logo.controller';
 import { LogoService } from './logo.service';
+import { VisitCounterService } from './visit-counter.service';
 
 const mockLogoService = () => ({
-  incrementCounter: jest.fn(),
+  // [ANTES] incrementCounter: jest.fn(),
   // [ANTES] getLogoStream: jest.fn(),
   getLogo: jest.fn(),
-  getCounter: jest.fn(),
+  // [ANTES] getCounter: jest.fn(),
+});
+
+const mockVisitCounter = () => ({
+  increment: jest.fn(),
+  getCount: jest.fn(),
 });
 
 const logoSvg = {
@@ -25,15 +31,21 @@ const crearRespuesta = () => {
 describe('LogoController', () => {
   let controller: LogoController;
   let service: ReturnType<typeof mockLogoService>;
+  let visitCounter: ReturnType<typeof mockVisitCounter>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LogoController],
-      providers: [{ provide: LogoService, useFactory: mockLogoService }],
+      // [ANTES] providers: [{ provide: LogoService, useFactory: mockLogoService }],
+      providers: [
+        { provide: LogoService, useFactory: mockLogoService },
+        { provide: VisitCounterService, useFactory: mockVisitCounter },
+      ],
     }).compile();
 
     controller = module.get<LogoController>(LogoController);
     service = module.get(LogoService);
+    visitCounter = module.get(VisitCounterService);
     jest.clearAllMocks();
   });
 
@@ -80,7 +92,7 @@ describe('LogoController', () => {
     // [ANTES] });
 
     it('debe devolver el logo como StreamableFile con su tipo y largo', async () => {
-      service.incrementCounter.mockResolvedValue(3);
+      visitCounter.increment.mockResolvedValue(3);
       service.getLogo.mockReturnValue(logoSvg);
       const { res } = crearRespuesta();
 
@@ -94,13 +106,13 @@ describe('LogoController', () => {
     });
 
     it('debe incrementar el contador y enviarlo en X-Request-Count', async () => {
-      service.incrementCounter.mockResolvedValue(3);
+      visitCounter.increment.mockResolvedValue(3);
       service.getLogo.mockReturnValue(logoSvg);
       const { res, setHeader } = crearRespuesta();
 
       await controller.getLogo(res);
 
-      expect(service.incrementCounter).toHaveBeenCalledTimes(1);
+      expect(visitCounter.increment).toHaveBeenCalledTimes(1);
       expect(setHeader).toHaveBeenCalledWith('X-Request-Count', '3');
     });
   });
@@ -108,14 +120,14 @@ describe('LogoController', () => {
   // ── getCount ──────────────────────────────────────────────────────────────
   describe('getCount', () => {
     it('debe retornar el contador envuelto en un objeto', async () => {
-      service.getCounter.mockResolvedValue(42);
+      visitCounter.getCount.mockResolvedValue(42);
       const result = await controller.getCount();
       expect(result).toEqual({ count: 42 });
-      expect(service.getCounter).toHaveBeenCalledTimes(1);
+      expect(visitCounter.getCount).toHaveBeenCalledTimes(1);
     });
 
     it('debe retornar { count: 0 } cuando el contador es 0', async () => {
-      service.getCounter.mockResolvedValue(0);
+      visitCounter.getCount.mockResolvedValue(0);
       expect(await controller.getCount()).toEqual({ count: 0 });
     });
   });

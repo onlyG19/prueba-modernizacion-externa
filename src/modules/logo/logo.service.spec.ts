@@ -3,7 +3,7 @@ import { join } from 'path';
 // [ANTES] import { LogoService } from './logo.service';
 import { LOGO_ASSETS_DIR, LogoService } from './logo.service';
 // [ANTES] import { REDIS_CLIENT } from '../redis/redis.provider';
-import { REDIS_CLIENT } from '../../infrastructure/redis/redis.provider';
+// [ANTES] import { REDIS_CLIENT } from '../../infrastructure/redis/redis.provider';
 
 // [ANTES] // Mock del módulo fs para controlar existsSync y createReadStream
 // [ANTES] jest.mock('fs', () => ({
@@ -22,51 +22,53 @@ jest.mock('fs/promises', () => ({ readFile: jest.fn() }));
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 
-const mockRedis = () => ({
-  incr: jest.fn(),
-  get: jest.fn(),
-});
+// [ANTES] const mockRedis = () => ({
+// [ANTES]   incr: jest.fn(),
+// [ANTES]   get: jest.fn(),
+// [ANTES] });
 
 describe('LogoService', () => {
   let service: LogoService;
-  let redis: ReturnType<typeof mockRedis>;
+  // [ANTES] let redis: ReturnType<typeof mockRedis>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        LogoService,
-        { provide: REDIS_CLIENT, useFactory: mockRedis },
-      ],
+      // [ANTES] providers: [
+      // [ANTES]   LogoService,
+      // [ANTES]   { provide: REDIS_CLIENT, useFactory: mockRedis },
+      // [ANTES] ],
+      providers: [LogoService],
     }).compile();
 
     service = module.get<LogoService>(LogoService);
-    redis = module.get(REDIS_CLIENT);
+    // [ANTES] redis = module.get(REDIS_CLIENT);
     jest.clearAllMocks();
   });
 
-  // ── incrementCounter ─────────────────────────────────────────────────────
-  describe('incrementCounter', () => {
-    it('debe llamar a redis.incr y retornar el valor incrementado', async () => {
-      redis.incr.mockResolvedValue(5);
-      const result = await service.incrementCounter();
-      expect(redis.incr).toHaveBeenCalledWith('logo:request:count');
-      expect(result).toBe(5);
-    });
-  });
-
-  // ── getCounter ───────────────────────────────────────────────────────────
-  describe('getCounter', () => {
-    it('debe retornar el valor parseado cuando existe', async () => {
-      redis.get.mockResolvedValue('42');
-      expect(await service.getCounter()).toBe(42);
-      expect(redis.get).toHaveBeenCalledWith('logo:request:count');
-    });
-
-    it('debe retornar 0 cuando la clave no existe en Redis', async () => {
-      redis.get.mockResolvedValue(null);
-      expect(await service.getCounter()).toBe(0);
-    });
-  });
+  // (los tests del contador se movieron a visit-counter.service.spec.ts)
+  // [ANTES] // ── incrementCounter ─────────────────────────────────────────────────────
+  // [ANTES] describe('incrementCounter', () => {
+  // [ANTES]   it('debe llamar a redis.incr y retornar el valor incrementado', async () => {
+  // [ANTES]     redis.incr.mockResolvedValue(5);
+  // [ANTES]     const result = await service.incrementCounter();
+  // [ANTES]     expect(redis.incr).toHaveBeenCalledWith('logo:request:count');
+  // [ANTES]     expect(result).toBe(5);
+  // [ANTES]   });
+  // [ANTES] });
+  // [ANTES]
+  // [ANTES] // ── getCounter ───────────────────────────────────────────────────────────
+  // [ANTES] describe('getCounter', () => {
+  // [ANTES]   it('debe retornar el valor parseado cuando existe', async () => {
+  // [ANTES]     redis.get.mockResolvedValue('42');
+  // [ANTES]     expect(await service.getCounter()).toBe(42);
+  // [ANTES]     expect(redis.get).toHaveBeenCalledWith('logo:request:count');
+  // [ANTES]   });
+  // [ANTES]
+  // [ANTES]   it('debe retornar 0 cuando la clave no existe en Redis', async () => {
+  // [ANTES]     redis.get.mockResolvedValue(null);
+  // [ANTES]     expect(await service.getCounter()).toBe(0);
+  // [ANTES]   });
+  // [ANTES] });
 
   // [ANTES] // ── getLogoStream ────────────────────────────────────────────────────────
   // [ANTES] describe('getLogoStream', () => {

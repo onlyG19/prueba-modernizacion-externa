@@ -1,6 +1,6 @@
 # Mejoras
 
-Respuesta al punto 3 de la prueba: 46 mejoras hechas y 13 pendientes. Las tareas marcadas llevan los commits donde se ve el cambio (`git show <hash>`). Las que no están marcadas son lo que haría a continuación.
+Respuesta al punto 3 de la prueba: 47 mejoras hechas y 13 pendientes. Las tareas marcadas llevan los commits donde se ve el cambio (`git show <hash>`). Las que no están marcadas son lo que haría a continuación.
 
 Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unitarios pasaban, el lint fallaba con 22 errores, la API no tenía autenticación y no había frontend. Se priorizó por riesgo: primero los datos y la seguridad, después la operación, la calidad y el producto.
 
@@ -183,6 +183,9 @@ Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unita
 - [x] **Todo el stack con Docker.** `0e06a91` `80d43f3`
   - **Qué:** Dockerfiles multi-etapa de la API y del frontend (nginx), y un compose con migraciones, API, web, Postgres y Redis, con healthchecks.
   - **Por qué:** solo la infraestructura estaba en Docker; levantar la app requería pasos a mano.
+- [x] **Integración continua con checks obligatorios.** `746ab1a`
+  - **Qué:** GitHub Actions corre en cada pull request tres jobs en paralelo, sobre el merge del PR con `master`: backend (lint, tipos, unitarios y e2e con Testcontainers), frontend (tipos, lint, formato y Vitest) y e2e con Playwright contra Postgres y Redis reales. `master` está protegida: los tres checks son obligatorios, también para el administrador del repositorio.
+  - **Por qué:** los tests solo corrían en la máquina de quien se acordaba de correrlos, y nada impedía mergear un cambio que rompiera algo.
 - [x] **Un comando para desarrollar.** `995e2da`
   - **Qué:** `pnpm dev` instala las dependencias, levanta Postgres y Redis, aplica las migraciones y arranca la API y el frontend juntos.
   - **Por qué:** probar el proyecto no debería exigir seguir una lista de pasos.

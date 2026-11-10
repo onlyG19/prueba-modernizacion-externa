@@ -44,6 +44,8 @@ El frontend tiene sus propias dependencias: `pnpm dev` las instala si faltan, o 
 | `pnpm --dir frontend test` | Tests del frontend (Vitest) |
 | `pnpm --dir frontend test:e2e` | Tests e2e con navegador real (Playwright) contra el stack completo |
 
+Cada pull request corre todo lo anterior en GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)), en tres checks: **Backend**, **Frontend** y **E2E**. Los tres son obligatorios: sin ellos en verde, `master` no acepta el merge.
+
 ## 1. Diagrama de arquitectura
 
 ```mermaid
@@ -225,6 +227,7 @@ src/                     API NestJS
     ├── usuarios/        dominio (Rut), entidad, DTOs, controller y service
     └── logo/            logo y contador de visitas
 test/                    tests e2e del backend
+.github/workflows/       CI: lint, tipos y tests en cada pull request
 frontend/                SPA en React (ver frontend/README.md)
 docs/MEJORAS.md          mejoras hechas y pendientes
 ```

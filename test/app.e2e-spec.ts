@@ -1,27 +1,37 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+// [ANTES] import { Test, TestingModule } from '@nestjs/testing';
+// [ANTES] import { INestApplication } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+// [ANTES] import { App } from 'supertest/types';
+// [ANTES] import { AppModule } from './../src/app.module';
+import { ORIGEN_E2E } from './setup/entorno-e2e';
+import { crearAppE2e } from './utilidades/app-e2e';
 
 // [ANTES] describe('AppController (e2e)', () => {
+// [ANTES] /**
+// [ANTES]  * La API completa (todos los módulos, filtro y guards globales) contra
+// [ANTES]  * Postgres y Redis reales: requiere `docker compose up -d postgres redis` y el
+// [ANTES]  * `.env` de la raíz.
+// [ANTES]  */
 /**
  * La API completa (todos los módulos, filtro y guards globales) contra
- * Postgres y Redis reales: requiere `docker compose up -d postgres redis` y el
- * `.env` de la raíz.
+ * Postgres y Redis en contenedores desechables (ver setup/global-setup.ts):
+ * solo requiere Docker.
  */
 describe('API (e2e)', () => {
-  let app: INestApplication<App>;
+  // [ANTES] let app: INestApplication<App>;
+  let app: NestExpressApplication;
 
   // [ANTES] beforeEach(async () => {
   // Arrancar la aplicación completa es lento: una vez para todo el archivo.
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    // [ANTES] const moduleFixture: TestingModule = await Test.createTestingModule({
+    // [ANTES]   imports: [AppModule],
+    // [ANTES] }).compile();
+    // [ANTES]
+    // [ANTES] app = moduleFixture.createNestApplication();
+    // [ANTES] await app.init();
+    app = await crearAppE2e();
   });
 
   // [ANTES] it('/ (GET)', () => {
@@ -49,6 +59,18 @@ describe('API (e2e)', () => {
 
   it('GET /usuarios sin token responde 401', () => {
     return request(app.getHttpServer()).get('/usuarios').expect(401);
+  });
+
+  it('aplica la configuración de main.ts: cabeceras de seguridad y CORS', () => {
+    return (
+      request(app.getHttpServer())
+        .get('/health')
+        .set('Origin', ORIGEN_E2E)
+        // helmet
+        .expect('X-Content-Type-Options', 'nosniff')
+        // CORS: solo el origen configurado
+        .expect('Access-Control-Allow-Origin', ORIGEN_E2E)
+    );
   });
 
   // [ANTES] afterEach(async () => {

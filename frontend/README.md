@@ -57,15 +57,32 @@ La configuración está en `frontend/nginx/`.
 ```
 src/
 ├── api/          cliente HTTP (errores tipados) y tipos generados desde OpenAPI
+├── rutas/        enrutador mínimo (History API), enlaces y reglas de redirección
+├── inicio/       sitio público: portada, validador de RUT en vivo, indicadores, 404
 ├── sesion/       login, contexto de sesión y almacenamiento versionado
-├── consola/      la consola (cargada bajo demanda), encabezado y logo
-├── usuarios/     lista, filas, formularios y el campo RUT
+├── consola/      el panel (cargado bajo demanda): encabezado, barra lateral, resumen
+├── usuarios/     página con pestañas, tabla, ventana de detalle, registro, RUT
 │   ├── formulario/   piezas compuestas + variantes crear / editar
 │   └── rut/          formato y verificación mientras se escribe
-├── ui/           botones, avisos (región viva), íconos
+├── ui/           botones, ventana modal (<dialog>), avisos, íconos
 ├── estilos/      tokens de diseño y estilos base
 └── test/         API falsa (MSW), utilidades de render y de accesibilidad
 ```
+
+Rutas:
+
+| Ruta | Página | Sesión |
+| --- | --- | --- |
+| `/` | Sitio de inicio | Pública |
+| `/ingresar` | Login (con sesión, redirige al panel) | Pública |
+| `/panel` | Resumen: cifras, últimos registrados y accesos | Requerida |
+| `/panel/usuarios` | Tabla de usuarios; el ojo abre el detalle y el lápiz, la edición | Requerida |
+| `/panel/usuarios/registrar` | Registrar usuario | Requerida |
+
+Sin sesión, una ruta del panel lleva al login con `?volver=` y, tras ingresar,
+vuelve a esa página (solo se aceptan rutas del panel: sin redirección abierta).
+`nginx` y Vite ya devuelven `index.html` en cualquier ruta, así que recargar o
+abrir un enlace directo funciona.
 
 Decisiones principales:
 
@@ -76,29 +93,44 @@ Decisiones principales:
   OpenAPI de la API: si un contrato cambia y no se regenera, el frontend no
   compila.
 - **Datos del servidor con TanStack Query**: caché, deduplicación y estados de
-  carga/error. Las mutaciones actualizan la caché con la respuesta, sin volver
-  a pedir la lista. Un 401 en cualquier consulta cierra la sesión.
+  carga/error. Tras cada mutación se invalida la lista (con paginación, un
+  cambio puede mover a alguien de página) y el detalle abierto se actualiza con
+  la respuesta. Un 401 en cualquier consulta cierra la sesión.
 - **La consola se carga bajo demanda** (`lazy`): quien no ha iniciado sesión no
   descarga ese código, y se precarga al enfocar el formulario de login.
+- **Enrutador propio en vez de una librería**: son cinco rutas fijas.
+  `useSyncExternalStore` lee la URL (un sistema externo a React) y `navegar()`
+  usa `pushState`; los enlaces siguen siendo `<a>` reales (abren en otra pestaña
+  con Ctrl/⌘). Al cambiar de página el foco va a su título, salvo en las
+  pestañas, donde se queda en la pestaña elegida.
+- **Ventana modal con `<dialog>` nativo** (`showModal()`): el navegador encierra
+  el foco y deja inerte el fondo, sin librerías. El detalle se abre al instante
+  con los datos de la fila y se completa con `GET /usuarios/:id`.
 - **Sesión en `sessionStorage`** con clave versionada: sobrevive a recargar la
   pestaña y se borra al cerrarla. Un JWT en el navegador es legible ante un XSS;
   la alternativa robusta (cookie `httpOnly`) requiere cambiar el backend.
 - **Composición en vez de props booleanas**: `FormularioCrearUsuario` y
   `FormularioEditarUsuario` arman las mismas piezas (`partes.tsx`) sobre un
-  contrato de contexto común; `FilaUsuario.Normal` y `FilaUsuario.EnEdicion`.
+  contrato de contexto común.
 
 ## Diseño y accesibilidad
 
-- Paleta inspirada en la cédula de identidad (donde vive el RUT) y en el cian
-  de la marca; todos los pares de color cumplen WCAG AA (verificados, también
-  en navegador real con axe-core). Los tokens están en `estilos/tokens.css`.
-- IBM Plex Sans servida desde el build (sin CDN externo), con cifras tabulares
-  para los RUT.
+- Diseño basado en la marca y la estructura de uno.cl: portada con el
+  degradado magenta, títulos en dos tonos, tarjetas con barra de color, banda
+  morada y pie gris de ayuda. En vez de un carrusel, la portada trae un
+  validador de RUT en vivo (el mismo `Rut` del dominio).
+- Paleta de la marca (cian, magenta, morado). Los colores que no alcanzan AA
+  para texto chico solo decoran o van en texto grande; el cian de la acción se
+  oscureció hasta cumplir AA en todas las superficies (verificado también en
+  navegador real con axe-core). Los tokens están en `estilos/tokens.css`.
+- Montserrat (la tipografía de la marca) en versión variable, servida desde el
+  build (sin CDN externo), con cifras tabulares para los RUT.
 - El campo RUT formatea mientras se escribe, conserva el cursor al editar en
   medio y confirma el dígito verificador al instante; el error aparece al salir
   del campo o al enviar.
 - Teclado completo: foco visible, enlace para saltar al contenido, Escape para
-  cancelar la edición o la eliminación, y el foco vuelve a donde estaba.
+  cerrar la ventana o cancelar la eliminación, y el foco vuelve al botón que la
+  abrió.
 - Avisos y errores en regiones vivas para lectores de pantalla; movimiento solo
   en respuesta a acciones y desactivado con `prefers-reduced-motion`.
 

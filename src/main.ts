@@ -19,9 +19,9 @@ async function bootstrap() {
   // ── Validación global de DTOs ──────────────────────────────────────────────
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,        // elimina propiedades no declaradas en el DTO
+      whitelist: true, // elimina propiedades no declaradas en el DTO
       forbidNonWhitelisted: true, // lanza error si llegan propiedades extra
-      transform: true,        // convierte los tipos automáticamente (ej: string → number)
+      transform: true, // convierte los tipos automáticamente (ej: string → number)
       transformOptions: { enableImplicitConversion: true },
     }),
   );

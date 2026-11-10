@@ -16,12 +16,18 @@ describe('UsuariosController', () => {
   let controller: UsuariosController;
   let service: ReturnType<typeof mockUsuariosService>;
 
-  const usuarioBase: Usuario = { id: 1, nombre: 'Juan Pérez', rut: '12345678-9' };
+  const usuarioBase: Usuario = {
+    id: 1,
+    nombre: 'Juan Pérez',
+    rut: '12345678-9',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsuariosController],
-      providers: [{ provide: UsuariosService, useFactory: mockUsuariosService }],
+      providers: [
+        { provide: UsuariosService, useFactory: mockUsuariosService },
+      ],
     }).compile();
 
     controller = module.get<UsuariosController>(UsuariosController);
@@ -46,7 +52,9 @@ describe('UsuariosController', () => {
     });
 
     it('debe propagar NotFoundException del service', async () => {
-      service.findOne.mockRejectedValue(new NotFoundException('Usuario con id 99 no encontrado'));
+      service.findOne.mockRejectedValue(
+        new NotFoundException('Usuario con id 99 no encontrado'),
+      );
       await expect(controller.findOne(99)).rejects.toThrow(NotFoundException);
     });
   });
@@ -75,8 +83,12 @@ describe('UsuariosController', () => {
     });
 
     it('debe propagar NotFoundException del service', async () => {
-      service.update.mockRejectedValue(new NotFoundException('Usuario con id 99 no encontrado'));
-      await expect(controller.update(99, { nombre: 'X' })).rejects.toThrow(NotFoundException);
+      service.update.mockRejectedValue(
+        new NotFoundException('Usuario con id 99 no encontrado'),
+      );
+      await expect(controller.update(99, { nombre: 'X' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -89,7 +101,9 @@ describe('UsuariosController', () => {
     });
 
     it('debe propagar NotFoundException del service', async () => {
-      service.remove.mockRejectedValue(new NotFoundException('Usuario con id 99 no encontrado'));
+      service.remove.mockRejectedValue(
+        new NotFoundException('Usuario con id 99 no encontrado'),
+      );
       await expect(controller.remove(99)).rejects.toThrow(NotFoundException);
     });
   });

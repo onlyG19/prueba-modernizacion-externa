@@ -14,13 +14,19 @@ const mockRepository = () => ({
   remove: jest.fn(),
 });
 
-type MockRepository<T extends ObjectLiteral> = Partial<Record<keyof Repository<T>, jest.Mock>>;
+type MockRepository<T extends ObjectLiteral> = Partial<
+  Record<keyof Repository<T>, jest.Mock>
+>;
 
 describe('UsuariosService', () => {
   let service: UsuariosService;
   let repo: MockRepository<Usuario>;
 
-  const usuarioBase: Usuario = { id: 1, nombre: 'Juan Pérez', rut: '12345678-9' };
+  const usuarioBase: Usuario = {
+    id: 1,
+    nombre: 'Juan Pérez',
+    rut: '12345678-9',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -96,7 +102,9 @@ describe('UsuariosService', () => {
 
     it('debe lanzar NotFoundException si el usuario no existe', async () => {
       repo.findOneBy!.mockResolvedValue(null);
-      await expect(service.update(99, { nombre: 'Nuevo' })).rejects.toThrow(NotFoundException);
+      await expect(service.update(99, { nombre: 'Nuevo' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

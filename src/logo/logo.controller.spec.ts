@@ -28,7 +28,10 @@ describe('LogoController', () => {
     it('debe setear headers y pipear el stream al response', async () => {
       const fakeStream = { pipe: jest.fn() };
       service.incrementCounter.mockResolvedValue(3);
-      service.getLogoStream.mockReturnValue({ stream: fakeStream, contentType: 'image/png' });
+      service.getLogoStream.mockReturnValue({
+        stream: fakeStream,
+        contentType: 'image/png',
+      });
 
       const mockRes = {
         setHeader: jest.fn(),
@@ -37,7 +40,10 @@ describe('LogoController', () => {
       await controller.getLogo(mockRes);
 
       expect(service.incrementCounter).toHaveBeenCalledTimes(1);
-      expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'image/png');
+      expect(mockRes.setHeader).toHaveBeenCalledWith(
+        'Content-Type',
+        'image/png',
+      );
       expect(mockRes.setHeader).toHaveBeenCalledWith('X-Request-Count', '3');
       expect(fakeStream.pipe).toHaveBeenCalledWith(mockRes);
     });
@@ -45,12 +51,18 @@ describe('LogoController', () => {
     it('debe usar el contentType retornado por el service', async () => {
       const fakeStream = { pipe: jest.fn() };
       service.incrementCounter.mockResolvedValue(1);
-      service.getLogoStream.mockReturnValue({ stream: fakeStream, contentType: 'image/svg+xml' });
+      service.getLogoStream.mockReturnValue({
+        stream: fakeStream,
+        contentType: 'image/svg+xml',
+      });
 
       const mockRes = { setHeader: jest.fn() } as any;
       await controller.getLogo(mockRes);
 
-      expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'image/svg+xml');
+      expect(mockRes.setHeader).toHaveBeenCalledWith(
+        'Content-Type',
+        'image/svg+xml',
+      );
     });
   });
 

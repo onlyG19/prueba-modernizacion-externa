@@ -22,3 +22,6 @@ afterAll(() => servidor.close());
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
   value: () => null,
 });
+
+// jsdom tampoco desplaza la página: al navegar, `scrollTo` no hace nada.
+window.scrollTo = () => {};

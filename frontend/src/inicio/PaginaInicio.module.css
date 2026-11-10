@@ -1,0 +1,449 @@
+.pagina {
+  min-height: 100dvh;
+  background: var(--color-hoja);
+}
+
+.principal:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.interior {
+  width: 100%;
+  max-width: var(--ancho-sitio);
+  margin: 0 auto;
+  padding-inline: var(--esp-5);
+}
+
+/* La segunda línea de los títulos, en el magenta de la marca (como uno.cl). */
+.acento {
+  color: var(--marca-magenta);
+}
+
+/* ── Portada ─────────────────────────────────────────────────────────────── */
+
+.portada {
+  position: relative;
+  overflow: hidden;
+  background: var(--degradado-marca);
+}
+
+/* Uno usa fotografía; aquí, dos halos de luz dan profundidad sin imágenes. */
+.portada::before,
+.portada::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.portada::before {
+  top: -12rem;
+  right: -6rem;
+  width: 34rem;
+  height: 34rem;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 255 255 / 0.22),
+    transparent
+  );
+}
+
+.portada::after {
+  bottom: -16rem;
+  left: 30%;
+  width: 30rem;
+  height: 30rem;
+  background: radial-gradient(
+    closest-side,
+    rgb(120 70 133 / 0.35),
+    transparent
+  );
+}
+
+.portadaInterior {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: var(--esp-6);
+  max-width: var(--ancho-sitio);
+  margin: 0 auto;
+  padding: var(--esp-7) var(--esp-5) var(--esp-8);
+}
+
+.tarjetaPortada {
+  padding: clamp(1.5rem, 0.9rem + 2.2vw, 2.75rem);
+  background: var(--color-hoja);
+  border-radius: var(--radio-destacado);
+  box-shadow: 0 18px 40px rgb(80 10 70 / 0.18);
+}
+
+.tituloPortada {
+  font-size: var(--texto-portada);
+  font-weight: var(--peso-negrita);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.tituloPortada span {
+  display: block;
+}
+
+.bajadaPortada {
+  max-width: 44ch;
+  margin-top: var(--esp-4);
+  font-size: 1.0625rem;
+  color: var(--color-tinta-suave);
+}
+
+.accionesPortada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-4) var(--esp-5);
+  margin-top: var(--esp-6);
+}
+
+.enlaceSuave {
+  font-weight: var(--peso-fuerte);
+  color: var(--color-accion);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+}
+
+/* ── Accesos directos ────────────────────────────────────────────────────── */
+
+.accesos {
+  padding-block: var(--esp-7);
+}
+
+.listaAccesos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--esp-5);
+}
+
+/* Barra de color a la izquierda, como las tarjetas de uno.cl. */
+.acceso {
+  position: relative;
+  padding: var(--esp-5) var(--esp-5) var(--esp-5) calc(var(--esp-5) + 10px);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-panel);
+  box-shadow: var(--sombra-tarjeta);
+  overflow: hidden;
+  transition: border-color var(--duracion-corta) var(--curva);
+}
+
+.acceso::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 10px;
+  background: var(--color-barra);
+}
+
+.magenta {
+  --color-barra: var(--marca-magenta);
+  --color-icono: var(--marca-magenta-texto);
+  --fondo-icono: #fdeaf2;
+}
+
+.morado {
+  --color-barra: var(--marca-morado);
+  --color-icono: var(--marca-morado);
+  --fondo-icono: var(--marca-morado-tenue);
+}
+
+.iconoAcceso {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: var(--color-icono);
+  background: var(--fondo-icono);
+  border-radius: 50%;
+}
+
+.tituloAcceso {
+  margin-top: var(--esp-4);
+  font-size: var(--texto-lg);
+}
+
+.enlaceAcceso {
+  color: var(--color-tinta);
+  text-decoration: none;
+}
+
+/* Toda la tarjeta es el enlace: el área que se toca es grande. */
+.enlaceAcceso::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.enlaceAcceso:focus-visible {
+  outline: none;
+}
+
+.acceso:has(.enlaceAcceso:focus-visible) {
+  outline: 3px solid var(--color-accion);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .acceso:hover {
+    border-color: var(--color-barra);
+  }
+
+  .acceso:hover .enlaceAcceso {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+.textoAcceso {
+  margin-top: var(--esp-2);
+  color: var(--color-tinta-suave);
+}
+
+/* ── Banda morada ────────────────────────────────────────────────────────── */
+
+.bandaMorada {
+  color: var(--color-hoja);
+  background: var(--marca-morado);
+}
+
+.bandaMorada :focus-visible {
+  outline-color: var(--color-hoja);
+}
+
+.interiorBanda {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: var(--esp-7);
+  padding-block: var(--esp-8);
+}
+
+.tituloBanda {
+  font-size: var(--texto-2xl);
+  font-weight: var(--peso-negrita);
+  line-height: 1.2;
+}
+
+.textoBanda p {
+  max-width: 46ch;
+  margin-top: var(--esp-4);
+}
+
+.textoBanda strong {
+  font-weight: var(--peso-negrita);
+}
+
+.botonBanda {
+  margin-top: var(--esp-6);
+}
+
+.razones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--esp-5);
+}
+
+.razon {
+  padding: var(--esp-5);
+  background: var(--marca-morado-claro);
+  border-radius: var(--radio-panel);
+}
+
+/* El dorado recuerda los íconos de uno.cl sobre su banda morada. */
+.iconoRazon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: #4b2556;
+  background: var(--marca-dorado);
+  border-radius: 50%;
+}
+
+.tituloRazon {
+  margin-top: var(--esp-4);
+  font-size: 1.0625rem;
+  font-weight: var(--peso-negrita);
+}
+
+.textoRazon {
+  margin-top: var(--esp-2);
+  font-size: var(--texto-sm);
+}
+
+/* ── Secciones con título ────────────────────────────────────────────────── */
+
+.seccion {
+  padding-top: var(--esp-8);
+}
+
+.tituloSeccion {
+  font-size: var(--texto-2xl);
+  font-weight: var(--peso-negrita);
+  line-height: 1.2;
+}
+
+.bajadaSeccion {
+  max-width: 60ch;
+  margin-top: var(--esp-4);
+}
+
+.pasos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--esp-5);
+  margin-top: var(--esp-6);
+}
+
+.paso {
+  overflow: hidden;
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-panel);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.ilustracionPaso {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 11rem;
+  background: #f1f0f3;
+}
+
+.numeroPaso {
+  position: absolute;
+  top: var(--esp-3);
+  left: var(--esp-3);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  font-weight: var(--peso-negrita);
+  color: var(--color-hoja);
+  background: var(--marca-magenta-texto);
+  border-radius: 50%;
+}
+
+.cuerpoPaso {
+  padding: var(--esp-5);
+}
+
+.tituloPaso {
+  margin-bottom: var(--esp-3);
+  font-size: var(--texto-lg);
+}
+
+/* ── Pie de página ───────────────────────────────────────────────────────── */
+
+.pie {
+  margin-top: var(--esp-8);
+  background: var(--color-gris);
+  border-top: 1px solid var(--color-borde);
+}
+
+.ayuda {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  gap: var(--esp-6);
+  padding-block: var(--esp-7);
+}
+
+.tituloAyuda {
+  font-size: 1.75rem;
+  font-weight: var(--peso-negrita);
+  line-height: 1.2;
+}
+
+.tituloAyuda span {
+  display: block;
+}
+
+.temasAyuda {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--esp-6);
+}
+
+.iconoAyuda {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--marca-morado);
+  background: var(--marca-morado-tenue);
+  border-radius: 50%;
+}
+
+.tituloTema {
+  margin-top: var(--esp-4);
+  font-size: var(--texto-lg);
+}
+
+.textoTema {
+  margin-top: var(--esp-2);
+}
+
+.creditos {
+  padding-block: var(--esp-4);
+  font-size: var(--texto-sm);
+  color: var(--color-hoja);
+  background: var(--marca-morado);
+}
+
+/* ── Pantallas medianas y angostas ───────────────────────────────────────── */
+
+@media (max-width: 60rem) {
+  .portadaInterior,
+  .interiorBanda {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .listaAccesos,
+  .pasos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ayuda {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .interior {
+    padding-inline: var(--esp-4);
+  }
+
+  .portadaInterior {
+    padding: var(--esp-5) var(--esp-4) var(--esp-7);
+  }
+
+  .interiorBanda {
+    gap: var(--esp-6);
+    padding-block: var(--esp-7);
+  }
+
+  .razones,
+  .temasAyuda {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .seccion {
+    padding-top: var(--esp-7);
+  }
+
+  .tituloSeccion,
+  .tituloBanda {
+    font-size: 1.75rem;
+  }
+}

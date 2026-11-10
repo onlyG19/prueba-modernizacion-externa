@@ -1,9 +1,12 @@
 import { useActionState } from 'react';
 import { ApiError, ErrorDeConexion, urlApi } from '../api/cliente';
 import { cargarConsola } from '../consola/cargar-consola';
+import { Enlace } from '../rutas/Enlace';
+import { RUTAS } from '../rutas/rutas';
 import { BotonPrimario } from '../ui/botones';
+import { IlustracionCredencial } from './IlustracionCredencial';
 import estilos from './PantallaLogin.module.css';
-import { useSesion } from './sesion-contexto';
+import { useSesion, type MotivoCierre } from './sesion-contexto';
 
 interface EstadoLogin {
   error: string | null;
@@ -33,6 +36,12 @@ function mensajeDeLogin(error: unknown): string {
   return 'No se pudo iniciar sesión. Inténtalo de nuevo.';
 }
 
+/** Por qué se está en el login otra vez, dicho a la persona. */
+const AVISO_CIERRE: Record<MotivoCierre, string> = {
+  expirada: 'Tu sesión expiró. Ingresa de nuevo para continuar.',
+  manual: 'Cerraste sesión. Vuelve cuando quieras.',
+};
+
 export function PantallaLogin() {
   const { state, actions } = useSesion();
 
@@ -53,11 +62,24 @@ export function PantallaLogin() {
     INICIAL,
   );
 
-  const sesionExpirada = state.motivoCierre === 'expirada';
+  // [ANTES] const sesionExpirada = state.motivoCierre === 'expirada';
+  const aviso = state.motivoCierre ? AVISO_CIERRE[state.motivoCierre] : null;
 
   return (
     <main className={estilos.pagina}>
+      <title>Ingresar – Consola de usuarios</title>
+      {/* La marca a un lado y el formulario al otro, como el acceso de uno.cl. */}
+      <div className={estilos.marca}>
+        <p className={estilos.lema}>
+          Tu registro de usuarios, <span>claro y en orden.</span>
+        </p>
+        <IlustracionCredencial />
+      </div>
+
       <div className={estilos.columna}>
+        <Enlace href={RUTAS.inicio} className={estilos.volver}>
+          Volver al inicio
+        </Enlace>
         <img
           className={estilos.logo}
           src={urlApi('/logo')}
@@ -72,9 +94,12 @@ export function PantallaLogin() {
           usuarios.
         </p>
 
-        {sesionExpirada ? (
+        {/* [ANTES] {sesionExpirada ? ( */}
+        {/* [ANTES]   <p className={estilos.aviso} role="status">Tu sesión expiró. Ingresa de nuevo para continuar.</p> */}
+        {/* [ANTES] ) : null} */}
+        {aviso ? (
           <p className={estilos.aviso} role="status">
-            Tu sesión expiró. Ingresa de nuevo para continuar.
+            {aviso}
           </p>
         ) : null}
 

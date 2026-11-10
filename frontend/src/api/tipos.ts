@@ -17,6 +17,7 @@ export type NuevoUsuario = Esquemas['CreateUsuarioDto'];
 export type CambiosUsuario = Esquemas['UpdateUsuarioDto'];
 export type Credenciales = Esquemas['LoginDto'];
 export type TokenAcceso = Esquemas['AccessTokenDto'];
+export type ConteoVisitas = Esquemas['VisitCountDto'];
 
 type ParametrosListado = NonNullable<
   operations['UsuariosController_findAll_v1']['parameters']['query']

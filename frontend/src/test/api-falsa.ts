@@ -230,6 +230,13 @@ export function crearApiFalsa({
       }
       return new HttpResponse(LOGO_SVG, { headers: cabeceras });
     }),
+
+    // Solo lee el contador (no suma una visita); sin Redis, 503.
+    http.get('/api/v1/logo/visitas', () =>
+      estado.redisDisponible
+        ? HttpResponse.json({ count: estado.visitas })
+        : error(503, 'Redis no está disponible', 'Service Unavailable'),
+    ),
   ];
 
   return { estado, handlers };

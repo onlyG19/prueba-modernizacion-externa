@@ -1,0 +1,112 @@
+.escena {
+  position: relative;
+  width: min(100%, 22rem);
+  aspect-ratio: 1.45;
+}
+
+/* Una segunda tarjeta, translúcida y girada al revés: profundidad sin sombras duras. */
+.fondo {
+  position: absolute;
+  inset: 8% -6% -4% 10%;
+  background: rgb(255 255 255 / 0.18);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: var(--radio-destacado);
+  transform: rotate(6deg);
+}
+
+.credencial {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--esp-4);
+  padding: var(--esp-5);
+  color: var(--color-tinta);
+  background: var(--color-hoja);
+  border-radius: var(--radio-destacado);
+  box-shadow: 0 24px 48px rgb(60 10 60 / 0.3);
+  transform: rotate(-4deg);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-3);
+}
+
+.chip {
+  width: 2.25rem;
+  height: 1.6rem;
+  background: linear-gradient(135deg, #fcd75a, #f2b632);
+  border-radius: 5px;
+}
+
+.lineaCorta {
+  width: 40%;
+  height: 0.5rem;
+  background: var(--color-borde);
+  border-radius: var(--radio-sello);
+}
+
+.cuerpo {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-4);
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-negrita);
+  color: var(--color-hoja);
+  background: var(--degradado-marca);
+  border-radius: 50%;
+}
+
+.datos {
+  display: grid;
+  gap: 2px;
+}
+
+.nombre {
+  font-weight: var(--peso-negrita);
+}
+
+.rut {
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
+  font-variant-numeric: tabular-nums;
+}
+
+.sello {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-1);
+  width: fit-content;
+  margin-top: var(--esp-1);
+  padding: 2px var(--esp-2);
+  font-size: 0.75rem;
+  font-weight: var(--peso-fuerte);
+  color: var(--color-ok);
+  background: var(--color-ok-tenue);
+  border-radius: var(--radio-sello);
+}
+
+.pie {
+  display: grid;
+  gap: var(--esp-2);
+}
+
+.pie span {
+  height: 0.5rem;
+  background: var(--color-papel);
+  border-radius: var(--radio-sello);
+}
+
+.pie span:last-child {
+  width: 60%;
+}

@@ -2,9 +2,25 @@ import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { violacionesDeAccesibilidad } from '../test/accesibilidad';
+import { RUTAS, rutaIngresarVolviendoA } from '../rutas/rutas';
 import { CREDENCIALES_VALIDAS, crearApiFalsa } from '../test/api-falsa';
 import { renderizarSinSesion } from '../test/renderizar';
 import { servidor } from '../test/servidor';
+
+/** Escribe las credenciales válidas y pulsa Ingresar. */
+async function ingresarComoAdmin(
+  usuario: ReturnType<typeof renderizarSinSesion>['usuario'],
+) {
+  await usuario.type(
+    screen.getByLabelText('Usuario'),
+    CREDENCIALES_VALIDAS.username,
+  );
+  await usuario.type(
+    screen.getByLabelText('Contraseña'),
+    CREDENCIALES_VALIDAS.password,
+  );
+  await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
+}
 
 function prepararApi() {
   const api = crearApiFalsa();
@@ -30,9 +46,58 @@ describe('Login', () => {
     expect(
       await screen.findByRole('heading', { name: 'Registro de usuarios' }),
     ).toBeInTheDocument();
+    expect(window.location.pathname).toBe(RUTAS.panel);
     expect(sessionStorage.getItem('consola-usuarios:sesion:v1')).toContain(
       'token-de-prueba',
     );
+  });
+
+  it('debe llevar, tras ingresar, a la página del panel que se había pedido', async () => {
+    prepararApi();
+    // Sin sesión, un enlace directo a la tabla pasa primero por el login.
+    const { usuario } = renderizarSinSesion(`${RUTAS.usuarios}?buscar=juan`);
+    expect(window.location.pathname).toBe(RUTAS.ingresar);
+
+    await ingresarComoAdmin(usuario);
+
+    expect(
+      await screen.findByRole('heading', { name: 'Registro de usuarios' }),
+    ).toBeInTheDocument();
+    expect(window.location.pathname).toBe(RUTAS.usuarios);
+    expect(screen.getByLabelText('Buscar por nombre o RUT')).toHaveValue(
+      'juan',
+    );
+  });
+
+  it('no debe redirigir fuera del panel aunque lo pida el enlace (redirección abierta)', async () => {
+    prepararApi();
+    const origen = window.location.origin;
+    const { usuario } = renderizarSinSesion(
+      rutaIngresarVolviendoA('https://sitio-falso.cl/robar'),
+    );
+
+    await ingresarComoAdmin(usuario);
+
+    expect(
+      await screen.findByRole('heading', { name: 'Registro de usuarios' }),
+    ).toBeInTheDocument();
+    expect(window.location.origin).toBe(origen);
+    expect(window.location.pathname).toBe(RUTAS.panel);
+  });
+
+  it('debe ofrecer volver al sitio de inicio', async () => {
+    prepararApi();
+    const { usuario } = renderizarSinSesion();
+
+    await usuario.click(screen.getByRole('link', { name: 'Volver al inicio' }));
+
+    expect(window.location.pathname).toBe(RUTAS.inicio);
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: /Tu registro de usuarios/,
+      }),
+    ).toBeInTheDocument();
   });
 
   it('debe explicar el error y conservar el usuario escrito si la contraseña es incorrecta', async () => {

@@ -11,7 +11,8 @@ declare global {
 const ADMIN = { usuario: 'admin', clave: 'e2e-clave-de-prueba' };
 
 async function ingresar(pagina: Page) {
-  await pagina.goto('/');
+  // [ANTES] await pagina.goto('/');
+  await pagina.goto('/ingresar');
   await pagina.getByLabel('Usuario').fill(ADMIN.usuario);
   await pagina.getByLabel('Contraseña').fill(ADMIN.clave);
   await pagina.getByRole('button', { name: 'Ingresar' }).click();

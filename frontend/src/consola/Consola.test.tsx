@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { violacionesDeAccesibilidad } from '../test/accesibilidad';
 // [ANTES] import { crearApiFalsa, type EstadoApiFalsa } from '../test/api-falsa';
 import { crearApiFalsa, type EscenarioApiFalsa } from '../test/api-falsa';
+import { RUTAS } from '../rutas/rutas';
 import { renderizarConSesion } from '../test/renderizar';
 import { servidor } from '../test/servidor';
 
@@ -70,6 +71,10 @@ describe('Encabezado de la consola', () => {
       screen.getByRole('heading', { name: 'Consola de usuarios' }),
     ).toBeInTheDocument();
     expect(sessionStorage.length).toBe(0);
+    expect(window.location.pathname).toBe(RUTAS.ingresar);
+    expect(
+      screen.getByText('Cerraste sesión. Vuelve cuando quieras.'),
+    ).toBeInTheDocument();
   });
 });
 
@@ -122,8 +127,9 @@ describe('Lista de usuarios', () => {
 
   it('debe conservar la búsqueda en la URL y retomarla al recargar', async () => {
     prepararApi();
-    window.history.replaceState(null, '', '/?buscar=maria');
-    const { usuario } = renderizarConSesion();
+    // [ANTES] window.history.replaceState(null, '', '/?buscar=maria');
+    // [ANTES] const { usuario } = renderizarConSesion();
+    const { usuario } = renderizarConSesion(`${RUTAS.usuarios}?buscar=maria`);
 
     const [fila] = await filas();
     expect(fila).toHaveTextContent('María López');
@@ -204,8 +210,9 @@ describe('Lista de usuarios', () => {
 
   it('debe corregir una página fuera de rango que venga en la URL', async () => {
     prepararApi();
-    window.history.replaceState(null, '', '/?pagina=7');
-    renderizarConSesion();
+    // [ANTES] window.history.replaceState(null, '', '/?pagina=7');
+    // [ANTES] renderizarConSesion();
+    renderizarConSesion(`${RUTAS.usuarios}?pagina=7`);
 
     expect(await filas()).toHaveLength(2);
     expect(window.location.search).toBe('');
@@ -265,6 +272,11 @@ describe('Lista de usuarios', () => {
         'Tu sesión expiró. Ingresa de nuevo para continuar.',
       ),
     ).toBeInTheDocument();
+    // El login recuerda la página: al volver a ingresar se retoma ahí.
+    expect(window.location.pathname).toBe(RUTAS.ingresar);
+    expect(new URLSearchParams(window.location.search).get('volver')).toBe(
+      RUTAS.usuarios,
+    );
   });
 });
 

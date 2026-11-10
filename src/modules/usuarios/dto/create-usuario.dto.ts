@@ -1,6 +1,7 @@
 // [ANTES] import { IsNotEmpty, IsString, MaxLength, Matches } from 'class-validator';
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { NormalizeWhitespace } from '../../../common/decorators/normalize-whitespace.decorator';
 import { Rut } from '../domain/rut';
 import { NOMBRE_MAX_LENGTH } from '../domain/usuario.constants';
 import { IsRut } from '../validators/is-rut.decorator';
@@ -8,9 +9,13 @@ import { IsRut } from '../validators/is-rut.decorator';
 export class CreateUsuarioDto {
   /**
    * Nombre del usuario.
+   * Se guarda sin espacios de sobra: `"  Juan   Pérez "` queda `"Juan Pérez"`.
    * @example 'Juan Pérez'
    */
-  @IsString()
+  // Antes de validar: un nombre de solo espacios llega vacío a @IsNotEmpty.
+  @NormalizeWhitespace()
+  // [ANTES] @IsString()
+  @IsString({ message: 'El nombre debe ser texto' })
   @IsNotEmpty({ message: 'El nombre no puede estar vacío' })
   // [ANTES] @MaxLength(45, { message: 'El nombre no puede superar los 45 caracteres' })
   @MaxLength(NOMBRE_MAX_LENGTH, {

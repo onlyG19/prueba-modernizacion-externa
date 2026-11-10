@@ -1,7 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 // [ANTES] import { ValidationPipe } from '@nestjs/common';
-import { Logger, ValidationPipe } from '@nestjs/common';
+// [ANTES] import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
@@ -9,6 +10,7 @@ import { AppConfigService } from './config/app-config';
 import { parseCorsOrigins } from './config/cors';
 import { Environment } from './config/env.validation';
 import { setupSwagger } from './config/swagger';
+import { createValidationPipe } from './config/validation-pipe';
 
 async function bootstrap() {
   // [ANTES] const app = await NestFactory.create(AppModule);
@@ -41,14 +43,15 @@ async function bootstrap() {
   });
 
   // ── Validación global de DTOs ──────────────────────────────────────────────
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // elimina propiedades no declaradas en el DTO
-      forbidNonWhitelisted: true, // lanza error si llegan propiedades extra
-      transform: true, // convierte los tipos automáticamente (ej: string → number)
-      transformOptions: { enableImplicitConversion: true },
-    }),
-  );
+  // [ANTES] app.useGlobalPipes(
+  // [ANTES]   new ValidationPipe({
+  // [ANTES]     whitelist: true, // elimina propiedades no declaradas en el DTO
+  // [ANTES]     forbidNonWhitelisted: true, // lanza error si llegan propiedades extra
+  // [ANTES]     transform: true, // convierte los tipos automáticamente (ej: string → number)
+  // [ANTES]     transformOptions: { enableImplicitConversion: true },
+  // [ANTES]   }),
+  // [ANTES] );
+  app.useGlobalPipes(createValidationPipe());
 
   // ── Documentación OpenAPI (/docs) ──────────────────────────────────────────
   // Solo fuera de producción: en producción expondría el mapa completo de la

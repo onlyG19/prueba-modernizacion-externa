@@ -215,6 +215,7 @@ export interface components {
     CreateUsuarioDto: {
       /**
        * @description Nombre del usuario.
+       *     Se guarda sin espacios de sobra: `"  Juan   Pérez "` queda `"Juan Pérez"`.
        * @example Juan Pérez
        */
       nombre: string;
@@ -228,6 +229,7 @@ export interface components {
     UpdateUsuarioDto: {
       /**
        * @description Nombre del usuario.
+       *     Se guarda sin espacios de sobra: `"  Juan   Pérez "` queda `"Juan Pérez"`.
        * @example Juan Pérez
        */
       nombre?: string;
@@ -544,7 +546,7 @@ export interface operations {
           'application/json': components['schemas']['Usuario'];
         };
       };
-      /** @description Datos inválidos */
+      /** @description Datos inválidos, o ningún campo que actualizar */
       400: {
         headers: {
           [name: string]: unknown;

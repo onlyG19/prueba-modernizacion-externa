@@ -20,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 // [ANTES] import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { ProblemDetailsDto } from '../../common/dto/problem-details.dto';
+import { NonEmptyBodyPipe } from '../../common/pipes/non-empty-body.pipe';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
@@ -82,7 +83,8 @@ export class UsuariosController {
 
   /** Actualiza parcialmente un usuario. */
   @ApiBadRequestResponse({
-    description: 'Datos inválidos',
+    // [ANTES] description: 'Datos inválidos',
+    description: 'Datos inválidos, o ningún campo que actualizar',
     type: ProblemDetailsDto,
   })
   @ApiNotFoundResponse({
@@ -96,7 +98,8 @@ export class UsuariosController {
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateUsuarioDto,
+    // [ANTES] @Body() dto: UpdateUsuarioDto,
+    @Body(NonEmptyBodyPipe) dto: UpdateUsuarioDto,
   ): Promise<Usuario> {
     return this.usuariosService.update(id, dto);
   }

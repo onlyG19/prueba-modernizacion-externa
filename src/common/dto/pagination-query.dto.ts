@@ -15,8 +15,10 @@ export class PaginationQueryDto {
   @ApiPropertyOptional({ type: 'integer', default: 1 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  // [ANTES] @IsInt()
+  // [ANTES] @Min(1)
+  @IsInt({ message: 'page debe ser un número entero' })
+  @Min(1, { message: 'page debe ser 1 o mayor' })
   page: number = 1;
 
   /**
@@ -26,8 +28,13 @@ export class PaginationQueryDto {
   @ApiPropertyOptional({ type: 'integer', default: 20 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(LIMITE_POR_PAGINA_MAXIMO)
+  // [ANTES] @IsInt()
+  // [ANTES] @Min(1)
+  // [ANTES] @Max(LIMITE_POR_PAGINA_MAXIMO)
+  @IsInt({ message: 'limit debe ser un número entero' })
+  @Min(1, { message: 'limit debe ser 1 o mayor' })
+  @Max(LIMITE_POR_PAGINA_MAXIMO, {
+    message: `limit no puede ser mayor que ${LIMITE_POR_PAGINA_MAXIMO}`,
+  })
   limit: number = 20;
 }

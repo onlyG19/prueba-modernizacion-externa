@@ -36,7 +36,8 @@ describe('UsuariosService', () => {
   const usuarioBase: Usuario = {
     id: 1,
     nombre: 'Juan Pérez',
-    rut: '12345678-9',
+    // [ANTES] rut: '12345678-9', van a fallar los test si dejamos ese DV mal
+    rut: '12345678-5',
   };
 
   beforeEach(async () => {
@@ -86,7 +87,8 @@ describe('UsuariosService', () => {
   // ── create ───────────────────────────────────────────────────────────────
   describe('create', () => {
     it('debe crear y retornar el nuevo usuario', async () => {
-      const dto = { nombre: 'María López', rut: '98765432-1' };
+      // [ANTES] const dto = { nombre: 'María López', rut: '98765432-1' }; IDEM, si lo dejamos mal el DV del RUT, fallan los test
+      const dto = { nombre: 'María López', rut: '98765432-5' };
       const creado = { id: 2, ...dto };
       repo.create!.mockReturnValue(creado);
       repo.save!.mockResolvedValue(creado);

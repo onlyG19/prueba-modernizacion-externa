@@ -13,9 +13,9 @@ Requisitos: la API y su infraestructura en ejecución (ver el README de la raíz
 
 ```bash
 # en la raíz del repositorio
-docker compose up -d
+docker compose up -d postgres redis   # solo la infraestructura
 pnpm migration:run
-pnpm start:dev          # API en http://localhost:3000
+pnpm start:dev                        # API en http://localhost:3000
 ```
 
 Luego, en `frontend/`:
@@ -31,6 +31,13 @@ Ingresa con `AUTH_USER` y la contraseña cuyo hash está en `AUTH_PASSWORD_HASH`
 En desarrollo, Vite redirige `/api/*` a la API (`API_PROXY_TARGET`, por defecto
 `http://localhost:3000`): el navegador ve un solo origen y no hay CORS. En
 producción, `VITE_API_URL` define la URL base de la API.
+
+### Con Docker (stack completo)
+
+Desde la raíz: `docker compose up -d --build` y abre http://localhost:8080.
+nginx sirve el build de producción y redirige `/api/*` a la API, con
+cabeceras de seguridad (CSP estricta, `nosniff`, `frame-ancestors 'none'`).
+La configuración está en `frontend/nginx/`.
 
 ## Scripts
 

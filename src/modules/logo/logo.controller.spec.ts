@@ -1,12 +1,26 @@
+import { StreamableFile } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import type { Response } from 'express';
 import { LogoController } from './logo.controller';
 import { LogoService } from './logo.service';
 
 const mockLogoService = () => ({
   incrementCounter: jest.fn(),
-  getLogoStream: jest.fn(),
+  // [ANTES] getLogoStream: jest.fn(),
+  getLogo: jest.fn(),
   getCounter: jest.fn(),
 });
+
+const logoSvg = {
+  content: Buffer.from('<svg/>'),
+  contentType: 'image/svg+xml',
+};
+
+/** Respuesta HTTP mínima: el controller solo usa `setHeader`. */
+const crearRespuesta = () => {
+  const setHeader = jest.fn();
+  return { res: { setHeader } as unknown as Response, setHeader };
+};
 
 describe('LogoController', () => {
   let controller: LogoController;
@@ -25,44 +39,69 @@ describe('LogoController', () => {
 
   // ── getLogo ───────────────────────────────────────────────────────────────
   describe('getLogo', () => {
-    it('debe setear headers y pipear el stream al response', async () => {
-      const fakeStream = { pipe: jest.fn() };
+    // [ANTES] it('debe setear headers y pipear el stream al response', async () => {
+    // [ANTES]   const fakeStream = { pipe: jest.fn() };
+    // [ANTES]   service.incrementCounter.mockResolvedValue(3);
+    // [ANTES]   service.getLogoStream.mockReturnValue({
+    // [ANTES]     stream: fakeStream,
+    // [ANTES]     contentType: 'image/png',
+    // [ANTES]   });
+    // [ANTES]
+    // [ANTES]   const mockRes = {
+    // [ANTES]     setHeader: jest.fn(),
+    // [ANTES]   } as any;
+    // [ANTES]
+    // [ANTES]   await controller.getLogo(mockRes);
+    // [ANTES]
+    // [ANTES]   expect(service.incrementCounter).toHaveBeenCalledTimes(1);
+    // [ANTES]   expect(mockRes.setHeader).toHaveBeenCalledWith(
+    // [ANTES]     'Content-Type',
+    // [ANTES]     'image/png',
+    // [ANTES]   );
+    // [ANTES]   expect(mockRes.setHeader).toHaveBeenCalledWith('X-Request-Count', '3');
+    // [ANTES]   expect(fakeStream.pipe).toHaveBeenCalledWith(mockRes);
+    // [ANTES] });
+    // [ANTES]
+    // [ANTES] it('debe usar el contentType retornado por el service', async () => {
+    // [ANTES]   const fakeStream = { pipe: jest.fn() };
+    // [ANTES]   service.incrementCounter.mockResolvedValue(1);
+    // [ANTES]   service.getLogoStream.mockReturnValue({
+    // [ANTES]     stream: fakeStream,
+    // [ANTES]     contentType: 'image/svg+xml',
+    // [ANTES]   });
+    // [ANTES]
+    // [ANTES]   const mockRes = { setHeader: jest.fn() } as any;
+    // [ANTES]   await controller.getLogo(mockRes);
+    // [ANTES]
+    // [ANTES]   expect(mockRes.setHeader).toHaveBeenCalledWith(
+    // [ANTES]     'Content-Type',
+    // [ANTES]     'image/svg+xml',
+    // [ANTES]   );
+    // [ANTES] });
+
+    it('debe devolver el logo como StreamableFile con su tipo y largo', async () => {
       service.incrementCounter.mockResolvedValue(3);
-      service.getLogoStream.mockReturnValue({
-        stream: fakeStream,
-        contentType: 'image/png',
+      service.getLogo.mockReturnValue(logoSvg);
+      const { res } = crearRespuesta();
+
+      const archivo = await controller.getLogo(res);
+
+      expect(archivo).toBeInstanceOf(StreamableFile);
+      expect(archivo.getHeaders()).toMatchObject({
+        type: 'image/svg+xml',
+        length: logoSvg.content.length,
       });
-
-      const mockRes = {
-        setHeader: jest.fn(),
-      } as any;
-
-      await controller.getLogo(mockRes);
-
-      expect(service.incrementCounter).toHaveBeenCalledTimes(1);
-      expect(mockRes.setHeader).toHaveBeenCalledWith(
-        'Content-Type',
-        'image/png',
-      );
-      expect(mockRes.setHeader).toHaveBeenCalledWith('X-Request-Count', '3');
-      expect(fakeStream.pipe).toHaveBeenCalledWith(mockRes);
     });
 
-    it('debe usar el contentType retornado por el service', async () => {
-      const fakeStream = { pipe: jest.fn() };
-      service.incrementCounter.mockResolvedValue(1);
-      service.getLogoStream.mockReturnValue({
-        stream: fakeStream,
-        contentType: 'image/svg+xml',
-      });
+    it('debe incrementar el contador y enviarlo en X-Request-Count', async () => {
+      service.incrementCounter.mockResolvedValue(3);
+      service.getLogo.mockReturnValue(logoSvg);
+      const { res, setHeader } = crearRespuesta();
 
-      const mockRes = { setHeader: jest.fn() } as any;
-      await controller.getLogo(mockRes);
+      await controller.getLogo(res);
 
-      expect(mockRes.setHeader).toHaveBeenCalledWith(
-        'Content-Type',
-        'image/svg+xml',
-      );
+      expect(service.incrementCounter).toHaveBeenCalledTimes(1);
+      expect(setHeader).toHaveBeenCalledWith('X-Request-Count', '3');
     });
   });
 

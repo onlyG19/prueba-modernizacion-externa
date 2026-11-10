@@ -8,10 +8,12 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
+import type { Rol } from './rol';
 
 /** Contenido del JWT: `sub` (subject) es el usuario autenticado. */
 export interface JwtPayload {
   sub: string;
+  rol: Rol;
 }
 
 /** Request a la que el guard le agregó el usuario autenticado. */

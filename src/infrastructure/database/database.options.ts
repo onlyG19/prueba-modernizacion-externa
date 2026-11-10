@@ -1,5 +1,6 @@
 import { DataSourceOptions } from 'typeorm';
 import { EnvironmentVariables } from '../../config/env.validation';
+import { Cuenta } from '../../modules/cuentas/entities/cuenta.entity';
 import { Usuario } from '../../modules/usuarios/entities/usuario.entity';
 import { MIGRATIONS } from './migrations';
 
@@ -25,7 +26,7 @@ export function buildDataSourceOptions(env: DatabaseEnv): DataSourceOptions {
     username: env.DB_USER,
     password: env.DB_PASSWORD,
     database: env.DB_NAME,
-    entities: [Usuario],
+    entities: [Usuario, Cuenta],
     migrations: MIGRATIONS,
     synchronize: false,
     // Ids UUID con gen_random_uuid(), incluida en Postgres desde la v13: sin

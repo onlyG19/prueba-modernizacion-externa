@@ -1,3 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { ROLES, type Rol } from '../rol';
+
 /**
  * Respuesta del login.
  *
@@ -24,4 +27,13 @@ export class AccessTokenDto {
    * @example 3600
    */
   expiresIn!: number;
+
+  /**
+   * Rol de la sesión: `admin` además puede crear cuentas. Va también dentro
+   * del token, que es lo que la API verifica; aquí es para que el cliente
+   * adapte su interfaz sin decodificar el JWT.
+   * @example 'admin'
+   */
+  @ApiProperty({ enum: ROLES })
+  rol!: Rol;
 }

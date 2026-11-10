@@ -8,6 +8,7 @@ import { RedisModule } from './infrastructure/redis/redis.module';
 import { LogoModule } from './modules/logo/logo.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CuentasModule } from './modules/cuentas/cuentas.module';
 import { HealthModule } from './health/health.module';
 import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
 import { validateEnv } from './config/env.validation';
@@ -49,6 +50,7 @@ import { crearOpcionesLog } from './infrastructure/logging/logger.options';
     LogoModule,
     UsuariosModule,
     AuthModule,
+    CuentasModule,
     HealthModule,
   ],
   // Sin controlador raíz: el "Hello World" de la plantilla de Nest no aportaba

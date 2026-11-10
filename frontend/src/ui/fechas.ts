@@ -20,7 +20,7 @@ export function formatearFecha(iso: string): string {
   return FECHA.format(new Date(iso));
 }
 
-/** `10 de noviembre de 2026 a las 09:00`: para el detalle de un usuario. */
+/** `10 de noviembre de 2026 a las 09:00`: para un detalle, donde sobra espacio. */
 export function formatearFechaYHora(iso: string): string {
   return FECHA_Y_HORA.format(new Date(iso));
 }

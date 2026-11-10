@@ -6,7 +6,7 @@ import { clases } from '../ui/clases';
 import { Dialogo } from '../ui/Dialogo';
 import { IconoCerrar, IconoLapiz } from '../ui/iconos';
 import { useUsuario } from './consultas';
-import { formatearFechaYHora } from './fechas';
+import { formatearFechaYHora } from '../ui/fechas';
 import { FormularioEditarUsuario } from './formulario/FormularioEditarUsuario';
 import estilos from './ModalUsuario.module.css';
 import { formatearRutParcial } from './rut/formato-rut';

@@ -5,7 +5,7 @@ import { useSesionActiva } from '../sesion/sesion-contexto';
 import { clases } from '../ui/clases';
 import { IconoAgregarUsuario, IconoTabla } from '../ui/iconos';
 import { useUsuarios } from '../usuarios/consultas';
-import { formatearFecha } from '../usuarios/fechas';
+import { formatearFecha } from '../ui/fechas';
 import { formatearRutParcial } from '../usuarios/rut/formato-rut';
 import { useLogo } from './consultas-logo';
 import estilos from './Resumen.module.css';

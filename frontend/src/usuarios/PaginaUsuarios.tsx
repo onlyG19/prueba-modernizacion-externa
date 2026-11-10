@@ -4,7 +4,7 @@ import { CONSERVAR_FOCO } from '../consola/foco';
 import { EnlaceNav } from '../rutas/Enlace';
 import { RUTAS } from '../rutas/rutas';
 import { IconoAgregarUsuario, IconoTabla } from '../ui/iconos';
-import estilos from './PaginaUsuarios.module.css';
+import estilos from '../ui/pagina-con-pestanas.module.css';
 import { RegistrarUsuario } from './RegistrarUsuario';
 import { TablaUsuarios } from './TablaUsuarios';
 

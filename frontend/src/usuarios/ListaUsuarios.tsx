@@ -1,21 +1,17 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import type { OrdenUsuarios, Usuario } from '../api/tipos';
 import { Enlace } from '../rutas/Enlace';
 import { RUTAS } from '../rutas/rutas';
 import { BotonSecundario } from '../ui/botones';
 import { clases } from '../ui/clases';
 import { IconoBuscar } from '../ui/iconos';
-import { useValorConRetraso } from '../ui/useValorConRetraso';
+import estilos from '../ui/listado.module.css';
+import { Paginacion } from '../ui/Paginacion';
+import { useFiltroEnUrl } from '../ui/useFiltroEnUrl';
 import { useUsuarios } from './consultas';
 import * as FilaUsuario from './FilaUsuario';
-import estilos from './ListaUsuarios.module.css';
-import { Paginacion } from './Paginacion';
 
 const FORMATO_NUMERO = new Intl.NumberFormat('es-CL');
-/** Parámetros de la URL: un enlace o una recarga conservan búsqueda y página. */
-const PARAMETRO_BUSQUEDA = 'buscar';
-const PARAMETRO_PAGINA = 'pagina';
-const PARAMETRO_ORDEN = 'orden';
 
 /** Opciones de orden, con la frase que completa «ordenados por…». */
 const ORDENES: ReadonlyArray<{
@@ -45,8 +41,7 @@ const ORDENES: ReadonlyArray<{
   },
 ];
 const ORDEN_POR_DEFECTO = ORDENES[0];
-/** Pausa tras la última tecla antes de preguntarle al servidor. */
-const RETRASO_BUSQUEDA_MS = 300;
+const VALORES_DE_ORDEN = ORDENES.map((opcion) => opcion.valor);
 
 /** Con espacio duro: el número nunca queda separado de su palabra. */
 const contar = (n: number) =>
@@ -54,53 +49,6 @@ const contar = (n: number) =>
 
 const contarEncontrados = (n: number) =>
   `${contar(n)} ${n === 1 ? 'encontrado' : 'encontrados'}`;
-
-function leerBusquedaDeUrl(): string {
-  return (
-    new URLSearchParams(window.location.search).get(PARAMETRO_BUSQUEDA) ?? ''
-  );
-}
-
-/** La página de la URL; si falta o no es un entero positivo, la primera. */
-function leerPaginaDeUrl(): number {
-  const pagina = Number(
-    new URLSearchParams(window.location.search).get(PARAMETRO_PAGINA),
-  );
-  return Number.isSafeInteger(pagina) && pagina > 0 ? pagina : 1;
-}
-
-/** El orden de la URL; si falta o no es uno conocido, por nombre. */
-function leerOrdenDeUrl(): OrdenUsuarios {
-  const valor = new URLSearchParams(window.location.search).get(
-    PARAMETRO_ORDEN,
-  );
-  return (ORDENES.find((o) => o.valor === valor) ?? ORDEN_POR_DEFECTO).valor;
-}
-
-/** Los valores por defecto (sin búsqueda, primera página) no ensucian la URL. */
-function escribirFiltroEnUrl(
-  busqueda: string,
-  pagina: number,
-  orden: OrdenUsuarios,
-) {
-  const url = new URL(window.location.href);
-  if (busqueda.trim()) {
-    url.searchParams.set(PARAMETRO_BUSQUEDA, busqueda.trim());
-  } else {
-    url.searchParams.delete(PARAMETRO_BUSQUEDA);
-  }
-  if (pagina > 1) {
-    url.searchParams.set(PARAMETRO_PAGINA, String(pagina));
-  } else {
-    url.searchParams.delete(PARAMETRO_PAGINA);
-  }
-  if (orden !== ORDEN_POR_DEFECTO.valor) {
-    url.searchParams.set(PARAMETRO_ORDEN, orden);
-  } else {
-    url.searchParams.delete(PARAMETRO_ORDEN);
-  }
-  window.history.replaceState(window.history.state, '', url);
-}
 
 interface Props {
   /** El usuario abierto en la ventana de detalle: su fila queda marcada. */
@@ -118,15 +66,15 @@ export function ListaUsuarios({
   onEditar,
   onEliminado,
 }: Props) {
-  const [busqueda, setBusqueda] = useState(leerBusquedaDeUrl);
-  const [pagina, setPagina] = useState(leerPaginaDeUrl);
-  const [orden, setOrden] = useState(leerOrdenDeUrl);
-  // El campo responde de inmediato; al servidor se le pregunta al dejar de
-  // escribir, no una vez por tecla.
-  const busquedaParaApi = useValorConRetraso(
-    busqueda.trim(),
-    RETRASO_BUSQUEDA_MS,
-  );
+  const {
+    busqueda,
+    busquedaParaApi,
+    pagina,
+    orden,
+    cambiarBusqueda,
+    cambiarOrden,
+    cambiarPagina,
+  } = useFiltroEnUrl(VALORES_DE_ORDEN, ORDEN_POR_DEFECTO.valor);
   const usuarios = useUsuarios({ pagina, busqueda: busquedaParaApi, orden });
   const refTitulo = useRef<HTMLHeadingElement>(null);
 
@@ -138,25 +86,7 @@ export function ListaUsuarios({
   // Página fuera de rango (un enlace viejo, o se eliminó la única fila de la
   // última página): se corrige durante el render, sin esperar a un efecto.
   if (usuarios.data && !usuarios.isPlaceholderData && pagina > ultimaPagina) {
-    setPagina(ultimaPagina);
-  }
-
-  // La URL es un sistema externo: un efecto la sincroniza venga de donde venga
-  // el cambio (escribir, cambiar de página o la corrección de arriba).
-  useEffect(() => {
-    escribirFiltroEnUrl(busqueda, pagina, orden);
-  }, [busqueda, pagina, orden]);
-
-  function cambiarBusqueda(valor: string) {
-    setBusqueda(valor);
-    // Otra búsqueda, otros resultados: se parte de la primera página.
-    setPagina(1);
-  }
-
-  function cambiarOrden(valor: OrdenUsuarios) {
-    setOrden(valor);
-    // Otro orden: la página 3 ya no muestra lo mismo, se vuelve a la primera.
-    setPagina(1);
+    cambiarPagina(ultimaPagina);
   }
 
   function manejarEliminado(usuario: Usuario) {
@@ -248,9 +178,10 @@ export function ListaUsuarios({
           </tbody>
         </table>
         <Paginacion
+          etiqueta="Páginas de usuarios"
           pagina={pagina}
           totalPaginas={totalPaginas}
-          onCambiar={setPagina}
+          onCambiar={cambiarPagina}
         />
       </>
     );

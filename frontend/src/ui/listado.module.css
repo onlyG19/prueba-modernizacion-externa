@@ -1,3 +1,8 @@
+/*
+ * Listados de la consola (usuarios y cuentas): cabecera con conteo, búsqueda,
+ * orden, la tabla y los estados de carga, error y vacío.
+ */
+
 /* La tabla es la superficie de trabajo de la página: una hoja sobre el papel. */
 .lista {
   display: grid;

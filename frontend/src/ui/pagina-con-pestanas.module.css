@@ -1,3 +1,5 @@
+/* Una página del panel con título, bajada y pestañas (usuarios, cuentas). */
+
 .pagina {
   display: grid;
   gap: var(--esp-5);

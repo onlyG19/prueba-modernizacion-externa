@@ -1,14 +1,21 @@
-import { BotonSecundario } from '../ui/botones';
+import { BotonSecundario } from './botones';
 import estilos from './Paginacion.module.css';
 
 interface Props {
+  /** Nombre de la navegación para el lector (p. ej. «Páginas de usuarios»). */
+  etiqueta: string;
   pagina: number;
   totalPaginas: number;
   onCambiar: (pagina: number) => void;
 }
 
 /** Anterior y siguiente; no se muestra si todo cabe en una página. */
-export function Paginacion({ pagina, totalPaginas, onCambiar }: Props) {
+export function Paginacion({
+  etiqueta,
+  pagina,
+  totalPaginas,
+  onCambiar,
+}: Props) {
   if (totalPaginas <= 1) {
     return null;
   }
@@ -20,7 +27,7 @@ export function Paginacion({ pagina, totalPaginas, onCambiar }: Props) {
    * quien avanza con el teclado quedaría perdido al llegar a la última página.
    */
   return (
-    <nav className={estilos.paginacion} aria-label="Páginas de usuarios">
+    <nav className={estilos.paginacion} aria-label={etiqueta}>
       <BotonSecundario
         onClick={() => {
           if (!esPrimera) {

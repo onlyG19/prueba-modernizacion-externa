@@ -11,7 +11,7 @@ import { BotonIcono, BotonPeligro, BotonSecundario } from '../ui/botones';
 import { clases } from '../ui/clases';
 import { IconoBasura, IconoLapiz, IconoOjo } from '../ui/iconos';
 import { useEliminarUsuario } from './consultas';
-import { formatearFecha } from './fechas';
+import { formatearFecha } from '../ui/fechas';
 import estilos from './FilaUsuario.module.css';
 import { erroresDeServidor } from './formulario/errores-formulario';
 import { formatearRutParcial } from './rut/formato-rut';

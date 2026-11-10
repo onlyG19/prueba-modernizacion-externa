@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
-import { ObjectLiteral, Repository } from 'typeorm';
+// [ANTES] import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
+// [ANTES] import { ObjectLiteral, Repository } from 'typeorm';
+import { ObjectLiteral, QueryFailedError, Repository } from 'typeorm';
 import { UsuariosService } from './usuarios.service';
 // [ANTES] import { Usuario } from './usuario.entity';
 import { Usuario } from './entities/usuario.entity';
@@ -18,6 +20,14 @@ const mockRepository = () => ({
 type MockRepository<T extends ObjectLiteral> = Partial<
   Record<keyof Repository<T>, jest.Mock>
 >;
+
+/** Simula el error que lanza TypeORM cuando Postgres rechaza un duplicado. */
+const errorDeUnicidad = () =>
+  new QueryFailedError(
+    'INSERT INTO "usuarios" ...',
+    [],
+    Object.assign(new Error('duplicate key value'), { code: '23505' }),
+  );
 
 describe('UsuariosService', () => {
   let service: UsuariosService;
@@ -86,6 +96,26 @@ describe('UsuariosService', () => {
       expect(repo.save).toHaveBeenCalledWith(creado);
       expect(result).toEqual(creado);
     });
+
+    it('debe lanzar ConflictException si el RUT ya existe', async () => {
+      const dto = { nombre: 'María López', rut: '12345678-5' };
+      repo.create!.mockReturnValue(dto);
+      repo.save!.mockRejectedValue(errorDeUnicidad());
+
+      await expect(service.create(dto)).rejects.toThrow(
+        new ConflictException('Ya existe un usuario con el RUT 12345678-5'),
+      );
+    });
+
+    it('debe propagar sin cambios cualquier otro error de base de datos', async () => {
+      const errorDesconocido = new Error('conexión perdida');
+      repo.create!.mockReturnValue({});
+      repo.save!.mockRejectedValue(errorDesconocido);
+
+      await expect(
+        service.create({ nombre: 'X', rut: '12345678-5' }),
+      ).rejects.toBe(errorDesconocido);
+    });
   });
 
   // ── update ───────────────────────────────────────────────────────────────
@@ -105,6 +135,15 @@ describe('UsuariosService', () => {
       repo.findOneBy!.mockResolvedValue(null);
       await expect(service.update(99, { nombre: 'Nuevo' })).rejects.toThrow(
         NotFoundException,
+      );
+    });
+
+    it('debe lanzar ConflictException si el nuevo RUT ya pertenece a otro usuario', async () => {
+      repo.findOneBy!.mockResolvedValue({ ...usuarioBase });
+      repo.save!.mockRejectedValue(errorDeUnicidad());
+
+      await expect(service.update(1, { rut: '11111111-1' })).rejects.toThrow(
+        ConflictException,
       );
     });
   });

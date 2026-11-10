@@ -17,6 +17,8 @@ export const RedisProvider: Provider = {
       host: config.get('REDIS_HOST', { infer: true }),
       // [ANTES] port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
       port: config.get('REDIS_PORT', { infer: true }),
+      // Vacía equivale a "sin contraseña" (Redis sin requirepass).
+      password: config.get('REDIS_PASSWORD', { infer: true }) || undefined,
       // Falla rápido si Redis no está disponible, en vez de encolar el comando
       // y dejar la request esperando mientras ioredis reintenta conectarse.
       enableOfflineQueue: false,

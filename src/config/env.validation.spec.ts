@@ -54,6 +54,13 @@ describe('validateEnv', () => {
     );
   });
 
+  it('debe aceptar REDIS_PASSWORD como opcional', () => {
+    expect(validateEnv(minimas).REDIS_PASSWORD).toBeUndefined();
+    expect(
+      validateEnv({ ...minimas, REDIS_PASSWORD: 'clave' }).REDIS_PASSWORD,
+    ).toBe('clave');
+  });
+
   it('debe rechazar un JWT_SECRET de menos de 32 caracteres', () => {
     expect(() => validateEnv({ ...minimas, JWT_SECRET: 'corto' })).toThrow(
       'JWT_SECRET debe tener al menos 32 caracteres',

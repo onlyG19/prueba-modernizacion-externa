@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   Max,
@@ -70,6 +71,11 @@ export class EnvironmentVariables {
   @Min(1)
   @Max(65535)
   REDIS_PORT: number = 6379;
+
+  /** Contraseña de Redis (`requirepass`). Vacía u omitida: sin autenticación. */
+  @IsOptional()
+  @IsString()
+  REDIS_PASSWORD?: string;
 
   /** Secreto con que se firman los JWT. Sin valor por defecto, a propósito. */
   @IsString()

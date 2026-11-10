@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import { RUTA_API } from '../src/config/app-setup';
 import type { ProblemDetailsDto } from '../src/common/dto/problem-details.dto';
 import type { AccessTokenDto } from '../src/modules/auth/dto/access-token.dto';
+import type { PaginaCuentasDto } from '../src/modules/cuentas/dto/pagina-cuentas.dto';
 import { ADMIN_E2E } from './setup/entorno-e2e';
 import { crearAppE2e, iniciarSesion } from './utilidades/app-e2e';
 
@@ -31,6 +32,21 @@ describe('/cuentas (e2e)', () => {
     request(app.getHttpServer())
       .post(`${RUTA_API}/auth/login`)
       .send(credenciales);
+
+  const listar = (
+    query: Record<string, string | number> = {},
+    token: string = tokenAdmin,
+  ) =>
+    request(app.getHttpServer())
+      .get(`${RUTA_API}/cuentas`)
+      .query(query)
+      .auth(token, { type: 'bearer' });
+
+  /** Lista (debe responder 200) y devuelve los usuarios de la página. */
+  const usuariosListados = async (query: Record<string, string | number>) =>
+    ((await listar(query).expect(200)).body as PaginaCuentasDto).data.map(
+      (cuenta) => cuenta.username,
+    );
 
   /** Ingresa (debe responder 200) y devuelve la sesión. */
   const sesionDe = async (credenciales: {
@@ -143,5 +159,76 @@ describe('/cuentas (e2e)', () => {
     await ingresar({ ...CUENTA, password: 'otra contraseña larga' }).expect(
       401,
     );
+  });
+
+  describe('GET /cuentas', () => {
+    /** Tres cuentas, creadas en este orden (la fecha de creación sube). */
+    beforeEach(async () => {
+      for (const username of ['carla', 'ana', 'bruno']) {
+        await crearCuenta({ username, password: CUENTA.password }).expect(201);
+      }
+    });
+
+    it('pagina ordenado por usuario, informa el total y nunca entrega el hash', async () => {
+      const respuesta = await listar({ limit: 2 }).expect(200);
+      const pagina = respuesta.body as PaginaCuentasDto;
+
+      expect(pagina.data.map((c) => c.username)).toEqual(['ana', 'bruno']);
+      expect(pagina.meta).toEqual({
+        page: 1,
+        limit: 2,
+        total: 3,
+        totalPages: 2,
+      });
+      expect(Object.keys(pagina.data[0]).sort()).toEqual([
+        'creadoEn',
+        'id',
+        'username',
+      ]);
+      await expect(usuariosListados({ limit: 2, page: 2 })).resolves.toEqual([
+        'carla',
+      ]);
+    });
+
+    it('ordena por fecha de creación o por usuario, también al revés', async () => {
+      await expect(usuariosListados({ orden: '-creadoEn' })).resolves.toEqual([
+        'bruno',
+        'ana',
+        'carla',
+      ]);
+      await expect(usuariosListados({ orden: 'creadoEn' })).resolves.toEqual([
+        'carla',
+        'ana',
+        'bruno',
+      ]);
+      await expect(usuariosListados({ orden: '-username' })).resolves.toEqual([
+        'carla',
+        'bruno',
+        'ana',
+      ]);
+    });
+
+    it('busca sin distinguir mayúsculas y sin comodines', async () => {
+      await expect(usuariosListados({ buscar: 'AN' })).resolves.toEqual([
+        'ana',
+      ]);
+      // "%" se busca literal: no devuelve todo.
+      await expect(usuariosListados({ buscar: '%' })).resolves.toEqual([]);
+    });
+
+    it('responde 403 a un operador: ver las cuentas es solo para el admin', async () => {
+      await crearCuenta(CUENTA).expect(201);
+      const { accessToken } = await sesionDe(CUENTA);
+
+      await listar({}, accessToken).expect(403);
+    });
+
+    it('rechaza un orden fuera de la lista con 400', async () => {
+      const respuesta = await listar({ orden: 'password_hash' }).expect(400);
+
+      expect((respuesta.body as ProblemDetailsDto).errors).toEqual([
+        'orden debe ser uno de: username, -username, creadoEn, -creadoEn',
+      ]);
+    });
   });
 });

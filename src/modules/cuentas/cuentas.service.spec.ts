@@ -16,21 +16,47 @@ const violacionUnique = new QueryFailedError(
   }),
 );
 
+/** QueryBuilder simulado: cada método devuelve el mismo objeto (encadenable). */
+const crearQueryBuilder = () => {
+  const qb = {
+    orderBy: jest.fn(),
+    addOrderBy: jest.fn(),
+    skip: jest.fn(),
+    take: jest.fn(),
+    where: jest.fn(),
+    getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+  };
+  for (const metodo of [
+    'orderBy',
+    'addOrderBy',
+    'skip',
+    'take',
+    'where',
+  ] as const) {
+    qb[metodo].mockReturnValue(qb);
+  }
+  return qb;
+};
+
 describe('CuentasService', () => {
   let repositorio: {
     create: jest.Mock;
     save: jest.Mock;
     findOneBy: jest.Mock;
+    createQueryBuilder: jest.Mock;
   };
+  let qb: ReturnType<typeof crearQueryBuilder>;
   let service: CuentasService;
 
   beforeEach(() => {
+    qb = crearQueryBuilder();
     repositorio = {
       create: jest.fn((datos: Partial<Cuenta>) => ({ ...datos })),
       save: jest.fn((cuenta: Cuenta) =>
         Promise.resolve({ ...cuenta, id: 'c1', creadoEn: new Date() }),
       ),
       findOneBy: jest.fn().mockResolvedValue(null),
+      createQueryBuilder: jest.fn().mockReturnValue(qb),
     };
     const config = {
       get: () => 'Admin',
@@ -39,6 +65,44 @@ describe('CuentasService', () => {
       repositorio as unknown as Repository<Cuenta>,
       config,
     );
+  });
+
+  describe('findAll', () => {
+    it('debe devolver la página pedida, ordenada por usuario por defecto', async () => {
+      const cuenta = {
+        id: 'c1',
+        username: 'maria',
+        passwordHash: 'h',
+        creadoEn: new Date(),
+      } satisfies Cuenta;
+      qb.getManyAndCount.mockResolvedValue([[cuenta], 41]);
+
+      const pagina = await service.findAll({ page: 3, limit: 20 });
+
+      expect(qb.orderBy).toHaveBeenCalledWith('cuenta.username', 'ASC');
+      expect(qb.addOrderBy).toHaveBeenCalledWith('cuenta.id', 'ASC');
+      expect(qb.skip).toHaveBeenCalledWith(40);
+      expect(qb.take).toHaveBeenCalledWith(20);
+      expect(qb.where).not.toHaveBeenCalled();
+      expect(pagina).toEqual({
+        data: [cuenta],
+        meta: { page: 3, limit: 20, total: 41, totalPages: 3 },
+      });
+    });
+
+    it('debe ordenar por fecha de creación, de la más reciente a la más antigua', async () => {
+      await service.findAll({ page: 1, limit: 20, orden: '-creadoEn' });
+
+      expect(qb.orderBy).toHaveBeenCalledWith('cuenta.creadoEn', 'DESC');
+    });
+
+    it('debe buscar en minúsculas y con los comodines de LIKE escapados', async () => {
+      await service.findAll({ page: 1, limit: 20, buscar: ' Ma_ria% ' });
+
+      expect(qb.where).toHaveBeenCalledWith('cuenta.username LIKE :texto', {
+        texto: '%ma\\_ria\\%%',
+      });
+    });
   });
 
   describe('create', () => {

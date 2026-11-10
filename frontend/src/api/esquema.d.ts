@@ -34,6 +34,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Total de visitas al logo (el recurso `visitas` del logo). Solo lee. */
     get: operations['LogoController_getCount_v1'];
     put?: never;
     post?: never;
@@ -50,6 +51,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Lista los usuarios por páginas, con búsqueda y orden opcionales. */
     get: operations['UsuariosController_findAll_v1'];
     put?: never;
     /** Crea un usuario. El RUT se acepta con o sin puntos y se guarda normalizado. */
@@ -75,6 +77,10 @@ export interface paths {
     delete: operations['UsuariosController_remove_v1'];
     options?: never;
     head?: never;
+    /**
+     * Actualiza parcialmente un usuario. Con `If-Match: "<versión>"` el cambio
+     *     solo se aplica si nadie lo modificó entretanto (concurrencia optimista).
+     */
     patch: operations['UsuariosController_update_v1'];
     trace?: never;
   };
@@ -226,7 +232,7 @@ export interface components {
       totalPages: number;
     };
     PaginaUsuariosDto: {
-      /** @description Usuarios de la página, ordenados por nombre. */
+      /** @description Usuarios de la página, en el orden pedido (por defecto, por nombre). */
       data: components['schemas']['UsuarioDto'][];
       meta: components['schemas']['PaginationMetaDto'];
     };
@@ -400,7 +406,7 @@ export interface operations {
           'application/json': components['schemas']['PaginaUsuariosDto'];
         };
       };
-      /** @description Parámetros de paginación o búsqueda inválidos */
+      /** @description Parámetros de paginación, búsqueda u orden inválidos */
       400: {
         headers: {
           [name: string]: unknown;

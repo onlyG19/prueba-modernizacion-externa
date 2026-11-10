@@ -61,9 +61,9 @@ const ID_UUID = new ParseUUIDPipe({
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
-  /** Lista los usuarios por páginas, ordenados por nombre, con búsqueda opcional. */
+  /** Lista los usuarios por páginas, con búsqueda y orden opcionales. */
   @ApiBadRequestResponse({
-    description: 'Parámetros de paginación o búsqueda inválidos',
+    description: 'Parámetros de paginación, búsqueda u orden inválidos',
     type: ProblemDetailsDto,
   })
   @Get()

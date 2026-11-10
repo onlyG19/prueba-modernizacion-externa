@@ -145,8 +145,10 @@ function escribirFiltroEnUrl(
 }
 
 interface Props {
-  idEnEdicion: number | null;
-  idResaltado: number | null;
+  // [ANTES] idEnEdicion: number | null;
+  idEnEdicion: Usuario['id'] | null;
+  // [ANTES] idResaltado: number | null;
+  idResaltado: Usuario['id'] | null;
   onEditar: (usuario: Usuario) => void;
   onEliminado: (usuario: Usuario) => void;
 }

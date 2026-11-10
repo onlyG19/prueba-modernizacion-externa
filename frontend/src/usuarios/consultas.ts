@@ -98,7 +98,14 @@ export function useActualizarUsuario() {
   const { token } = useSesionActiva();
   const cliente = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, cambios }: { id: number; cambios: CambiosUsuario }) =>
+    // [ANTES] mutationFn: ({ id, cambios }: { id: number; cambios: CambiosUsuario }) =>
+    mutationFn: ({
+      id,
+      cambios,
+    }: {
+      id: Usuario['id'];
+      cambios: CambiosUsuario;
+    }) =>
       solicitarJson<Usuario>(`/usuarios/${id}`, {
         metodo: 'PATCH',
         cuerpo: cambios,
@@ -118,7 +125,8 @@ export function useEliminarUsuario() {
   const cliente = useQueryClient();
   return useMutation({
     // 204 sin cuerpo: no se interpreta como JSON.
-    mutationFn: async (id: number) => {
+    // [ANTES] mutationFn: async (id: number) => {
+    mutationFn: async (id: Usuario['id']) => {
       await solicitar(`/usuarios/${id}`, { metodo: 'DELETE', token });
     },
     // [ANTES] onSuccess: (_respuesta, id) => {

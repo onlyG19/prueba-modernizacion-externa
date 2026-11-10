@@ -64,7 +64,8 @@ function paginar(usuarios: Usuario[], url: URL): PaginaUsuarios {
         (rut !== '' && u.rut.replace('-', '').toLowerCase().includes(rut)),
     )
     // [ANTES] .toSorted((a, b) => COLECCION.compare(a.nombre, b.nombre) || a.id - b.id);
-    .toSorted((a, b) => sentido * comparar(a, b) || a.id - b.id);
+    // [ANTES] .toSorted((a, b) => sentido * comparar(a, b) || a.id - b.id);
+    .toSorted((a, b) => sentido * comparar(a, b) || a.id.localeCompare(b.id));
   const total = coincidentes.length;
   return {
     data: coincidentes.slice((page - 1) * limit, page * limit),
@@ -94,8 +95,10 @@ const error = (status: number, detail: string, title: string) =>
 // [ANTES] export function crearApiFalsa(inicial: Partial<EstadoApiFalsa> = {}) {
 export function crearApiFalsa({
   usuarios = [
-    { id: 2, nombre: 'Juan Pérez', rut: '12345678-5' },
-    { id: 3, nombre: 'María López', rut: '9876543-3' },
+    // [ANTES] { id: 2, nombre: 'Juan Pérez', rut: '12345678-5' },
+    { id: 'u2', nombre: 'Juan Pérez', rut: '12345678-5' },
+    // [ANTES] { id: 3, nombre: 'María López', rut: '9876543-3' },
+    { id: 'u3', nombre: 'María López', rut: '9876543-3' },
   ],
   ...inicial
 }: EscenarioApiFalsa = {}) {
@@ -110,7 +113,8 @@ export function crearApiFalsa({
     recibidos: { creaciones: [], cambios: [] },
     ...inicial,
   };
-  let siguienteId = 100;
+  // [ANTES] let siguienteId = 100;
+  // Ids como los de la API real: UUID (crypto.randomUUID() al crear).
 
   const autorizado = (request: Request) =>
     request.headers.get('Authorization') === `Bearer ${TOKEN_PRUEBA}`;
@@ -159,7 +163,8 @@ export function crearApiFalsa({
       // [ANTES] const creado = { id: siguienteId++, ...datos };
       const ahora = new Date().toISOString();
       const creado = {
-        id: siguienteId++,
+        // [ANTES] id: siguienteId++,
+        id: crypto.randomUUID(),
         ...datos,
         creadoEn: ahora,
         actualizadoEn: ahora,
@@ -175,7 +180,8 @@ export function crearApiFalsa({
       }
       const cambios = (await request.json()) as CambiosUsuario;
       estado.recibidos.cambios.push(cambios);
-      const usuario = estado.usuarios.find((u) => u.id === Number(params.id));
+      // [ANTES] const usuario = estado.usuarios.find((u) => u.id === Number(params.id));
+      const usuario = estado.usuarios.find((u) => u.id === params.id);
       if (!usuario) {
         return error(404, 'Usuario no encontrado', 'Not Found');
       }
@@ -192,7 +198,8 @@ export function crearApiFalsa({
         return noAutorizado();
       }
       estado.usuarios = estado.usuarios.filter(
-        (u) => u.id !== Number(params.id),
+        // [ANTES] (u) => u.id !== Number(params.id),
+        (u) => u.id !== params.id,
       );
       return new HttpResponse(null, { status: 204 });
     }),

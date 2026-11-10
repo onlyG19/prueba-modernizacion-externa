@@ -28,5 +28,9 @@ export function buildDataSourceOptions(env: DatabaseEnv): DataSourceOptions {
     entities: [Usuario],
     migrations: MIGRATIONS,
     synchronize: false,
+    // Ids UUID con gen_random_uuid(), incluida en Postgres desde la v13: sin
+    // extensiones que TypeORM intente instalar al conectar.
+    uuidExtension: 'pgcrypto',
+    installExtensions: false,
   };
 }

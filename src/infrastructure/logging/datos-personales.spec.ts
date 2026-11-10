@@ -32,12 +32,15 @@ describe('enmascararRuts', () => {
     expect(enmascararRuts(`/usuarios/${rut}`)).toBe(`/usuarios/${RUT_OCULTO}`);
   });
 
-  it.each([['/usuarios/42'], ['/api/v1/logo/count'], ['page=2&limit=20']])(
-    'no debe tocar textos sin RUT: %s',
-    (texto) => {
-      expect(enmascararRuts(texto)).toBe(texto);
-    },
-  );
+  it.each([
+    ['/usuarios/42'],
+    ['/api/v1/logo/count'],
+    ['page=2&limit=20'],
+    // Un UUID con el primer bloque solo de dígitos no es un RUT.
+    ['/usuarios/12345678-1234-4abc-8def-123456789012'],
+  ])('no debe tocar textos sin RUT: %s', (texto) => {
+    expect(enmascararRuts(texto)).toBe(texto);
+  });
 });
 
 describe('serializarPeticion', () => {

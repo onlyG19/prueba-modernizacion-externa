@@ -171,10 +171,10 @@ export interface components {
     };
     UsuarioDto: {
       /**
-       * @description Identificador del usuario.
-       * @example 2
+       * @description Identificador del usuario (UUID).
+       * @example 0b5f2c1e-7d4a-4f3b-9a61-2e8c4d7f1a90
        */
-      id: number;
+      id: string;
       /**
        * @description Nombre del usuario.
        * @example Juan Pérez
@@ -473,7 +473,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        id: number;
+        id: string;
       };
       cookie?: never;
     };
@@ -512,7 +512,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        id: number;
+        id: string;
       };
       cookie?: never;
     };
@@ -549,7 +549,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        id: number;
+        id: string;
       };
       cookie?: never;
     };

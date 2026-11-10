@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,7 +7,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseIntPipe,
+  // [ANTES] ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -33,6 +35,12 @@ import { PaginaUsuariosDto } from './dto/pagina-usuarios.dto';
 import { UsuarioDto } from './dto/usuario.dto';
 // [ANTES] import { Usuario } from './usuario.entity';
 // [ANTES] import { Usuario } from './entities/usuario.entity';
+
+/** El id de la ruta debe ser un UUID; si no, 400 con un mensaje claro. */
+const ID_UUID = new ParseUUIDPipe({
+  exceptionFactory: () =>
+    new BadRequestException('El id del usuario debe ser un UUID'),
+});
 
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({
@@ -71,7 +79,8 @@ export class UsuariosController {
   // [ANTES] findOne(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
   // [ANTES]   return this.usuariosService.findOne(id);
   // [ANTES] }
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UsuarioDto> {
+  // [ANTES] async findOne(@Param('id', ParseIntPipe) id: number): Promise<UsuarioDto> {
+  async findOne(@Param('id', ID_UUID) id: string): Promise<UsuarioDto> {
     return UsuarioDto.desde(await this.usuariosService.findOne(id));
   }
 
@@ -136,7 +145,8 @@ export class UsuariosController {
   @Patch(':id')
   // [ANTES] update(
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    // [ANTES] @Param('id', ParseIntPipe) id: number,
+    @Param('id', ID_UUID) id: string,
     // [ANTES] @Body() dto: UpdateUsuarioDto,
     @Body(NonEmptyBodyPipe) dto: UpdateUsuarioDto,
     // [ANTES] ): Promise<Usuario> {
@@ -152,7 +162,8 @@ export class UsuariosController {
   })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  // [ANTES] remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ID_UUID) id: string): Promise<void> {
     return this.usuariosService.remove(id);
   }
 }

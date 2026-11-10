@@ -7,9 +7,12 @@ export const RUT_OCULTO = '[RUT]';
 
 /**
  * Un RUT con o sin puntos y guion: `12.345.678-5`, `12345678-5`, `123456785`.
- * Exige el dígito verificador para no tapar cualquier número.
+ * Exige el dígito verificador para no tapar cualquier número, y no puede
+ * estar pegado a letras, puntos o guiones: así un UUID como
+ * `12345678-1234-…` no se confunde con un RUT.
  */
-const RUT = /\b\d{1,2}(?:\.?\d{3}){2}-?[\dkK]\b/g;
+// [ANTES] const RUT = /\b\d{1,2}(?:\.?\d{3}){2}-?[\dkK]\b/g;
+const RUT = /(?<![\w.-])\d{1,2}(?:\.?\d{3}){2}-?[\dkK](?![\w.-])/g;
 
 /**
  * Parámetros cuyo valor puede ser un dato personal: `buscar` lleva un nombre

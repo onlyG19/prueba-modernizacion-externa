@@ -30,7 +30,8 @@ function filasVisibles() {
 
 /** 25 usuarios: más de una página (20 por página). */
 const VEINTICINCO_USUARIOS = Array.from({ length: 25 }, (_, i) => ({
-  id: i + 1,
+  // [ANTES] id: i + 1,
+  id: `u${i + 1}`,
   nombre: `Persona ${String(i + 1).padStart(2, '0')}`,
   rut: `${10_000_000 + i}-0`,
 }));
@@ -76,8 +77,10 @@ describe('Lista de usuarios', () => {
   it('debe listar los usuarios ordenados por nombre, con el RUT formateado', async () => {
     prepararApi({
       usuarios: [
-        { id: 1, nombre: 'Zoe Díaz', rut: '11111111-1' },
-        { id: 2, nombre: 'Ana Rojas', rut: '12345678-5' },
+        // [ANTES] { id: 1, nombre: 'Zoe Díaz', rut: '11111111-1' },
+        { id: 'u1', nombre: 'Zoe Díaz', rut: '11111111-1' },
+        // [ANTES] { id: 2, nombre: 'Ana Rojas', rut: '12345678-5' },
+        { id: 'u2', nombre: 'Ana Rojas', rut: '12345678-5' },
       ],
     });
     renderizarConSesion();
@@ -170,13 +173,15 @@ describe('Lista de usuarios', () => {
     prepararApi({
       usuarios: [
         {
-          id: 1,
+          // [ANTES] id: 1,
+          id: 'u1',
           nombre: 'Ana Rojas',
           rut: '11111111-1',
           creadoEn: '2026-11-01T10:00:00.000Z',
         },
         {
-          id: 2,
+          // [ANTES] id: 2,
+          id: 'u2',
           nombre: 'Zoe Díaz',
           rut: '22222222-2',
           creadoEn: '2026-11-09T10:00:00.000Z',

@@ -8,6 +8,8 @@ import type { UsuarioDto } from '../src/modules/usuarios/dto/usuario.dto';
 import { RUTA_API } from '../src/config/app-setup';
 import { crearAppE2e, iniciarSesion } from './utilidades/app-e2e';
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 /** Un usuario tal como llega en el JSON: las fechas, como texto ISO 8601. */
 type UsuarioJson = Omit<UsuarioDto, 'creadoEn' | 'actualizadoEn'> & {
   creadoEn: string;
@@ -86,7 +88,8 @@ describe('/usuarios (e2e)', () => {
     const creado = await crear('  Ana   Rojas ', '11.111.111-1');
     // Se guarda normalizado: sin espacios de sobra y el RUT sin puntos.
     expect(creado).toEqual({
-      id: expect.any(Number) as number,
+      // [ANTES] id: expect.any(Number) as number,
+      id: expect.stringMatching(UUID) as string,
       nombre: 'Ana Rojas',
       rut: '11111111-1',
       creadoEn: expect.any(String) as string,
@@ -240,5 +243,19 @@ describe('/usuarios (e2e)', () => {
   it('rechaza parámetros inválidos con 400', async () => {
     await api.get('/usuarios?limit=101').expect(400);
     await api.get('/usuarios/abc').expect(400);
+  });
+
+  it('no permite recorrer usuarios por número: los ids son UUID', async () => {
+    await crear('Ana Rojas', '11.111.111-1');
+
+    await api
+      .get('/usuarios/1')
+      .expect(400)
+      .expect(({ body }) => {
+        expect((body as ProblemDetailsDto).detail).toBe(
+          'El id del usuario debe ser un UUID',
+        );
+      });
+    await api.get('/usuarios/f0e1d2c3-b4a5-4968-8776-655443322110').expect(404);
   });
 });

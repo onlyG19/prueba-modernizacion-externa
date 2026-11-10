@@ -6,6 +6,11 @@ import { UsuariosService } from './usuarios.service';
 import type { Request, Response } from 'express';
 import { Usuario } from './entities/usuario.entity';
 
+/** Ids UUID de prueba (los usuarios ya no tienen ids seriales). */
+const ID = '0b5f2c1e-7d4a-4f3b-9a61-2e8c4d7f1a90';
+const OTRO_ID = '5c3d9e2a-1f4b-4c6d-8e7f-9a0b1c2d3e4f';
+const ID_INEXISTENTE = 'f0e1d2c3-b4a5-4968-8776-655443322110';
+
 const mockUsuariosService = () => ({
   findAll: jest.fn(),
   findOne: jest.fn(),
@@ -19,7 +24,8 @@ describe('UsuariosController', () => {
   let service: ReturnType<typeof mockUsuariosService>;
 
   const usuarioBase: Usuario = {
-    id: 1,
+    // [ANTES] id: 1,
+    id: ID,
     nombre: 'Juan Pérez',
     // [ANTES] rut: '12345678-9', van a fallar los test si dejamos ese DV mal
     rut: '12345678-5',
@@ -63,8 +69,10 @@ describe('UsuariosController', () => {
   describe('findOne', () => {
     it('debe retornar el usuario encontrado', async () => {
       service.findOne.mockResolvedValue(usuarioBase);
-      expect(await controller.findOne(1)).toEqual(usuarioBase);
-      expect(service.findOne).toHaveBeenCalledWith(1);
+      // [ANTES] expect(await controller.findOne(1)).toEqual(usuarioBase);
+      expect(await controller.findOne(ID)).toEqual(usuarioBase);
+      // [ANTES] expect(service.findOne).toHaveBeenCalledWith(1);
+      expect(service.findOne).toHaveBeenCalledWith(ID);
     });
 
     it('no debe exponer campos de la entidad que el DTO no declara', async () => {
@@ -72,8 +80,10 @@ describe('UsuariosController', () => {
       const conColumnaInterna = { ...usuarioBase, notaInterna: 'privada' };
       service.findOne.mockResolvedValue(conColumnaInterna);
 
-      expect(await controller.findOne(1)).toStrictEqual({
-        id: 1,
+      // [ANTES] expect(await controller.findOne(1)).toStrictEqual({
+      expect(await controller.findOne(ID)).toStrictEqual({
+        // [ANTES] id: 1,
+        id: ID,
         nombre: 'Juan Pérez',
         rut: '12345678-5',
         creadoEn: usuarioBase.creadoEn,
@@ -83,9 +93,13 @@ describe('UsuariosController', () => {
 
     it('debe propagar NotFoundException del service', async () => {
       service.findOne.mockRejectedValue(
-        new NotFoundException('Usuario con id 99 no encontrado'),
+        // [ANTES] new NotFoundException('Usuario con id 99 no encontrado'),
+        new NotFoundException(`Usuario con id ${ID_INEXISTENTE} no encontrado`),
       );
-      await expect(controller.findOne(99)).rejects.toThrow(NotFoundException);
+      // [ANTES] await expect(controller.findOne(99)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(ID_INEXISTENTE)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -94,7 +108,8 @@ describe('UsuariosController', () => {
     it('debe retornar el usuario creado', async () => {
       // [ANTES] const dto = { nombre: 'María López', rut: '98765432-1' };
       const dto = { nombre: 'María López', rut: '98765432-5' };
-      const creado = { id: 2, ...dto };
+      // [ANTES] const creado = { id: 2, ...dto };
+      const creado = { id: OTRO_ID, ...dto };
       service.create.mockResolvedValue(creado);
       // [ANTES] expect(await controller.create(dto)).toEqual(creado);
       const req = { originalUrl: '/api/v1/usuarios' } as Request;
@@ -115,7 +130,8 @@ describe('UsuariosController', () => {
         { location } as unknown as Response,
       );
 
-      expect(location).toHaveBeenCalledWith('/api/v1/usuarios/1');
+      // [ANTES] expect(location).toHaveBeenCalledWith('/api/v1/usuarios/1');
+      expect(location).toHaveBeenCalledWith(`/api/v1/usuarios/${ID}`);
     });
   });
 
@@ -126,17 +142,21 @@ describe('UsuariosController', () => {
       const actualizado = { ...usuarioBase, ...dto };
       service.update.mockResolvedValue(actualizado);
 
-      expect(await controller.update(1, dto)).toEqual(actualizado);
-      expect(service.update).toHaveBeenCalledWith(1, dto);
+      // [ANTES] expect(await controller.update(1, dto)).toEqual(actualizado);
+      expect(await controller.update(ID, dto)).toEqual(actualizado);
+      // [ANTES] expect(service.update).toHaveBeenCalledWith(1, dto);
+      expect(service.update).toHaveBeenCalledWith(ID, dto);
     });
 
     it('debe propagar NotFoundException del service', async () => {
       service.update.mockRejectedValue(
-        new NotFoundException('Usuario con id 99 no encontrado'),
+        // [ANTES] new NotFoundException('Usuario con id 99 no encontrado'),
+        new NotFoundException(`Usuario con id ${ID_INEXISTENTE} no encontrado`),
       );
-      await expect(controller.update(99, { nombre: 'X' })).rejects.toThrow(
-        NotFoundException,
-      );
+      // [ANTES] await expect(controller.update(99, { nombre: 'X' })).rejects.toThrow(
+      await expect(
+        controller.update(ID_INEXISTENTE, { nombre: 'X' }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -144,15 +164,21 @@ describe('UsuariosController', () => {
   describe('remove', () => {
     it('debe llamar al service con el id correcto', async () => {
       service.remove.mockResolvedValue(undefined);
-      await expect(controller.remove(1)).resolves.toBeUndefined();
-      expect(service.remove).toHaveBeenCalledWith(1);
+      // [ANTES] await expect(controller.remove(1)).resolves.toBeUndefined();
+      await expect(controller.remove(ID)).resolves.toBeUndefined();
+      // [ANTES] expect(service.remove).toHaveBeenCalledWith(1);
+      expect(service.remove).toHaveBeenCalledWith(ID);
     });
 
     it('debe propagar NotFoundException del service', async () => {
       service.remove.mockRejectedValue(
-        new NotFoundException('Usuario con id 99 no encontrado'),
+        // [ANTES] new NotFoundException('Usuario con id 99 no encontrado'),
+        new NotFoundException(`Usuario con id ${ID_INEXISTENTE} no encontrado`),
       );
-      await expect(controller.remove(99)).rejects.toThrow(NotFoundException);
+      // [ANTES] await expect(controller.remove(99)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(ID_INEXISTENTE)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

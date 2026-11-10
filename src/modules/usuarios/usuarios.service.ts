@@ -104,7 +104,8 @@ export class UsuariosService {
     };
   }
 
-  async findOne(id: number): Promise<Usuario> {
+  // [ANTES] async findOne(id: number): Promise<Usuario> {
+  async findOne(id: string): Promise<Usuario> {
     const usuario = await this.usuarioRepository.findOneBy({ id });
     if (!usuario) {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
@@ -118,14 +119,16 @@ export class UsuariosService {
     return this.guardar(usuario);
   }
 
-  async update(id: number, dto: UpdateUsuarioDto): Promise<Usuario> {
+  // [ANTES] async update(id: number, dto: UpdateUsuarioDto): Promise<Usuario> {
+  async update(id: string, dto: UpdateUsuarioDto): Promise<Usuario> {
     const usuario = await this.findOne(id);
     Object.assign(usuario, dto);
     // [ANTES] return this.usuarioRepository.save(usuario);
     return this.guardar(usuario);
   }
 
-  async remove(id: number): Promise<void> {
+  // [ANTES] async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const usuario = await this.findOne(id);
     await this.usuarioRepository.remove(usuario);
   }

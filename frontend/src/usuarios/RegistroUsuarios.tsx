@@ -9,7 +9,8 @@ import estilos from './RegistroUsuarios.module.css';
 /** Formulario (crear o editar) a un lado y el registro al otro. */
 export function RegistroUsuarios() {
   const [enEdicion, setEnEdicion] = useState<Usuario | null>(null);
-  const [idResaltado, setIdResaltado] = useState<number | null>(null);
+  // [ANTES] const [idResaltado, setIdResaltado] = useState<number | null>(null);
+  const [idResaltado, setIdResaltado] = useState<Usuario['id'] | null>(null);
 
   const idEnEdicion = enEdicion?.id ?? null;
   const terminarEdicion = useCallback(() => {

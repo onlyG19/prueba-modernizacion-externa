@@ -12,12 +12,14 @@ import { NOMBRE_MAX_LENGTH } from '../domain/usuario.constants';
 @Entity('usuarios')
 export class Usuario {
   /**
-   * Identificador del usuario.
-   * @example 2
+   * Identificador del usuario (UUID: no revela el orden ni la cantidad).
+   * @example '0b5f2c1e-7d4a-4f3b-9a61-2e8c4d7f1a90'
    */
-  @PrimaryGeneratedColumn()
+  // [ANTES] @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   // [ANTES] id: number;
-  id!: number;
+  // [ANTES] id!: number;
+  id!: string;
 
   /**
    * Nombre del usuario.

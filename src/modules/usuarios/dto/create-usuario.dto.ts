@@ -6,6 +6,10 @@ import { NOMBRE_MAX_LENGTH } from '../domain/usuario.constants';
 import { IsRut } from '../validators/is-rut.decorator';
 
 export class CreateUsuarioDto {
+  /**
+   * Nombre del usuario.
+   * @example 'Juan Pérez'
+   */
   @IsString()
   @IsNotEmpty({ message: 'El nombre no puede estar vacío' })
   // [ANTES] @MaxLength(45, { message: 'El nombre no puede superar los 45 caracteres' })
@@ -14,6 +18,11 @@ export class CreateUsuarioDto {
   })
   nombre: string;
 
+  /**
+   * RUT chileno con dígito verificador válido. Se acepta con o sin puntos,
+   * guion o ceros a la izquierda, y se guarda normalizado (`12345678-5`).
+   * @example '12.345.678-5'
+   */
   // [ANTES] @IsString()
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? Rut.normalizar(value) : value,

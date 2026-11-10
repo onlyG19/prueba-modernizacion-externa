@@ -10,36 +10,76 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 // [ANTES] import { Usuario } from './usuario.entity';
 import { Usuario } from './entities/usuario.entity';
 
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({
+  description: 'Falta el token de acceso, o es inválido o expiró',
+  type: ErrorResponseDto,
+})
 @Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
-  /** GET /usuarios */
+  /** Lista todos los usuarios. */
   @Get()
   findAll(): Promise<Usuario[]> {
     return this.usuariosService.findAll();
   }
 
-  /** GET /usuarios/:id */
+  /** Obtiene un usuario por su id. */
+  @ApiNotFoundResponse({
+    description: 'No existe un usuario con ese id',
+    type: ErrorResponseDto,
+  })
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
     return this.usuariosService.findOne(id);
   }
 
-  /** POST /usuarios */
+  /**
+   * Crea un usuario. El RUT se acepta con o sin puntos y se guarda normalizado.
+   */
+  @ApiBadRequestResponse({
+    description:
+      'Datos inválidos (p. ej. RUT con dígito verificador incorrecto)',
+    type: ErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'Ya existe un usuario con ese RUT',
+    type: ErrorResponseDto,
+  })
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateUsuarioDto): Promise<Usuario> {
     return this.usuariosService.create(dto);
   }
 
-  /** PATCH /usuarios/:id */
+  /** Actualiza parcialmente un usuario. */
+  @ApiBadRequestResponse({
+    description: 'Datos inválidos',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'No existe un usuario con ese id',
+    type: ErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'El nuevo RUT ya pertenece a otro usuario',
+    type: ErrorResponseDto,
+  })
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -48,7 +88,11 @@ export class UsuariosController {
     return this.usuariosService.update(id, dto);
   }
 
-  /** DELETE /usuarios/:id */
+  /** Elimina un usuario. */
+  @ApiNotFoundResponse({
+    description: 'No existe un usuario con ese id',
+    type: ErrorResponseDto,
+  })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {

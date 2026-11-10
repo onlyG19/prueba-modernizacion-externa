@@ -3,7 +3,14 @@ import { Controller, Get, Res, StreamableFile } from '@nestjs/common';
 import type { Response } from 'express';
 import { LogoService } from './logo.service';
 import { VisitCounterService } from './visit-counter.service';
+import {
+  ApiOkResponse,
+  ApiProduces,
+  ApiServiceUnavailableResponse,
+} from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
+import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+import { VisitCountDto } from './dto/visit-count.dto';
 
 @Public()
 @Controller('logo')
@@ -15,11 +22,23 @@ export class LogoController {
   ) {}
 
   /**
-   * GET /logo
-   * Devuelve la imagen del logo UNO AFP e incrementa el contador de visitas en Redis.
-   * Si Redis no está disponible, igual devuelve el logo, sin el header
+   * Devuelve la imagen del logo e incrementa el contador de visitas.
+   *
+   * @remarks Si Redis no está disponible, igual devuelve el logo, sin el header
    * `X-Request-Count`.
    */
+  @ApiProduces('image/svg+xml', 'image/png')
+  @ApiOkResponse({
+    description: 'La imagen del logo',
+    schema: { type: 'string', format: 'binary' },
+    headers: {
+      'X-Request-Count': {
+        description:
+          'Total de visitas, incluida esta. Se omite si Redis no está disponible.',
+        schema: { type: 'integer', example: 42 },
+      },
+    },
+  })
   @Get()
   // [ANTES] async getLogo(@Res() res: Response): Promise<void> {
   async getLogo(
@@ -43,13 +62,14 @@ export class LogoController {
     });
   }
 
-  /**
-   * GET /logo/count
-   * Devuelve el contador actual de solicitudes almacenado en Redis
-   * (503 si Redis no está disponible).
-   */
+  /** Devuelve el total de visitas al logo. */
+  @ApiServiceUnavailableResponse({
+    description: 'Redis no está disponible',
+    type: ErrorResponseDto,
+  })
   @Get('count')
-  async getCount(): Promise<{ count: number }> {
+  // [ANTES] async getCount(): Promise<{ count: number }> {
+  async getCount(): Promise<VisitCountDto> {
     // [ANTES] const count = await this.logoService.getCounter();
     const count = await this.visitCounter.getCount();
     return { count };

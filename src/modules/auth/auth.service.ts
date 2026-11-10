@@ -3,16 +3,17 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { verifyPassword } from '../../common/security/password';
 import { EnvironmentVariables } from '../../config/env.validation';
+import { AccessTokenDto } from './dto/access-token.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './jwt-auth.guard';
 
-/** Respuesta del login. */
-export interface AccessTokenResponse {
-  accessToken: string;
-  tokenType: 'Bearer';
-  /** Segundos de vigencia del token. */
-  expiresIn: number;
-}
+// [ANTES] /** Respuesta del login. */
+// [ANTES] export interface AccessTokenResponse {
+// [ANTES]   accessToken: string;
+// [ANTES]   tokenType: 'Bearer';
+// [ANTES]   /** Segundos de vigencia del token. */
+// [ANTES]   expiresIn: number;
+// [ANTES] }
 
 @Injectable()
 export class AuthService {
@@ -31,7 +32,8 @@ export class AuthService {
    *
    * @throws UnauthorizedException Si el usuario o la contraseña no son válidos.
    */
-  async login({ username, password }: LoginDto): Promise<AccessTokenResponse> {
+  // [ANTES] async login({ username, password }: LoginDto): Promise<AccessTokenResponse> {
+  async login({ username, password }: LoginDto): Promise<AccessTokenDto> {
     const passwordValida = await verifyPassword(
       password,
       this.config.get('AUTH_PASSWORD_HASH', { infer: true }),

@@ -159,8 +159,8 @@ Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unita
 - [x] **Tests e2e reales en el backend.** `d50317b` `443c5e8` `586e0c9`
   - **Qué:** e2e de `/usuarios`, `/auth`, `/cuentas`, `/logo` y `/health` contra Postgres y Redis desechables (Testcontainers). Usan la misma configuración HTTP que producción (`configureApp()`).
   - **Por qué:** el único e2e probaba el "Hello World" y necesitaba una base de datos preparada a mano.
-- [x] **Tests del frontend y e2e de punta a punta.** `8334d2e` `e7b5cb0`
-  - **Qué:** Vitest, Testing Library y MSW, con una API falsa que replica las reglas del backend. Playwright con un navegador real contra la API, Postgres y Redis, en una base de datos exclusiva para los tests.
+- [x] **Tests del frontend y e2e de punta a punta.** `8334d2e` `e7b5cb0` `7cd793e` `c4a1793`
+  - **Qué:** Vitest, Testing Library y MSW, con una API falsa que replica las reglas del backend. Playwright con un navegador real contra la API, Postgres y Redis, en una base de datos exclusiva para los tests. Los e2e prueban lo que solo se ve con el stack real: RUT único al registrar y al editar, paginación y orden de la API, dos personas editando al mismo usuario (412 con `If-Match`), permisos de cada rol y un JWT manipulado. Inician sesión por la API una vez por rol, porque el login admite 10 intentos por minuto. Uno de ellos encontró un bug, ya corregido: tras un 404 al guardar, la tabla seguía mostrando al usuario eliminado.
   - **Por qué:** un cambio en cualquier capa tiene que romper un test antes de llegar a quien usa la app.
 - [x] **Sin código ni dependencias sobrantes.** `586e0c9` `ea00eff`
   - **Qué:** fuera el "Hello World" de la plantilla y tres dependencias sin uso (`@types/ioredis`, `@nestjs/serve-static` y `@nestjs/mapped-types`).

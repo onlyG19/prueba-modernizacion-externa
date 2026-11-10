@@ -3,14 +3,15 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 // [ANTES] import { ValidationPipe } from '@nestjs/common';
 // [ANTES] import { Logger, ValidationPipe } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
-import helmet from 'helmet';
+// [ANTES] import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { AppConfigService } from './config/app-config';
-import { parseCorsOrigins } from './config/cors';
+// [ANTES] import { parseCorsOrigins } from './config/cors';
+import { configureApp } from './config/app-setup';
 import { Environment } from './config/env.validation';
 import { setupSwagger } from './config/swagger';
-import { createValidationPipe } from './config/validation-pipe';
+// [ANTES] import { createValidationPipe } from './config/validation-pipe';
 
 async function bootstrap() {
   // [ANTES] const app = await NestFactory.create(AppModule);
@@ -18,31 +19,34 @@ async function bootstrap() {
 
   const config = app.get<AppConfigService>(ConfigService);
 
-  // ── Proxy de confianza ─────────────────────────────────────────────────────
-  // Detrás de nginx, la IP real del cliente viene en X-Forwarded-For: sin esto,
-  // el límite de peticiones trataría a todos los usuarios como uno solo.
-  const saltosProxy = config.get('TRUST_PROXY', { infer: true });
-  if (saltosProxy > 0) {
-    app.set('trust proxy', saltosProxy);
-  }
+  // [ANTES] // ── Proxy de confianza ─────────────────────────────────────────────────────
+  // [ANTES] // Detrás de nginx, la IP real del cliente viene en X-Forwarded-For: sin esto,
+  // [ANTES] // el límite de peticiones trataría a todos los usuarios como uno solo.
+  // [ANTES] const saltosProxy = config.get('TRUST_PROXY', { infer: true });
+  // [ANTES] if (saltosProxy > 0) {
+  // [ANTES]   app.set('trust proxy', saltosProxy);
+  // [ANTES] }
+  // ── Proxy, seguridad HTTP, CORS y validación ───────────────────────────────
+  // En config/app-setup.ts: los tests e2e configuran la app de la misma forma.
+  configureApp(app);
 
   // ── Apagado ordenado ───────────────────────────────────────────────────────
   // Ante SIGTERM/SIGINT ejecuta los hooks de cierre (p. ej. cerrar Redis).
   app.enableShutdownHooks();
 
-  // ── Seguridad HTTP ─────────────────────────────────────────────────────────
-  app.use(helmet());
-
-  // ── CORS ───────────────────────────────────────────────────────────────────
-  app.enableCors({
-    // [ANTES] origin: process.env.CORS_ORIGIN ?? '*',
-    // [ANTES] origin: config.get('CORS_ORIGIN', { infer: true }),
-    origin: parseCorsOrigins(config.get('CORS_ORIGIN', { infer: true })),
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  });
-
-  // ── Validación global de DTOs ──────────────────────────────────────────────
+  // [ANTES] // ── Seguridad HTTP ─────────────────────────────────────────────────────────
+  // [ANTES] app.use(helmet());
+  // [ANTES]
+  // [ANTES] // ── CORS ───────────────────────────────────────────────────────────────────
+  // [ANTES] app.enableCors({
+  // [ANTES]   // [ANTES] origin: process.env.CORS_ORIGIN ?? '*',
+  // [ANTES]   // [ANTES] origin: config.get('CORS_ORIGIN', { infer: true }),
+  // [ANTES]   origin: parseCorsOrigins(config.get('CORS_ORIGIN', { infer: true })),
+  // [ANTES]   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  // [ANTES]   allowedHeaders: ['Content-Type', 'Authorization'],
+  // [ANTES] });
+  // [ANTES]
+  // [ANTES] // ── Validación global de DTOs ──────────────────────────────────────────────
   // [ANTES] app.useGlobalPipes(
   // [ANTES]   new ValidationPipe({
   // [ANTES]     whitelist: true, // elimina propiedades no declaradas en el DTO
@@ -51,7 +55,7 @@ async function bootstrap() {
   // [ANTES]     transformOptions: { enableImplicitConversion: true },
   // [ANTES]   }),
   // [ANTES] );
-  app.useGlobalPipes(createValidationPipe());
+  // [ANTES] app.useGlobalPipes(createValidationPipe());
 
   // ── Documentación OpenAPI (/docs) ──────────────────────────────────────────
   // Solo fuera de producción: en producción expondría el mapa completo de la

@@ -25,7 +25,9 @@ function paginaDe(ruta: string): ReactNode {
     case RUTAS.registrarUsuario:
       return <PaginaUsuarios seccion="registrar" />;
     case RUTAS.cuentas:
-      return <PaginaCuentas />;
+      return <PaginaCuentas seccion="tabla" />;
+    case RUTAS.crearCuenta:
+      return <PaginaCuentas seccion="crear" />;
     default:
       return <SeccionNoEncontrada />;
   }

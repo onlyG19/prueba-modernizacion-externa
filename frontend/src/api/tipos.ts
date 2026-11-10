@@ -19,6 +19,7 @@ export type TokenAcceso = Esquemas['AccessTokenDto'];
 export type Rol = TokenAcceso['rol'];
 export type Cuenta = Esquemas['CuentaDto'];
 export type NuevaCuenta = Esquemas['CreateCuentaDto'];
+export type PaginaCuentas = Esquemas['PaginaCuentasDto'];
 export type ConteoVisitas = Esquemas['VisitCountDto'];
 
 type ParametrosListado = NonNullable<
@@ -26,3 +27,9 @@ type ParametrosListado = NonNullable<
 >;
 /** Órdenes que acepta `GET /usuarios` (`nombre`, `-creadoEn`, …). */
 export type OrdenUsuarios = NonNullable<ParametrosListado['orden']>;
+
+type ParametrosCuentas = NonNullable<
+  operations['CuentasController_findAll_v1']['parameters']['query']
+>;
+/** Órdenes que acepta `GET /cuentas` (`username`, `-creadoEn`, …). */
+export type OrdenCuentas = NonNullable<ParametrosCuentas['orden']>;

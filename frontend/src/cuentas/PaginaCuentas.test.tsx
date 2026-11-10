@@ -1,14 +1,18 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { RUTAS } from '../rutas/rutas';
 import { violacionesDeAccesibilidad } from '../test/accesibilidad';
-import { CREDENCIALES_OPERADOR, crearApiFalsa } from '../test/api-falsa';
+import {
+  CREDENCIALES_OPERADOR,
+  crearApiFalsa,
+  type EscenarioApiFalsa,
+} from '../test/api-falsa';
 import { renderizarConSesion, renderizarSinSesion } from '../test/renderizar';
 import { servidor } from '../test/servidor';
 import { LARGO_GENERADA } from './generar-contrasena';
 
-function prepararApi() {
-  const api = crearApiFalsa();
+function prepararApi(escenario?: EscenarioApiFalsa) {
+  const api = crearApiFalsa(escenario);
   servidor.use(...api.handlers);
   return api;
 }
@@ -52,26 +56,33 @@ describe('Cuentas: quién ve la sección', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('debe explicarle a un operador que llega por la URL que la sección es del administrador', async () => {
-    prepararApi();
-    renderizarConSesion(RUTAS.cuentas, 'operador');
+  it.each([
+    ['la tabla', RUTAS.cuentas],
+    ['el formulario', RUTAS.crearCuenta],
+  ])(
+    'debe explicarle a un operador que llega por la URL a %s que la sección es del administrador',
+    async (_seccion, ruta) => {
+      prepararApi();
+      renderizarConSesion(ruta, 'operador');
 
-    expect(
-      await screen.findByRole('heading', {
-        name: 'Esta sección es del administrador',
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: 'Crear cuenta' }),
-    ).not.toBeInTheDocument();
-    expect(await violacionesDeAccesibilidad()).toEqual([]);
-  });
+      expect(
+        await screen.findByRole('heading', {
+          name: 'Esta sección es del administrador',
+        }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Crear cuenta' }),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      expect(await violacionesDeAccesibilidad()).toEqual([]);
+    },
+  );
 });
 
 describe('Crear cuenta', () => {
   it('debe crear la cuenta con el usuario normalizado y dejar el formulario listo para otra', async () => {
     const api = prepararApi();
-    const { usuario } = renderizarConSesion(RUTAS.cuentas);
+    const { usuario } = renderizarConSesion(RUTAS.crearCuenta);
 
     await usuario.type(
       await screen.findByLabelText('Usuario'),
@@ -97,7 +108,7 @@ describe('Crear cuenta', () => {
 
   it('debe validar antes de enviar y llevar el foco al primer campo con error', async () => {
     const api = prepararApi();
-    const { usuario } = renderizarConSesion(RUTAS.cuentas);
+    const { usuario } = renderizarConSesion(RUTAS.crearCuenta);
 
     await usuario.click(
       await screen.findByRole('button', { name: 'Crear cuenta' }),
@@ -117,7 +128,7 @@ describe('Crear cuenta', () => {
 
   it('debe avisar cuántos caracteres faltan en una contraseña corta al salir del campo', async () => {
     prepararApi();
-    const { usuario } = renderizarConSesion(RUTAS.cuentas);
+    const { usuario } = renderizarConSesion(RUTAS.crearCuenta);
 
     await usuario.type(await screen.findByLabelText('Contraseña'), 'corta');
     // Mientras escribe no se le marca en rojo.
@@ -133,7 +144,7 @@ describe('Crear cuenta', () => {
 
   it('debe mostrar en el campo de usuario que ya está en uso, con el foco ahí', async () => {
     prepararApi();
-    const { usuario } = renderizarConSesion(RUTAS.cuentas);
+    const { usuario } = renderizarConSesion(RUTAS.crearCuenta);
 
     await usuario.type(
       await screen.findByLabelText('Usuario'),
@@ -154,7 +165,7 @@ describe('Crear cuenta', () => {
 
   it('debe mostrar y ocultar la contraseña', async () => {
     prepararApi();
-    const { usuario } = renderizarConSesion(RUTAS.cuentas);
+    const { usuario } = renderizarConSesion(RUTAS.crearCuenta);
 
     await usuario.type(await screen.findByLabelText('Contraseña'), 'secreta');
     expect(campoContrasena()).toHaveAttribute('type', 'password');
@@ -173,7 +184,7 @@ describe('Crear cuenta', () => {
 
   it('debe generar una contraseña segura y dejarla visible para copiarla', async () => {
     const api = prepararApi();
-    const { usuario } = renderizarConSesion(RUTAS.cuentas);
+    const { usuario } = renderizarConSesion(RUTAS.crearCuenta);
 
     await usuario.type(await screen.findByLabelText('Usuario'), 'pedro');
     await usuario.click(
@@ -191,5 +202,108 @@ describe('Crear cuenta', () => {
     expect(api.estado.recibidos.cuentas).toEqual([
       { username: 'pedro', password: generada },
     ]);
+  });
+});
+
+/** Tres cuentas, creadas en este orden: carla, ana, bruno. */
+const TRES_CUENTAS = [
+  { id: 'c1', username: 'carla', creadoEn: '2026-11-01T12:00:00.000Z' },
+  { id: 'c2', username: 'ana', creadoEn: '2026-11-05T12:00:00.000Z' },
+  { id: 'c3', username: 'bruno', creadoEn: '2026-11-09T12:00:00.000Z' },
+];
+
+/** Espera a que la tabla cargue y devuelve sus filas (sin el encabezado). */
+async function filas() {
+  const tabla = await screen.findByRole('table');
+  return within(tabla).getAllByRole('row').slice(1);
+}
+
+/** Las filas que se ven ahora (tras buscar u ordenar, dentro de `waitFor`). */
+const usuariosVisibles = () =>
+  within(screen.getByRole('table'))
+    .getAllByRole('row')
+    .slice(1)
+    .map((fila) => within(fila).getAllByRole('cell')[0].textContent);
+
+describe('Tabla de cuentas', () => {
+  it('debe listar las cuentas por usuario, con su rol y fecha, y aclarar que el admin no aparece', async () => {
+    prepararApi({ cuentas: TRES_CUENTAS });
+    renderizarConSesion(RUTAS.cuentas);
+
+    const [primera, segunda, tercera] = await filas();
+    expect(primera).toHaveTextContent('ana');
+    expect(primera).toHaveTextContent('Operador');
+    expect(primera).toHaveTextContent('5 de noviembre de 2026');
+    expect(segunda).toHaveTextContent('bruno');
+    expect(tercera).toHaveTextContent('carla');
+    expect(screen.getByText('3 cuentas')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Tu cuenta de administrador no aparece aquí/),
+    ).toBeInTheDocument();
+    expect(await violacionesDeAccesibilidad()).toEqual([]);
+  });
+
+  it('debe buscar por usuario y ordenar, y guardar ambos en la URL', async () => {
+    prepararApi({ cuentas: TRES_CUENTAS });
+    const { usuario } = renderizarConSesion(RUTAS.cuentas);
+    await filas();
+
+    await usuario.type(screen.getByLabelText('Buscar por usuario'), 'AR');
+    expect(await screen.findByText('1 cuenta encontrada')).toBeInTheDocument();
+    expect(usuariosVisibles()).toEqual(['carla']);
+    expect(window.location.search).toBe('?buscar=AR');
+
+    await usuario.clear(screen.getByLabelText('Buscar por usuario'));
+    await usuario.selectOptions(
+      screen.getByLabelText('Ordenar por'),
+      'Más recientes',
+    );
+    await waitFor(() =>
+      expect(usuariosVisibles()).toEqual(['bruno', 'ana', 'carla']),
+    );
+    expect(window.location.search).toBe('?orden=-creadoEn');
+  });
+
+  it('debe avisar si ninguna cuenta coincide con la búsqueda', async () => {
+    prepararApi({ cuentas: TRES_CUENTAS });
+    const { usuario } = renderizarConSesion(RUTAS.cuentas);
+    await filas();
+
+    await usuario.type(screen.getByLabelText('Buscar por usuario'), 'nadie');
+
+    expect(
+      await screen.findByText('Ninguna cuenta coincide con «nadie».'),
+    ).toBeInTheDocument();
+  });
+
+  it('debe invitar a crear la primera si todavía no hay cuentas', async () => {
+    prepararApi({ cuentas: [] });
+    renderizarConSesion(RUTAS.cuentas);
+
+    expect(
+      await screen.findByText(/Todavía no hay cuentas/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Crea la primera' }),
+    ).toHaveAttribute('href', RUTAS.crearCuenta);
+  });
+
+  it('tras crear una cuenta, "Verla en la tabla" la muestra filtrada', async () => {
+    prepararApi({ cuentas: TRES_CUENTAS });
+    const { usuario } = renderizarConSesion(RUTAS.crearCuenta);
+
+    await usuario.type(await screen.findByLabelText('Usuario'), 'diego');
+    await usuario.type(campoContrasena(), CLAVE_VALIDA);
+    await usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+    await usuario.click(
+      await screen.findByRole('link', { name: 'Verla en la tabla' }),
+    );
+
+    expect(window.location.pathname).toBe(RUTAS.cuentas);
+    await waitFor(() => expect(usuariosVisibles()).toEqual(['diego']));
+    // "Cuentas" sigue marcada en la barra lateral, en ambas pestañas.
+    expect(
+      within(await barraLateral()).getByRole('link', { name: 'Cuentas' }),
+    ).toHaveAttribute('aria-current', 'page');
   });
 });

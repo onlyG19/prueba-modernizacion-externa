@@ -32,7 +32,8 @@ const PAGINAS: Array<{
     href: RUTAS.cuentas,
     texto: 'Cuentas',
     icono: <IconoLlave />,
-    seccion: false,
+    // Queda marcada también en su pestaña "Crear cuenta".
+    seccion: true,
     soloRol: 'admin',
   },
 ];

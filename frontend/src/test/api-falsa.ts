@@ -2,8 +2,10 @@ import { http, HttpResponse } from 'msw';
 import type {
   CambiosUsuario,
   Credenciales,
+  Cuenta,
   NuevaCuenta,
   NuevoUsuario,
+  PaginaCuentas,
   PaginaUsuarios,
   Usuario,
 } from '../api/tipos';
@@ -38,8 +40,8 @@ export interface EstadoApiFalsa {
   usuarios: Usuario[];
   visitas: number;
   redisDisponible: boolean;
-  /** Usuarios de las cuentas creadas (además de la operadora). */
-  cuentas: string[];
+  /** Cuentas creadas por el admin (al inicio, solo la de la operadora). */
+  cuentas: Cuenta[];
   /** Cuerpos recibidos, para verificar qué envió el frontend. */
   recibidos: {
     creaciones: NuevoUsuario[];
@@ -86,6 +88,30 @@ function paginar(usuarios: Usuario[], url: URL): PaginaUsuarios {
   };
 }
 
+/**
+ * `GET /cuentas` como lo responde la API real: busca en el usuario sin
+ * distinguir mayúsculas, ordena por usuario o fecha y entrega una página.
+ */
+function paginarCuentas(cuentas: Cuenta[], url: URL): PaginaCuentas {
+  const page = Number(url.searchParams.get('page') ?? 1);
+  const limit = Number(url.searchParams.get('limit') ?? 20);
+  const texto = url.searchParams.get('buscar')?.trim().toLowerCase() ?? '';
+  const orden = url.searchParams.get('orden') ?? 'username';
+  const sentido = orden.startsWith('-') ? -1 : 1;
+  const campo = orden.endsWith('creadoEn') ? 'creadoEn' : 'username';
+  const coincidentes = cuentas
+    .filter((c) => c.username.includes(texto))
+    .toSorted(
+      (a, b) =>
+        sentido * a[campo].localeCompare(b[campo]) || a.id.localeCompare(b.id),
+    );
+  const total = coincidentes.length;
+  return {
+    data: coincidentes.slice((page - 1) * limit, page * limit),
+    meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  };
+}
+
 /** Escenario inicial de la API falsa; los usuarios pueden venir sin fechas. */
 export type EscenarioApiFalsa = Partial<Omit<EstadoApiFalsa, 'usuarios'>> & {
   usuarios?: UsuarioDePrueba[];
@@ -116,7 +142,13 @@ export function crearApiFalsa({
     usuarios: usuarios.map(conFechas),
     visitas: 41,
     redisDisponible: true,
-    cuentas: [CREDENCIALES_OPERADOR.username],
+    cuentas: [
+      {
+        id: 'c1',
+        username: CREDENCIALES_OPERADOR.username,
+        creadoEn: FECHA_INICIAL,
+      },
+    ],
     recibidos: { creaciones: [], cambios: [], cuentas: [] },
     ...inicial,
   };
@@ -128,6 +160,8 @@ export function crearApiFalsa({
     [TOKEN_PRUEBA, TOKEN_OPERADOR].includes(tokenDe(request) ?? '');
   const noAutorizado = () =>
     error(401, 'Token inválido o expirado', 'Unauthorized');
+  const soloAdmin = () =>
+    error(403, 'Solo el administrador puede hacer esto', 'Forbidden');
 
   const handlers = [
     http.post('/api/v1/auth/login', async ({ request }) => {
@@ -157,6 +191,19 @@ export function crearApiFalsa({
       return error(401, 'Credenciales inválidas', 'Unauthorized');
     }),
 
+    // Como la API real: solo el admin ve las cuentas.
+    http.get('/api/v1/cuentas', ({ request }) => {
+      if (!autorizado(request)) {
+        return noAutorizado();
+      }
+      if (tokenDe(request) !== TOKEN_PRUEBA) {
+        return soloAdmin();
+      }
+      return HttpResponse.json(
+        paginarCuentas(estado.cuentas, new URL(request.url)),
+      );
+    }),
+
     // Como la API real: solo el admin crea cuentas, y el usuario no se repite
     // (ni puede ser el del admin).
     http.post('/api/v1/cuentas', async ({ request }) => {
@@ -164,17 +211,13 @@ export function crearApiFalsa({
         return noAutorizado();
       }
       if (tokenDe(request) !== TOKEN_PRUEBA) {
-        return error(
-          403,
-          'Solo el administrador puede hacer esto',
-          'Forbidden',
-        );
+        return soloAdmin();
       }
       const datos = (await request.json()) as NuevaCuenta;
       estado.recibidos.cuentas.push(datos);
       if (
         datos.username === CREDENCIALES_VALIDAS.username ||
-        estado.cuentas.includes(datos.username)
+        estado.cuentas.some((c) => c.username === datos.username)
       ) {
         return error(
           409,
@@ -182,15 +225,13 @@ export function crearApiFalsa({
           'Conflict',
         );
       }
-      estado.cuentas.push(datos.username);
-      return HttpResponse.json(
-        {
-          id: crypto.randomUUID(),
-          username: datos.username,
-          creadoEn: new Date().toISOString(),
-        },
-        { status: 201 },
-      );
+      const creada: Cuenta = {
+        id: crypto.randomUUID(),
+        username: datos.username,
+        creadoEn: new Date().toISOString(),
+      };
+      estado.cuentas.push(creada);
+      return HttpResponse.json(creada, { status: 201 });
     }),
 
     http.get('/api/v1/usuarios', ({ request }) =>

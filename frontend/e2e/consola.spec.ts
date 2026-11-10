@@ -156,13 +156,19 @@ test('un RUT duplicado lo rechaza Postgres (UNIQUE) y la interfaz lo explica', a
   );
 });
 
-test('el admin crea una cuenta, y quien ingresa con ella gestiona usuarios pero no crea cuentas', async ({
+test('el admin crea una cuenta y la ve en la tabla; quien ingresa con ella gestiona usuarios pero no ve ni crea cuentas', async ({
   page,
 }) => {
   await ingresar(page);
   await page
     .getByRole('navigation', { name: 'Panel' })
     .getByRole('link', { name: 'Cuentas' })
+    .click();
+  // La base e2e parte sin cuentas: la tabla invita a crear la primera.
+  await expect(page.getByText(/Todavía no hay cuentas/)).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Secciones de cuentas' })
+    .getByRole('link', { name: 'Crear cuenta' })
     .click();
 
   await page.getByLabel('Usuario', { exact: true }).fill('Operador.E2E');
@@ -180,17 +186,27 @@ test('el admin crea una cuenta, y quien ingresa con ella gestiona usuarios pero 
   ).toBeVisible();
   expect(await violacionesDeAccesibilidad(page)).toEqual([]);
 
+  // La tabla la trae desde Postgres, filtrada por su usuario.
+  await page.getByRole('link', { name: 'Verla en la tabla' }).click();
+  await expect(page).toHaveURL(/\/panel\/cuentas\?buscar=operador\.e2e$/);
+  await expect(page.getByRole('row', { name: /operador\.e2e/ })).toContainText(
+    'Operador',
+  );
+  await expect(page.getByText('1 cuenta encontrada')).toBeVisible();
+  expect(await violacionesDeAccesibilidad(page)).toEqual([]);
+
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   await ingresar(page, { usuario: 'operador.e2e', clave });
   const lateral = page.getByRole('navigation', { name: 'Panel' });
   await expect(lateral.getByRole('link', { name: 'Usuarios' })).toBeVisible();
   await expect(lateral.getByRole('link', { name: 'Cuentas' })).toHaveCount(0);
 
-  // Por la URL ve una explicación, no el formulario…
+  // Por la URL ve una explicación, no la tabla ni el formulario…
   await page.goto('/panel/cuentas');
   await expect(
     page.getByRole('heading', { name: 'Esta sección es del administrador' }),
   ).toBeVisible();
+  await expect(page.getByRole('table')).toHaveCount(0);
   // …y aunque se saltara la interfaz, la API real le responde 403.
   const token = await page.evaluate(
     () =>
@@ -200,11 +216,16 @@ test('el admin crea una cuenta, y quien ingresa con ella gestiona usuarios pero 
         ) as { token?: string }
       ).token,
   );
-  const respuesta = await page.request.post('/api/v1/cuentas', {
-    headers: { Authorization: `Bearer ${token}` },
+  const autorizacion = { Authorization: `Bearer ${token}` };
+  const listado = await page.request.get('/api/v1/cuentas', {
+    headers: autorizacion,
+  });
+  expect(listado.status()).toBe(403);
+  const alta = await page.request.post('/api/v1/cuentas', {
+    headers: autorizacion,
     data: { username: 'colada', password: 'una frase larga y secreta' },
   });
-  expect(respuesta.status()).toBe(403);
+  expect(alta.status()).toBe(403);
 });
 
 test('la API rechaza peticiones sin token (401)', async ({ request }) => {

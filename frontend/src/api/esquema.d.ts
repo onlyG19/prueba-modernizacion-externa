@@ -111,12 +111,13 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
-    put?: never;
     /**
-     * Crea una cuenta para ingresar a la consola, con rol `operador`. Solo el
-     *     administrador puede crear cuentas.
+     * Lista las cuentas por páginas, con búsqueda por usuario y orden
+     *     opcionales. No incluye al administrador, que no vive en la base de datos.
      */
+    get: operations['CuentasController_findAll_v1'];
+    put?: never;
+    /** Crea una cuenta para ingresar a la consola, con rol `operador`. */
     post: operations['CuentasController_create_v1'];
     delete?: never;
     options?: never;
@@ -321,19 +322,6 @@ export interface components {
        */
       expiresIn: number;
     };
-    CreateCuentaDto: {
-      /**
-       * @description Usuario con que se ingresará. Se guarda sin espacios en los extremos y en
-       *     minúsculas: `" Maria.Lopez "` queda `"maria.lopez"`.
-       * @example maria.lopez
-       */
-      username: string;
-      /**
-       * @description Contraseña de la cuenta. Solo se guarda su hash (scrypt).
-       * @example una frase larga y secreta
-       */
-      password: string;
-    };
     CuentaDto: {
       /**
        * @description Identificador de la cuenta (UUID).
@@ -351,6 +339,24 @@ export interface components {
        * @example 2026-11-10T14:03:00.000Z
        */
       creadoEn: string;
+    };
+    PaginaCuentasDto: {
+      /** @description Cuentas de la página, en el orden pedido (por defecto, por usuario). */
+      data: components['schemas']['CuentaDto'][];
+      meta: components['schemas']['PaginationMetaDto'];
+    };
+    CreateCuentaDto: {
+      /**
+       * @description Usuario con que se ingresará. Se guarda sin espacios en los extremos y en
+       *     minúsculas: `" Maria.Lopez "` queda `"maria.lopez"`.
+       * @example maria.lopez
+       */
+      username: string;
+      /**
+       * @description Contraseña de la cuenta. Solo se guarda su hash (scrypt).
+       * @example una frase larga y secreta
+       */
+      password: string;
     };
     HealthStatusDto: {
       /**
@@ -725,6 +731,64 @@ export interface operations {
       };
       /** @description Credenciales inválidas */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProblemDetailsDto'];
+        };
+      };
+    };
+  };
+  CuentasController_findAll_v1: {
+    parameters: {
+      query?: {
+        /** @description Número de página, desde 1. */
+        page?: number;
+        /** @description Elementos por página (máximo 100). */
+        limit?: number;
+        /**
+         * @description Orden de la lista: `username` (por defecto) o `creadoEn`; con `-` delante,
+         *     descendente.
+         */
+        orden?: 'username' | '-username' | 'creadoEn' | '-creadoEn';
+        /** @description Texto a buscar en el usuario (sin distinguir mayúsculas). */
+        buscar?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PaginaCuentasDto'];
+        };
+      };
+      /** @description Parámetros de paginación, búsqueda u orden inválidos */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProblemDetailsDto'];
+        };
+      };
+      /** @description Falta el token de acceso, o es inválido o expiró */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProblemDetailsDto'];
+        };
+      };
+      /** @description La sesión no es la del administrador */
+      403: {
         headers: {
           [name: string]: unknown;
         };

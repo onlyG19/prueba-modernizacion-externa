@@ -5,8 +5,9 @@ export const RUTAS = {
   panel: '/panel',
   usuarios: '/panel/usuarios',
   registrarUsuario: '/panel/usuarios/registrar',
-  /** Crear cuentas para ingresar a la consola: solo el administrador. */
+  /** Cuentas para ingresar a la consola: solo el administrador las ve y crea. */
   cuentas: '/panel/cuentas',
+  crearCuenta: '/panel/cuentas/crear',
 } as const;
 
 /** Parámetro del login con la página a la que volver tras ingresar. */

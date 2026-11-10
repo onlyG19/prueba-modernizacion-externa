@@ -2,16 +2,21 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
+import { AppConfigService } from './config/app-config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const config = app.get<AppConfigService>(ConfigService);
 
   // ── Seguridad HTTP ─────────────────────────────────────────────────────────
   app.use(helmet());
 
   // ── CORS ───────────────────────────────────────────────────────────────────
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? '*',
+    // [ANTES] origin: process.env.CORS_ORIGIN ?? '*',
+    origin: config.get('CORS_ORIGIN', { infer: true }),
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
@@ -26,6 +31,7 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
+  // [ANTES] await app.listen(process.env.PORT ?? 3000);
+  await app.listen(config.get('PORT', { infer: true }));
 }
 bootstrap();

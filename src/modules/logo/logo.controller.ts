@@ -15,6 +15,8 @@ export class LogoController {
   /**
    * GET /logo
    * Devuelve la imagen del logo UNO AFP e incrementa el contador de visitas en Redis.
+   * Si Redis no está disponible, igual devuelve el logo, sin el header
+   * `X-Request-Count`.
    */
   @Get()
   // [ANTES] async getLogo(@Res() res: Response): Promise<void> {
@@ -27,7 +29,10 @@ export class LogoController {
     const { content, contentType } = this.logoService.getLogo();
 
     // [ANTES] res.setHeader('Content-Type', contentType);
-    res.setHeader('X-Request-Count', count.toString());
+    // [ANTES] res.setHeader('X-Request-Count', count.toString());
+    if (count !== null) {
+      res.setHeader('X-Request-Count', count.toString());
+    }
 
     // [ANTES] stream.pipe(res);
     return new StreamableFile(content, {
@@ -38,7 +43,8 @@ export class LogoController {
 
   /**
    * GET /logo/count
-   * Devuelve el contador actual de solicitudes almacenado en Redis.
+   * Devuelve el contador actual de solicitudes almacenado en Redis
+   * (503 si Redis no está disponible).
    */
   @Get('count')
   async getCount(): Promise<{ count: number }> {

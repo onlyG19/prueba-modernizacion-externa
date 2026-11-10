@@ -115,6 +115,17 @@ describe('LogoController', () => {
       expect(visitCounter.increment).toHaveBeenCalledTimes(1);
       expect(setHeader).toHaveBeenCalledWith('X-Request-Count', '3');
     });
+
+    it('debe servir el logo sin X-Request-Count si el contador no está disponible', async () => {
+      visitCounter.increment.mockResolvedValue(null);
+      service.getLogo.mockReturnValue(logoSvg);
+      const { res, setHeader } = crearRespuesta();
+
+      const archivo = await controller.getLogo(res);
+
+      expect(archivo).toBeInstanceOf(StreamableFile);
+      expect(setHeader).not.toHaveBeenCalled();
+    });
   });
 
   // ── getCount ──────────────────────────────────────────────────────────────

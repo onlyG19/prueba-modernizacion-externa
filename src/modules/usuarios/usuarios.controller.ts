@@ -10,11 +10,15 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  Res,
 } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -79,6 +83,16 @@ export class UsuariosController {
       'Datos inválidos (p. ej. RUT con dígito verificador incorrecto)',
     type: ProblemDetailsDto,
   })
+  @ApiCreatedResponse({
+    description: 'El usuario creado',
+    type: UsuarioDto,
+    headers: {
+      Location: {
+        description: 'Ruta del usuario creado (p. ej. /api/v1/usuarios/7)',
+        schema: { type: 'string' },
+      },
+    },
+  })
   @ApiConflictResponse({
     description: 'Ya existe un usuario con ese RUT',
     type: ProblemDetailsDto,
@@ -88,8 +102,21 @@ export class UsuariosController {
   // [ANTES] create(@Body() dto: CreateUsuarioDto): Promise<Usuario> {
   // [ANTES]   return this.usuariosService.create(dto);
   // [ANTES] }
-  async create(@Body() dto: CreateUsuarioDto): Promise<UsuarioDto> {
-    return UsuarioDto.desde(await this.usuariosService.create(dto));
+  // [ANTES] async create(@Body() dto: CreateUsuarioDto): Promise<UsuarioDto> {
+  // [ANTES]   return UsuarioDto.desde(await this.usuariosService.create(dto));
+  // [ANTES] }
+  async create(
+    @Body() dto: CreateUsuarioDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<UsuarioDto> {
+    const creado = UsuarioDto.desde(await this.usuariosService.create(dto));
+    // Estándar HTTP: un 201 dice dónde quedó el recurso. Se arma desde la ruta
+    // de la petición, así no depende del prefijo ni de la versión de la API.
+    res.location(
+      `${req.originalUrl.split('?')[0].replace(/\/$/, '')}/${creado.id}`,
+    );
+    return creado;
   }
 
   /** Actualiza parcialmente un usuario. */

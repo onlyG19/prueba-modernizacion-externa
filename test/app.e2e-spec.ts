@@ -72,7 +72,11 @@ describe('API (e2e)', () => {
         .expect('X-Content-Type-Options', 'nosniff')
         // CORS: solo el origen configurado, y las cabeceras propias legibles
         .expect('Access-Control-Allow-Origin', ORIGEN_E2E)
-        .expect('Access-Control-Expose-Headers', 'X-Request-Count,X-Request-Id')
+        // [ANTES] .expect('Access-Control-Expose-Headers', 'X-Request-Count,X-Request-Id')
+        .expect(
+          'Access-Control-Expose-Headers',
+          'Location,X-Request-Count,X-Request-Id',
+        )
     );
   });
 

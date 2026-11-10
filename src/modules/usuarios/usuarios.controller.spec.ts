@@ -3,6 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { UsuariosController } from './usuarios.controller';
 import { UsuariosService } from './usuarios.service';
 // [ANTES] import { Usuario } from './usuario.entity';
+import type { Request, Response } from 'express';
 import { Usuario } from './entities/usuario.entity';
 
 const mockUsuariosService = () => ({
@@ -95,9 +96,26 @@ describe('UsuariosController', () => {
       const dto = { nombre: 'María López', rut: '98765432-5' };
       const creado = { id: 2, ...dto };
       service.create.mockResolvedValue(creado);
+      // [ANTES] expect(await controller.create(dto)).toEqual(creado);
+      const req = { originalUrl: '/api/v1/usuarios' } as Request;
+      const res = { location: jest.fn() } as unknown as Response;
 
-      expect(await controller.create(dto)).toEqual(creado);
+      expect(await controller.create(dto, req, res)).toEqual(creado);
       expect(service.create).toHaveBeenCalledWith(dto);
+    });
+
+    it('debe indicar en Location dónde quedó el usuario creado', async () => {
+      service.create.mockResolvedValue(usuarioBase);
+      const req = { originalUrl: '/api/v1/usuarios/?x=1' } as Request;
+      const location = jest.fn();
+
+      await controller.create(
+        { nombre: usuarioBase.nombre, rut: usuarioBase.rut },
+        req,
+        { location } as unknown as Response,
+      );
+
+      expect(location).toHaveBeenCalledWith('/api/v1/usuarios/1');
     });
   });
 

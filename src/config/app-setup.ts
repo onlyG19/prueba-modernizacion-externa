@@ -50,7 +50,8 @@ export function configureApp(app: NestExpressApplication): void {
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     // Cabeceras propias que un frontend en otro origen necesita poder leer.
-    exposedHeaders: ['X-Request-Count', 'X-Request-Id'],
+    // [ANTES] exposedHeaders: ['X-Request-Count', 'X-Request-Id'],
+    exposedHeaders: ['Location', 'X-Request-Count', 'X-Request-Id'],
   });
 
   // ── Validación global de DTOs ──────────────────────────────────────────────

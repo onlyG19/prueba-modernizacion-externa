@@ -119,6 +119,22 @@ describe('/usuarios (e2e)', () => {
       .expect('Content-Type', /^application\/problem\+json/);
   });
 
+  it('el 201 indica en Location dónde quedó el usuario, y esa ruta lo devuelve', async () => {
+    const respuesta = await api
+      .post('/usuarios')
+      .send({ nombre: 'Ana Rojas', rut: '11.111.111-1' })
+      .expect(201);
+    const creado = respuesta.body as UsuarioJson;
+
+    expect(respuesta.headers.location).toBe(
+      `${RUTA_API}/usuarios/${creado.id}`,
+    );
+    await request(app.getHttpServer())
+      .get(respuesta.headers.location)
+      .auth(token, { type: 'bearer' })
+      .expect(200, creado);
+  });
+
   it('responde 409 si el RUT ya existe, aunque venga escrito de otra forma', async () => {
     await crear('Primera Persona', '10.000.013-K');
 

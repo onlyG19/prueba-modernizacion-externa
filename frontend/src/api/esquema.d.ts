@@ -422,8 +422,11 @@ export interface operations {
       };
     };
     responses: {
+      /** @description El usuario creado */
       201: {
         headers: {
+          /** @description Ruta del usuario creado (p. ej. /api/v1/usuarios/7) */
+          Location?: string;
           [name: string]: unknown;
         };
         content: {

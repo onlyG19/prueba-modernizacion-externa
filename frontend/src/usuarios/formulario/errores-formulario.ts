@@ -58,6 +58,11 @@ export function erroresDeServidor(
       case 401:
         // La sesión se cierra de forma global (ver cliente-consultas.ts).
         return {};
+      case 429:
+        return {
+          general:
+            'Demasiadas solicitudes seguidas. Espera un momento e inténtalo de nuevo.',
+        };
     }
   }
   if (error instanceof ErrorDeConexion) {

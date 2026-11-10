@@ -4,7 +4,9 @@ import {
   ApiOkResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Public } from '../../common/decorators/public.decorator';
+import { LIMITE_LOGIN } from '../../config/limites';
 // [ANTES] import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { ProblemDetailsDto } from '../../common/dto/problem-details.dto';
 // [ANTES] import { AccessTokenResponse, AuthService } from './auth.service';
@@ -31,6 +33,8 @@ export class AuthController {
     description: 'Credenciales inválidas',
     type: ProblemDetailsDto,
   })
+  // Más estricto que el general: frena la fuerza bruta de contraseñas.
+  @Throttle({ default: LIMITE_LOGIN })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   // [ANTES] login(@Body() dto: LoginDto): Promise<AccessTokenResponse> {

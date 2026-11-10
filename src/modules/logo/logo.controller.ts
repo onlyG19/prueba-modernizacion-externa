@@ -8,7 +8,9 @@ import {
   ApiProduces,
   ApiServiceUnavailableResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Public } from '../../common/decorators/public.decorator';
+import { LIMITE_LOGO } from '../../config/limites';
 // [ANTES] import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { ProblemDetailsDto } from '../../common/dto/problem-details.dto';
 import { VisitCountDto } from './dto/visit-count.dto';
@@ -40,6 +42,8 @@ export class LogoController {
       },
     },
   })
+  // Cada petición suma una visita: un límite propio evita inflar el contador.
+  @Throttle({ default: LIMITE_LOGO })
   @Get()
   // [ANTES] async getLogo(@Res() res: Response): Promise<void> {
   async getLogo(

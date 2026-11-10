@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 // [ANTES] import { ValidationPipe } from '@nestjs/common';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
@@ -10,9 +11,18 @@ import { Environment } from './config/env.validation';
 import { setupSwagger } from './config/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // [ANTES] const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const config = app.get<AppConfigService>(ConfigService);
+
+  // ── Proxy de confianza ─────────────────────────────────────────────────────
+  // Detrás de nginx, la IP real del cliente viene en X-Forwarded-For: sin esto,
+  // el límite de peticiones trataría a todos los usuarios como uno solo.
+  const saltosProxy = config.get('TRUST_PROXY', { infer: true });
+  if (saltosProxy > 0) {
+    app.set('trust proxy', saltosProxy);
+  }
 
   // ── Apagado ordenado ───────────────────────────────────────────────────────
   // Ante SIGTERM/SIGINT ejecuta los hooks de cierre (p. ej. cerrar Redis).

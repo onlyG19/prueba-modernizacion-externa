@@ -77,6 +77,15 @@ export class EnvironmentVariables {
   @IsString()
   REDIS_PASSWORD?: string;
 
+  /**
+   * Saltos de proxy de confianza (p. ej. 1 detrás de nginx). Con 0, la IP del
+   * cliente es la de la conexión. No se debe activar sin un proxy delante:
+   * cualquiera podría falsificar su IP con el header X-Forwarded-For.
+   */
+  @IsInt()
+  @Min(0)
+  TRUST_PROXY: number = 0;
+
   /** Secreto con que se firman los JWT. Sin valor por defecto, a propósito. */
   @IsString()
   @MinLength(32, { message: 'JWT_SECRET debe tener al menos 32 caracteres' })

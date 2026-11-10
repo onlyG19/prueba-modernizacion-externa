@@ -21,6 +21,9 @@ function mensajeDeLogin(error: unknown): string {
   if (error instanceof ApiError && error.status === 401) {
     return 'Usuario o contraseña incorrectos. Revísalos e inténtalo de nuevo.';
   }
+  if (error instanceof ApiError && error.status === 429) {
+    return 'Demasiados intentos de ingreso. Espera un minuto e inténtalo de nuevo.';
+  }
   if (error instanceof ApiError && error.status === 400) {
     return 'Escribe tu usuario y tu contraseña.';
   }

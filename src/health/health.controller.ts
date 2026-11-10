@@ -9,6 +9,7 @@ import type { Response } from 'express';
 import { ApiOkResponse, ApiServiceUnavailableResponse } from '@nestjs/swagger';
 import Redis from 'ioredis';
 import { DataSource } from 'typeorm';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Public } from '../common/decorators/public.decorator';
 import { REDIS_CLIENT } from '../infrastructure/redis/redis.provider';
 import {
@@ -20,6 +21,8 @@ import {
 export const PROBE_TIMEOUT_MS = 3000;
 
 @Public()
+// Los healthchecks consultan seguido: no deben consumir el límite de nadie.
+@SkipThrottle()
 @Controller('health')
 export class HealthController {
   constructor(

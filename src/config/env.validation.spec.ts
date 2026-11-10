@@ -54,6 +54,14 @@ describe('validateEnv', () => {
     );
   });
 
+  it('debe dejar TRUST_PROXY en 0 por defecto y rechazar valores negativos', () => {
+    expect(validateEnv(minimas).TRUST_PROXY).toBe(0);
+    expect(validateEnv({ ...minimas, TRUST_PROXY: '1' }).TRUST_PROXY).toBe(1);
+    expect(() => validateEnv({ ...minimas, TRUST_PROXY: '-1' })).toThrow(
+      'TRUST_PROXY',
+    );
+  });
+
   it('debe aceptar REDIS_PASSWORD como opcional', () => {
     expect(validateEnv(minimas).REDIS_PASSWORD).toBeUndefined();
     expect(

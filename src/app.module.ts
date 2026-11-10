@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+// [ANTES] import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,6 +17,7 @@ import { HealthModule } from './health/health.module';
 import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
 // [ANTES] import { Usuario } from './modules/usuarios/entities/usuario.entity';
 import { validateEnv } from './config/env.validation';
+import { LIMITE_GENERAL, MENSAJE_LIMITE } from './config/limites';
 import { AppConfigService } from './config/app-config';
 import { buildDataSourceOptions } from './infrastructure/database/database.options';
 
@@ -22,6 +25,10 @@ import { buildDataSourceOptions } from './infrastructure/database/database.optio
   imports: [
     // [ANTES] ConfigModule.forRoot({ isGlobal: true }),
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
+    ThrottlerModule.forRoot({
+      throttlers: [{ name: 'default', ...LIMITE_GENERAL }],
+      errorMessage: MENSAJE_LIMITE,
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -47,6 +54,8 @@ import { buildDataSourceOptions } from './infrastructure/database/database.optio
     AppService,
     // Todas las respuestas de error en formato Problem Details (RFC 9457).
     { provide: APP_FILTER, useClass: ProblemDetailsFilter },
+    // Límite de peticiones por IP en toda la API (ver config/limites.ts).
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}

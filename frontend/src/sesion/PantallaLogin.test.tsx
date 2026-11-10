@@ -78,6 +78,26 @@ describe('Login', () => {
     );
   });
 
+  it('debe pedir esperar si la API limitó los intentos (429)', async () => {
+    servidor.use(
+      http.post('/api/auth/login', () =>
+        HttpResponse.json(
+          { type: 'about:blank', title: 'Too Many Requests', status: 429 },
+          { status: 429 },
+        ),
+      ),
+    );
+    const { usuario } = renderizarSinSesion();
+
+    await usuario.type(screen.getByLabelText('Usuario'), 'admin');
+    await usuario.type(screen.getByLabelText('Contraseña'), 'x');
+    await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Demasiados intentos de ingreso. Espera un minuto',
+    );
+  });
+
   it('no debe tener violaciones de accesibilidad detectables', async () => {
     prepararApi();
     renderizarSinSesion();

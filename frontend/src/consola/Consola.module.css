@@ -1,12 +1,63 @@
+/* Encabezado arriba, navegación a la izquierda y la página a la derecha. */
+.consola {
+  display: grid;
+  grid-template-columns: 15.5rem minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'encabezado encabezado'
+    'lateral contenido';
+  min-height: 100dvh;
+}
+
+.consola > header {
+  grid-area: encabezado;
+}
+
+.consola > nav {
+  grid-area: lateral;
+}
+
 .contenido {
+  grid-area: contenido;
   width: 100%;
   max-width: 76rem;
-  margin: 0 auto;
-  padding: var(--esp-6) var(--esp-5) var(--esp-7);
+  padding: var(--esp-6) var(--esp-6) var(--esp-7);
 }
 
 .contenido:focus:not(:focus-visible) {
   outline: none;
+}
+
+/* Los títulos reciben el foco al navegar: sin contorno por clic, sí por teclado. */
+.contenido h1:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.noEncontrada {
+  display: grid;
+  justify-items: start;
+  gap: var(--esp-3);
+}
+
+.noEncontrada h1 {
+  font-size: var(--texto-xl);
+}
+
+.noEncontrada a {
+  font-weight: var(--peso-fuerte);
+  color: var(--color-accion);
+}
+
+/* En pantallas angostas la navegación pasa a ser una franja bajo el encabezado. */
+@media (max-width: 56rem) {
+  .consola {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      'encabezado'
+      'lateral'
+      'contenido';
+  }
 }
 
 @media (max-width: 40rem) {

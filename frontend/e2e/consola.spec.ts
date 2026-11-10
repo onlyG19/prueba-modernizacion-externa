@@ -16,9 +16,23 @@ async function ingresar(pagina: Page) {
   await pagina.getByLabel('Usuario').fill(ADMIN.usuario);
   await pagina.getByLabel('Contraseña').fill(ADMIN.clave);
   await pagina.getByRole('button', { name: 'Ingresar' }).click();
-  await expect(
-    pagina.getByRole('heading', { name: 'Registro de usuarios' }),
-  ).toBeVisible();
+  // [ANTES] await expect(pagina.getByRole('heading', { name: 'Registro de usuarios' })).toBeVisible();
+  await expect(pagina.getByRole('heading', { name: 'Resumen' })).toBeVisible();
+}
+
+/** Desde cualquier página del panel: barra lateral → Usuarios → una pestaña. */
+async function abrirPestana(
+  pagina: Page,
+  pestana: 'Tabla de usuarios' | 'Registrar usuario',
+) {
+  await pagina
+    .getByRole('navigation', { name: 'Panel' })
+    .getByRole('link', { name: 'Usuarios' })
+    .click();
+  await pagina
+    .getByRole('navigation', { name: 'Secciones de usuarios' })
+    .getByRole('link', { name: pestana })
+    .click();
 }
 
 async function registrar(pagina: Page, nombre: string, rut: string) {
@@ -29,6 +43,11 @@ async function registrar(pagina: Page, nombre: string, rut: string) {
 
 /** Corre axe-core dentro del navegador real: aquí sí se mide el contraste. */
 async function violacionesDeAccesibilidad(pagina: Page) {
+  // Se mide el estado final: a mitad de una animación de entrada (opacidad
+  // parcial) el contraste sale más bajo de lo que de verdad se ve.
+  await pagina.evaluate(() =>
+    Promise.all(document.getAnimations().map((a) => a.finished)),
+  );
   await pagina.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
   return pagina.evaluate(async () =>
     (await window.axe.run()).violations.map(
@@ -41,6 +60,7 @@ test('ciclo completo: registrar, editar, buscar, recargar y eliminar', async ({
   page,
 }) => {
   await ingresar(page);
+  await abrirPestana(page, 'Registrar usuario');
 
   await registrar(page, 'Ana Rojas', '111111111');
   await expect(
@@ -48,13 +68,39 @@ test('ciclo completo: registrar, editar, buscar, recargar y eliminar', async ({
       .getByRole('status')
       .filter({ hasText: 'Usuario registrado: Ana Rojas.' }),
   ).toBeVisible();
+  // El registro está en otra pestaña: el enlace abre la tabla filtrada por su RUT.
+  await page.getByRole('link', { name: 'Verlo en la tabla' }).click();
   await expect(page.getByRole('row', { name: /Ana Rojas/ })).toContainText(
     '11.111.111-1',
   );
 
-  await page.getByRole('button', { name: 'Editar a Ana Rojas' }).click();
-  await page.getByLabel('Nombre', { exact: true }).fill('Ana María Rojas');
-  await page.getByRole('button', { name: 'Guardar cambios' }).click();
+  // [ANTES] await page.getByRole('button', { name: 'Editar a Ana Rojas' }).click();
+  // [ANTES] await page.getByLabel('Nombre', { exact: true }).fill('Ana María Rojas');
+  // [ANTES] await page.getByRole('button', { name: 'Guardar cambios' }).click();
+  // El ojo abre el detalle en una ventana modal; el lápiz, dentro, la edición.
+  await page.getByRole('button', { name: 'Ver detalle de Ana Rojas' }).click();
+  const ventana = page.getByRole('dialog', { name: 'Ana Rojas' });
+  await expect(ventana).toContainText('11.111.111-1');
+  // Con `showModal()` el resto de la página queda inerte: Tab recorre la
+  // ventana y nunca llega a la tabla de fondo. (Tras el último botón el foco
+  // puede ir a la barra del navegador, y entonces `activeElement` es `body`.)
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press('Tab');
+    const enElFondo = await page.evaluate(
+      () =>
+        document.activeElement !== document.body &&
+        document.activeElement?.closest('dialog') === null,
+    );
+    expect(enElFondo).toBe(false);
+  }
+  await ventana.getByRole('button', { name: 'Editar' }).click();
+  await ventana.getByLabel('Nombre', { exact: true }).fill('Ana María Rojas');
+  await ventana.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(
+    page.getByText('Se guardaron los cambios de Ana María Rojas.'),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(
     page.getByRole('row', { name: /Ana María Rojas/ }),
   ).toBeVisible();
@@ -91,16 +137,24 @@ test('un RUT duplicado lo rechaza Postgres (UNIQUE) y la interfaz lo explica', a
   page,
 }) => {
   await ingresar(page);
+  await abrirPestana(page, 'Registrar usuario');
 
   await registrar(page, 'Primera Persona', '10000013k');
+  // [ANTES] await expect(page.getByRole('row', { name: /Primera Persona/ })).toBeVisible();
   await expect(
-    page.getByRole('row', { name: /Primera Persona/ }),
+    page
+      .getByRole('status')
+      .filter({ hasText: 'Usuario registrado: Primera Persona.' }),
   ).toBeVisible();
 
   // Mismo RUT escrito de otra forma: el backend lo normaliza y choca con UNIQUE.
   await registrar(page, 'Segunda Persona', '10.000.013-K');
   await expect(
     page.getByText(/Ya existe un usuario con el RUT 10\.000\.013-K/),
+  ).toBeVisible();
+  await abrirPestana(page, 'Tabla de usuarios');
+  await expect(
+    page.getByRole('row', { name: /Primera Persona/ }),
   ).toBeVisible();
   await expect(page.getByRole('row', { name: /Segunda Persona/ })).toHaveCount(
     0,
@@ -122,20 +176,41 @@ test('cerrar sesión vuelve al login y una recarga no recupera la consola', asyn
   await expect(
     page.getByRole('heading', { name: 'Consola de usuarios' }),
   ).toBeVisible();
+  await expect(page.getByText('Cerraste sesión.')).toBeVisible();
 
   await page.reload();
   await expect(page.getByRole('button', { name: 'Ingresar' })).toBeVisible();
+
+  // Sin sesión, el panel redirige al login recordando la página pedida.
+  await page.goto('/panel/usuarios');
+  await expect(page).toHaveURL(/\/ingresar\?volver=%2Fpanel%2Fusuarios$/);
 });
 
 test('sin violaciones de accesibilidad en el navegador real, contraste incluido', async ({
   page,
 }) => {
+  // [ANTES] await page.goto('/');
+  // [ANTES] expect(await violacionesDeAccesibilidad(page)).toEqual([]);
   await page.goto('/');
+  await expect(page.getByText(/Actualizado a las/)).toBeVisible();
+  expect(await violacionesDeAccesibilidad(page)).toEqual([]);
+
+  await page.goto('/ingresar');
   expect(await violacionesDeAccesibilidad(page)).toEqual([]);
 
   await ingresar(page);
   await expect(
     page.getByText(/visitas al logo|Visitas no disponibles/),
   ).toBeVisible();
+  expect(await violacionesDeAccesibilidad(page)).toEqual([]);
+
+  // La tabla, y la ventana de detalle abierta sobre ella.
+  await abrirPestana(page, 'Registrar usuario');
+  await registrar(page, 'Carla Soto', '22222222-2');
+  await abrirPestana(page, 'Tabla de usuarios');
+  await expect(page.getByRole('row', { name: /Carla Soto/ })).toBeVisible();
+  expect(await violacionesDeAccesibilidad(page)).toEqual([]);
+  await page.getByRole('button', { name: 'Ver detalle de Carla Soto' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
   expect(await violacionesDeAccesibilidad(page)).toEqual([]);
 });

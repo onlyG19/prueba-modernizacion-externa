@@ -147,6 +147,16 @@ export function crearApiFalsa({
         : noAutorizado(),
     ),
 
+    http.get('/api/v1/usuarios/:id', ({ request, params }) => {
+      if (!autorizado(request)) {
+        return noAutorizado();
+      }
+      const usuario = estado.usuarios.find((u) => u.id === params.id);
+      return usuario
+        ? HttpResponse.json(usuario)
+        : error(404, 'Usuario no encontrado', 'Not Found');
+    }),
+
     // [ANTES] http.post('/api/usuarios', async ({ request }) => {
     http.post('/api/v1/usuarios', async ({ request }) => {
       if (!autorizado(request)) {

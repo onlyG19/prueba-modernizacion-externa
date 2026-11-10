@@ -18,6 +18,8 @@ import type {
 import { useSesionActiva } from '../sesion/sesion-contexto';
 
 const CLAVE_USUARIOS = ['usuarios'] as const;
+const claveDetalle = (id: Usuario['id']) =>
+  [...CLAVE_USUARIOS, 'detalle', id] as const;
 
 export const USUARIOS_POR_PAGINA = 20;
 
@@ -63,6 +65,24 @@ export function useUsuarios({ pagina, busqueda, orden }: FiltroUsuarios) {
     },
     // Mientras llega la página nueva se sigue viendo la anterior: sin parpadeo.
     placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * Un usuario por su id, para el detalle. Mientras llega se muestran los datos
+ * de la fila (`placeholderData`): el detalle se abre al instante y se
+ * completa con la versión vigente del servidor.
+ *
+ * @remarks La clave cuelga de `['usuarios']`: las mutaciones, que invalidan
+ * esa clave, también refrescan el detalle abierto.
+ */
+export function useUsuario(deLaFila: Usuario) {
+  const { token } = useSesionActiva();
+  return useQuery({
+    queryKey: claveDetalle(deLaFila.id),
+    queryFn: ({ signal }) =>
+      solicitarJson<Usuario>(`/usuarios/${deLaFila.id}`, { token, signal }),
+    placeholderData: deLaFila,
   });
 }
 
@@ -121,7 +141,13 @@ export function useActualizarUsuario() {
     // [ANTES]     actuales.map((u) => (u.id === actualizado.id ? actualizado : u)),
     // [ANTES]   );
     // [ANTES] },
-    onSuccess: () => cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS }),
+    // [ANTES] onSuccess: () => cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS }),
+    onSuccess: (actualizado) => {
+      // El detalle abierto muestra al instante lo que respondió el servidor,
+      // sin pasar un momento por los datos de antes.
+      cliente.setQueryData(claveDetalle(actualizado.id), actualizado);
+      return cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS });
+    },
     // 412: otra persona lo cambió. Se recarga la lista para mostrar su versión.
     onError: (error) => {
       if (error instanceof ApiError && error.status === 412) {

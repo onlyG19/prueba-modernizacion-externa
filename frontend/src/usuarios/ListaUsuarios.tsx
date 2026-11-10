@@ -8,6 +8,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 // [ANTES] import type { Usuario } from '../api/tipos';
 import type { OrdenUsuarios, Usuario } from '../api/tipos';
+import { Enlace } from '../rutas/Enlace';
+import { RUTAS } from '../rutas/rutas';
 import { BotonSecundario } from '../ui/botones';
 import { clases } from '../ui/clases';
 import { IconoBuscar } from '../ui/iconos';
@@ -146,16 +148,22 @@ function escribirFiltroEnUrl(
 
 interface Props {
   // [ANTES] idEnEdicion: number | null;
-  idEnEdicion: Usuario['id'] | null;
+  // [ANTES] idEnEdicion: Usuario['id'] | null;
+  /** El usuario abierto en la ventana de detalle: su fila queda marcada. */
+  idSeleccionado: Usuario['id'] | null;
   // [ANTES] idResaltado: number | null;
   idResaltado: Usuario['id'] | null;
+  onVer: (usuario: Usuario) => void;
   onEditar: (usuario: Usuario) => void;
-  onEliminado: (usuario: Usuario) => void;
+  // [ANTES] onEliminado: (usuario: Usuario) => void;
+  onEliminado?: (usuario: Usuario) => void;
 }
 
 export function ListaUsuarios({
-  idEnEdicion,
+  // [ANTES] idEnEdicion,
+  idSeleccionado,
   idResaltado,
+  onVer,
   onEditar,
   onEliminado,
 }: Props) {
@@ -218,7 +226,8 @@ export function ListaUsuarios({
   function manejarEliminado(usuario: Usuario) {
     // La fila desaparece: el foco pasa al título de la lista y no se pierde.
     refTitulo.current?.focus();
-    onEliminado(usuario);
+    // [ANTES] onEliminado(usuario);
+    onEliminado?.(usuario);
   }
 
   // [ANTES] const total = usuarios.data?.length ?? 0;
@@ -255,10 +264,20 @@ export function ListaUsuarios({
     );
     // [ANTES] } else if (total === 0) {
   } else if (total === 0 && !terminoBuscado) {
+    // [ANTES] contenido = (
+    // [ANTES]   <p className={estilos.estado}>
+    // [ANTES]     Todavía no hay usuarios registrados. Registra el primero con el
+    // [ANTES]     formulario.
+    // [ANTES]   </p>
+    // [ANTES] );
+    // El formulario está en otra pestaña: un enlace lleva directo a él.
     contenido = (
       <p className={estilos.estado}>
-        Todavía no hay usuarios registrados. Registra el primero con el
-        formulario.
+        Todavía no hay usuarios registrados.{' '}
+        <Enlace href={RUTAS.registrarUsuario} className={estilos.enlace}>
+          Registra el primero
+        </Enlace>
+        .
       </p>
     );
     // [ANTES] } else if (visibles.length === 0) {
@@ -287,25 +306,32 @@ export function ListaUsuarios({
             <tr>
               <th scope="col">Nombre</th>
               <th scope="col">RUT</th>
-              <th scope="col">
-                <span className="sr-only">Acciones</span>
+              <th scope="col">Registrado</th>
+              {/* [ANTES] <th scope="col"><span className="sr-only">Acciones</span></th> */}
+              <th scope="col" className={estilos.columnaAcciones}>
+                Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            {visibles.map((usuario) =>
-              usuario.id === idEnEdicion ? (
-                <FilaUsuario.EnEdicion key={usuario.id} usuario={usuario} />
-              ) : (
-                <FilaUsuario.Normal
-                  key={usuario.id}
-                  usuario={usuario}
-                  resaltada={usuario.id === idResaltado}
-                  onEditar={onEditar}
-                  onEliminado={manejarEliminado}
-                />
-              ),
-            )}
+            {/* [ANTES] {visibles.map((usuario) => */}
+            {/* [ANTES]   usuario.id === idEnEdicion ? ( */}
+            {/* [ANTES]     <FilaUsuario.EnEdicion key={usuario.id} usuario={usuario} /> */}
+            {/* [ANTES]   ) : ( */}
+            {/* [ANTES]     <FilaUsuario.Normal key={usuario.id} usuario={usuario} resaltada={usuario.id === idResaltado} onEditar={onEditar} onEliminado={manejarEliminado} /> */}
+            {/* [ANTES]   ), */}
+            {/* [ANTES] )} */}
+            {visibles.map((usuario) => (
+              <FilaUsuario.Normal
+                key={usuario.id}
+                usuario={usuario}
+                resaltada={usuario.id === idResaltado}
+                seleccionada={usuario.id === idSeleccionado}
+                onVer={onVer}
+                onEditar={onEditar}
+                onEliminado={manejarEliminado}
+              />
+            ))}
           </tbody>
         </table>
         <Paginacion

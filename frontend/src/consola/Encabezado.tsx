@@ -1,3 +1,6 @@
+import { Enlace } from '../rutas/Enlace';
+import { navegar } from '../rutas/navegacion';
+import { RUTAS } from '../rutas/rutas';
 import { useSesion, useSesionActiva } from '../sesion/sesion-contexto';
 import { BotonSecundario } from '../ui/botones';
 import { IconoSalir } from '../ui/iconos';
@@ -22,7 +25,7 @@ function textoVisitas(
   }
   const visitas = logo.visitas;
   // Espacio duro: el número no queda separado de "visitas" al ajustar línea.
-  return `${FORMATO_NUMERO.format(visitas)}\u00a0${visitas === 1 ? 'visita' : 'visitas'} al logo`;
+  return `${FORMATO_NUMERO.format(visitas)} ${visitas === 1 ? 'visita' : 'visitas'} al logo`;
 }
 
 export function Encabezado() {
@@ -30,22 +33,35 @@ export function Encabezado() {
   const sesion = useSesionActiva();
   const logo = useLogo();
 
+  function cerrarSesion() {
+    actions.cerrarSesion('manual');
+    // En el mismo evento: React muestra el login de una vez, sin pasar por
+    // la redirección que haría la consola al quedarse sin sesión.
+    navegar(RUTAS.ingresar);
+  }
+
   return (
     <header className={estilos.encabezado}>
       <div className={estilos.marca}>
-        {logo.data ? (
-          <img
-            className={estilos.logo}
-            src={logo.data.src}
-            alt="Uno"
-            width={ANCHO_LOGO}
-            height={ALTO_LOGO}
-          />
-        ) : (
-          // Reserva el espacio del logo: la página no salta al cargarlo.
-          <span className={estilos.reservaLogo} aria-hidden="true" />
-        )}
-        <h1 className={estilos.titulo}>Registro de usuarios</h1>
+        <Enlace href={RUTAS.panel} className={estilos.enlaceLogo}>
+          {logo.data ? (
+            <img
+              className={estilos.logo}
+              src={logo.data.src}
+              alt="Uno"
+              width={ANCHO_LOGO}
+              height={ALTO_LOGO}
+            />
+          ) : (
+            // Reserva el espacio del logo: la página no salta al cargarlo.
+            <span className={estilos.reservaLogo}>
+              <span className="sr-only">Uno</span>
+            </span>
+          )}
+        </Enlace>
+        {/* [ANTES] <h1 className={estilos.titulo}>Registro de usuarios</h1> */}
+        {/* Cada página tiene su propio h1: el nombre del producto no es un título. */}
+        <p className={estilos.titulo}>Consola de usuarios</p>
       </div>
 
       <div className={estilos.herramientas}>
@@ -53,10 +69,14 @@ export function Encabezado() {
           {textoVisitas(logo.isPending, logo.data)}
         </p>
         <p className={estilos.usuario}>
+          <span className={estilos.avatar} aria-hidden="true">
+            {sesion.usuario.charAt(0).toUpperCase()}
+          </span>
           <span className="sr-only">Sesión iniciada como </span>
           <span translate="no">{sesion.usuario}</span>
         </p>
-        <BotonSecundario onClick={() => actions.cerrarSesion('manual')}>
+        {/* [ANTES] <BotonSecundario onClick={() => actions.cerrarSesion('manual')}> */}
+        <BotonSecundario onClick={cerrarSesion}>
           <IconoSalir />
           Cerrar sesión
         </BotonSecundario>

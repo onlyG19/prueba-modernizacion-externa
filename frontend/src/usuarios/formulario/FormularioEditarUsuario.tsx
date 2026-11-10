@@ -10,10 +10,18 @@ import { useEstadoFormulario } from './useEstadoFormulario';
 
 interface Props {
   usuario: Usuario;
+  /** Al guardar, cancelar o pulsar Escape. */
   onTerminar: () => void;
+  /** Solo tras guardar, con el usuario como quedó en el servidor. */
+  onGuardado?: (actualizado: Usuario) => void;
 }
 
-export function FormularioEditarUsuario({ usuario, onTerminar }: Props) {
+// [ANTES] export function FormularioEditarUsuario({ usuario, onTerminar }: Props) {
+export function FormularioEditarUsuario({
+  usuario,
+  onTerminar,
+  onGuardado,
+}: Props) {
   const actualizar = useActualizarUsuario();
   const anunciar = useAnunciar();
 
@@ -43,6 +51,7 @@ export function FormularioEditarUsuario({ usuario, onTerminar }: Props) {
         cambios,
       });
       anunciar(`Cambios guardados: ${actualizado.nombre}.`);
+      onGuardado?.(actualizado);
     },
     alGuardar: () => onTerminar(),
   });

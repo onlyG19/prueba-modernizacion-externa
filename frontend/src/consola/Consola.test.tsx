@@ -29,6 +29,9 @@ function filasVisibles() {
   return within(screen.getByRole('table')).getAllByRole('row').slice(1);
 }
 
+/** La ventana de detalle abierta (falla si no hay una). */
+const ventana = () => screen.getByRole('dialog');
+
 /** 25 usuarios: más de una página (20 por página). */
 const VEINTICINCO_USUARIOS = Array.from({ length: 25 }, (_, i) => ({
   // [ANTES] id: i + 1,
@@ -220,10 +223,19 @@ describe('Lista de usuarios', () => {
 
   it('debe invitar a registrar el primero cuando no hay usuarios', async () => {
     prepararApi({ usuarios: [] });
-    renderizarConSesion();
+    // [ANTES] renderizarConSesion();
+    const { usuario } = renderizarConSesion();
 
     expect(
       await screen.findByText(/Todavía no hay usuarios registrados/),
+    ).toBeInTheDocument();
+    // El formulario está en la otra pestaña: el enlace lleva a él.
+    await usuario.click(
+      screen.getByRole('link', { name: 'Registra el primero' }),
+    );
+    expect(window.location.pathname).toBe(RUTAS.registrarUsuario);
+    expect(
+      screen.getByRole('heading', { name: 'Registrar usuario' }),
     ).toBeInTheDocument();
   });
 
@@ -281,12 +293,15 @@ describe('Lista de usuarios', () => {
 });
 
 describe('Registrar usuario', () => {
-  it('debe registrar un usuario, mostrarlo en la lista y dejar el formulario listo para otro', async () => {
+  // [ANTES] it('debe registrar un usuario, mostrarlo en la lista y dejar el formulario listo para otro', async () => {
+  it('debe registrar un usuario, dejar el formulario listo para otro y llevar a verlo en la tabla', async () => {
     const api = prepararApi();
-    const { usuario } = renderizarConSesion();
-    await filas();
+    // [ANTES] const { usuario } = renderizarConSesion();
+    // [ANTES] await filas();
+    const { usuario } = renderizarConSesion(RUTAS.registrarUsuario);
 
-    await usuario.type(screen.getByLabelText('Nombre'), 'Ana Rojas');
+    // [ANTES] await usuario.type(screen.getByLabelText('Nombre'), 'Ana Rojas');
+    await usuario.type(await screen.findByLabelText('Nombre'), 'Ana Rojas');
     await usuario.type(screen.getByLabelText('RUT'), '111111111');
     await usuario.click(
       screen.getByRole('button', { name: 'Registrar usuario' }),
@@ -296,19 +311,31 @@ describe('Registrar usuario', () => {
       await screen.findByText('Usuario registrado: Ana Rojas.'),
     ).toBeInTheDocument();
     // [ANTES] expect(await filas()).toHaveLength(3);
-    await waitFor(() => expect(filasVisibles()).toHaveLength(3));
+    // [ANTES] await waitFor(() => expect(filasVisibles()).toHaveLength(3));
     // Se envía el RUT en forma canónica, sin puntos.
     expect(api.estado.recibidos.creaciones).toEqual([
       { nombre: 'Ana Rojas', rut: '11111111-1' },
     ]);
     expect(screen.getByLabelText('Nombre')).toHaveValue('');
     expect(screen.getByLabelText('Nombre')).toHaveFocus();
+
+    // La tabla se abre filtrada por su RUT: el recién registrado queda a la vista.
+    await usuario.click(
+      screen.getByRole('link', { name: 'Verlo en la tabla' }),
+    );
+    await waitFor(() => expect(filasVisibles()).toHaveLength(1));
+    expect(filasVisibles()[0]).toHaveTextContent('Ana Rojas');
+    expect(screen.getByLabelText('Buscar por nombre o RUT')).toHaveValue(
+      '11.111.111-1',
+    );
   });
 
   it('debe explicar el dígito verificador esperado sin llamar a la API', async () => {
     const api = prepararApi();
-    const { usuario } = renderizarConSesion();
-    await filas();
+    // [ANTES] const { usuario } = renderizarConSesion();
+    // [ANTES] await filas();
+    const { usuario } = renderizarConSesion(RUTAS.registrarUsuario);
+    await screen.findByLabelText('Nombre');
 
     await usuario.type(screen.getByLabelText('Nombre'), 'Ana Rojas');
     await usuario.type(screen.getByLabelText('RUT'), '123456789');
@@ -327,8 +354,10 @@ describe('Registrar usuario', () => {
 
   it('debe pedir los campos obligatorios y llevar el foco al primero', async () => {
     prepararApi();
-    const { usuario } = renderizarConSesion();
-    await filas();
+    // [ANTES] const { usuario } = renderizarConSesion();
+    // [ANTES] await filas();
+    const { usuario } = renderizarConSesion(RUTAS.registrarUsuario);
+    await screen.findByLabelText('Nombre');
 
     await usuario.click(
       screen.getByRole('button', { name: 'Registrar usuario' }),
@@ -343,8 +372,10 @@ describe('Registrar usuario', () => {
 
   it('debe mostrar el conflicto en el campo RUT si ya existe (409)', async () => {
     prepararApi();
-    const { usuario } = renderizarConSesion();
-    await filas();
+    // [ANTES] const { usuario } = renderizarConSesion();
+    // [ANTES] await filas();
+    const { usuario } = renderizarConSesion(RUTAS.registrarUsuario);
+    await screen.findByLabelText('Nombre');
 
     await usuario.type(screen.getByLabelText('Nombre'), 'Otro Juan');
     await usuario.type(screen.getByLabelText('RUT'), '12.345.678-5');
@@ -364,8 +395,10 @@ describe('Registrar usuario', () => {
 describe('Cambios sin guardar', () => {
   it('debe pedir confirmación al salir de la página solo si hay datos escritos', async () => {
     prepararApi();
-    const { usuario } = renderizarConSesion();
-    await filas();
+    // [ANTES] const { usuario } = renderizarConSesion();
+    // [ANTES] await filas();
+    const { usuario } = renderizarConSesion(RUTAS.registrarUsuario);
+    await screen.findByLabelText('Nombre');
     const intentarSalir = () => {
       const evento = new Event('beforeunload', { cancelable: true });
       window.dispatchEvent(evento);
@@ -375,6 +408,100 @@ describe('Cambios sin guardar', () => {
     expect(intentarSalir()).toBe(false);
     await usuario.type(screen.getByLabelText('Nombre'), 'Ana');
     expect(intentarSalir()).toBe(true);
+  });
+});
+
+describe('Detalle de un usuario', () => {
+  it('debe abrir con el ojo una ventana con el detalle, marcando su fila', async () => {
+    prepararApi({
+      usuarios: [
+        {
+          id: 'u3',
+          nombre: 'María López',
+          rut: '9876543-3',
+          creadoEn: '2026-11-10T12:00:00.000Z',
+          actualizadoEn: '2026-11-10T15:30:00.000Z',
+          version: 4,
+        },
+      ],
+    });
+    const { usuario } = renderizarConSesion();
+    await filas();
+
+    await usuario.click(
+      screen.getByRole('button', { name: 'Ver detalle de María López' }),
+    );
+
+    const detalle = within(ventana());
+    expect(ventana()).toHaveAccessibleName('María López');
+    expect(detalle.getByText('9.876.543-3')).toBeInTheDocument();
+    // Registrado el y último cambio: el mismo día, a distinta hora.
+    expect(detalle.getAllByText(/10 de noviembre de 2026/)).toHaveLength(2);
+    expect(detalle.getByText('4')).toBeInTheDocument();
+    expect(detalle.getByText('u3')).toBeInTheDocument();
+    // La fila de la persona abierta queda marcada tras la ventana.
+    expect(filasVisibles()[0].className).toMatch(/seleccionada/);
+  });
+
+  it('debe pasar a editar con el lápiz, volver al detalle al cancelar y cerrar devolviendo el foco', async () => {
+    const api = prepararApi();
+    const { usuario } = renderizarConSesion();
+    await filas();
+
+    await usuario.click(
+      screen.getByRole('button', { name: 'Ver detalle de Juan Pérez' }),
+    );
+    await usuario.click(
+      within(ventana()).getByRole('button', { name: 'Editar' }),
+    );
+    expect(
+      within(ventana()).getByRole('heading', { name: 'Editar usuario' }),
+    ).toBeInTheDocument();
+    expect(within(ventana()).getByLabelText('Nombre')).toHaveFocus();
+
+    await usuario.click(
+      within(ventana()).getByRole('button', { name: 'Cancelar' }),
+    );
+    expect(
+      within(ventana()).queryByRole('heading', { name: 'Editar usuario' }),
+    ).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        within(ventana()).getByRole('button', { name: 'Editar' }),
+      ).toHaveFocus(),
+    );
+
+    await usuario.click(
+      within(ventana()).getByRole('button', { name: 'Cerrar' }),
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Ver detalle de Juan Pérez' }),
+      ).toHaveFocus(),
+    );
+    expect(api.estado.recibidos.cambios).toEqual([]);
+  });
+
+  it('debe avisar si otra persona eliminó al usuario (404)', async () => {
+    const api = prepararApi();
+    const { usuario } = renderizarConSesion();
+    await filas();
+    // Otra persona lo elimina después de que se cargó la tabla.
+    api.estado.usuarios = api.estado.usuarios.filter(
+      (u) => u.nombre !== 'María López',
+    );
+
+    await usuario.click(
+      screen.getByRole('button', { name: 'Ver detalle de María López' }),
+    );
+
+    expect(await within(ventana()).findByRole('alert')).toHaveTextContent(
+      'Este usuario ya no existe: otra persona lo eliminó.',
+    );
+    expect(
+      within(ventana()).queryByRole('button', { name: 'Editar' }),
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -391,7 +518,8 @@ describe('Editar usuario', () => {
     const juan = api.estado.usuarios.find((u) => u.nombre === 'Juan Pérez');
     expect(juan).toBeDefined();
     Object.assign(juan ?? {}, { version: 2 });
-    const nombre = screen.getByLabelText('Nombre');
+    // [ANTES] const nombre = screen.getByLabelText('Nombre');
+    const nombre = within(ventana()).getByLabelText('Nombre');
     await usuario.clear(nombre);
     await usuario.type(nombre, 'Juan Pablo Pérez');
     await usuario.click(
@@ -405,7 +533,8 @@ describe('Editar usuario', () => {
     expect(juan?.nombre).toBe('Juan Pérez');
   });
 
-  it('debe guardar solo los campos que cambiaron', async () => {
+  // [ANTES] it('debe guardar solo los campos que cambiaron', async () => {
+  it('debe abrir con el lápiz directo la edición y guardar solo los campos que cambiaron', async () => {
     const api = prepararApi();
     const { usuario } = renderizarConSesion();
     await filas();
@@ -413,7 +542,8 @@ describe('Editar usuario', () => {
     await usuario.click(
       screen.getByRole('button', { name: 'Editar a Juan Pérez' }),
     );
-    const nombre = screen.getByLabelText('Nombre');
+    // [ANTES] const nombre = screen.getByLabelText('Nombre');
+    const nombre = within(ventana()).getByLabelText('Nombre');
     expect(nombre).toHaveFocus();
     await usuario.clear(nombre);
     await usuario.type(nombre, 'Juan Pablo Pérez');
@@ -427,12 +557,24 @@ describe('Editar usuario', () => {
     expect(api.estado.recibidos.cambios).toEqual([
       { nombre: 'Juan Pablo Pérez' },
     ]);
+    // [ANTES] expect(screen.getByRole('heading', { name: 'Registrar usuario' })).toBeInTheDocument();
+    // La ventana vuelve al detalle, ya con los datos nuevos y la confirmación.
+    expect(ventana()).toHaveAccessibleName('Juan Pablo Pérez');
     expect(
-      screen.getByRole('heading', { name: 'Registrar usuario' }),
+      within(ventana()).getByText(
+        'Se guardaron los cambios de Juan Pablo Pérez.',
+      ),
     ).toBeInTheDocument();
+    expect(
+      within(ventana()).getByRole('button', { name: 'Editar' }),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(filasVisibles()[0]).toHaveTextContent('Juan Pablo Pérez'),
+    );
   });
 
-  it('debe cancelar con Escape y devolver el foco al botón que abrió la edición', async () => {
+  // [ANTES] it('debe cancelar con Escape y devolver el foco al botón que abrió la edición', async () => {
+  it('debe cerrar la ventana con Escape y devolver el foco al lápiz que la abrió', async () => {
     prepararApi();
     const { usuario } = renderizarConSesion();
     await filas();
@@ -444,9 +586,8 @@ describe('Editar usuario', () => {
     ).toBeInTheDocument();
     await usuario.keyboard('{Escape}');
 
-    expect(
-      screen.getByRole('heading', { name: 'Registrar usuario' }),
-    ).toBeInTheDocument();
+    // [ANTES] expect(screen.getByRole('heading', { name: 'Registrar usuario' })).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() =>
       expect(
         screen.getByRole('button', { name: 'Editar a Juan Pérez' }),
@@ -494,6 +635,32 @@ describe('Accesibilidad de la consola', () => {
     await filas();
     await screen.findByText('42 visitas al logo');
 
+    expect(await violacionesDeAccesibilidad()).toEqual([]);
+  });
+
+  it('no debe tener violaciones detectables con la ventana de detalle abierta', async () => {
+    prepararApi();
+    const { usuario } = renderizarConSesion();
+    await filas();
+    await usuario.click(
+      screen.getByRole('button', { name: 'Ver detalle de Juan Pérez' }),
+    );
+
+    expect(await violacionesDeAccesibilidad()).toEqual([]);
+  });
+
+  it('no debe tener violaciones detectables en el resumen ni en el registro', async () => {
+    prepararApi();
+    const { usuario } = renderizarConSesion(RUTAS.panel);
+    await screen.findByText('Registrados recientemente');
+    await screen.findByText('Juan Pérez', { selector: 'span' });
+    expect(await violacionesDeAccesibilidad()).toEqual([]);
+
+    await usuario.click(screen.getByRole('link', { name: 'Usuarios' }));
+    await usuario.click(
+      screen.getByRole('link', { name: 'Registrar usuario' }),
+    );
+    await screen.findByLabelText('Nombre');
     expect(await violacionesDeAccesibilidad()).toEqual([]);
   });
 });

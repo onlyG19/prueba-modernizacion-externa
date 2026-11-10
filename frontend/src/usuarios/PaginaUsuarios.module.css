@@ -1,0 +1,53 @@
+.pagina {
+  display: grid;
+  gap: var(--esp-5);
+}
+
+.titulo {
+  font-size: var(--texto-xl);
+  font-weight: var(--peso-negrita);
+}
+
+.bajada {
+  margin-top: var(--esp-1);
+  color: var(--color-tinta-suave);
+}
+
+/* Pestañas sobre una línea: la activa se une al contenido con su borde. */
+.pestanas {
+  display: flex;
+  gap: var(--esp-1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.pestana {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: var(--alto-control);
+  margin-bottom: -1px;
+  padding: 0 var(--esp-4);
+  font-weight: var(--peso-fuerte);
+  color: var(--color-tinta-suave);
+  white-space: nowrap;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  border-radius: var(--radio-control) var(--radio-control) 0 0;
+  transition:
+    color var(--duracion-corta) var(--curva),
+    background-color var(--duracion-corta) var(--curva);
+}
+
+@media (hover: hover) {
+  .pestana:hover {
+    color: var(--color-tinta);
+    background: var(--color-hoja);
+  }
+}
+
+.pestana[aria-current='page'] {
+  color: var(--marca-magenta-texto);
+  background: var(--color-hoja);
+  border-bottom-color: var(--marca-magenta);
+}

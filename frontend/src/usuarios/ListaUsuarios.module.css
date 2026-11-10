@@ -1,8 +1,17 @@
-/* La lista no es una "tarjeta": vive sobre el papel, separada por líneas. */
+/* La tabla es la superficie de trabajo de la página: una hoja sobre el papel. */
 .lista {
   display: grid;
   gap: var(--esp-4);
   min-width: 0;
+  padding: var(--esp-5);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-panel);
+}
+
+.enlace {
+  font-weight: var(--peso-fuerte);
+  color: var(--color-accion);
 }
 
 .cabecera {
@@ -130,15 +139,26 @@
 }
 
 .tabla thead th {
-  padding: var(--esp-2) var(--esp-3);
+  padding: var(--esp-3);
   font-size: var(--texto-sm);
-  font-weight: var(--peso-medio);
+  font-weight: var(--peso-fuerte);
   text-align: left;
   color: var(--color-tinta-suave);
+  background: var(--color-papel);
   border-bottom: 1px solid var(--color-borde-control);
 }
 
+.tabla thead th.columnaAcciones {
+  /* Alineado con los íconos, que van a la derecha de su celda. */
+  padding-right: calc(var(--esp-3) + 0.25rem);
+  text-align: right;
+}
+
 @media (max-width: 40rem) {
+  .lista {
+    padding: var(--esp-4);
+  }
+
   /* Con filas apiladas los encabezados sobran a la vista (no al lector). */
   .tabla thead {
     position: absolute;

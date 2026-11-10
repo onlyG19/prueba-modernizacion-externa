@@ -1,18 +1,25 @@
 /*
  * Variantes explícitas de una fila de la lista. Se usan con
- * `import * as FilaUsuario from './FilaUsuario'`: `<FilaUsuario.Normal>` y
- * `<FilaUsuario.EnEdicion>`, en vez de una sola fila llena de props booleanas.
+ * `import * as FilaUsuario from './FilaUsuario'`: `<FilaUsuario.Normal>`, y
+ * la confirmación de borrado como su propia variante, en vez de una sola fila
+ * llena de props booleanas.
  */
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { Usuario } from '../api/tipos';
 import { useAnunciar } from '../ui/avisos-contexto';
-import { BotonEnLinea, BotonPeligro, BotonSecundario } from '../ui/botones';
+// [ANTES] import { BotonEnLinea, BotonPeligro, BotonSecundario } from '../ui/botones';
+import { BotonIcono, BotonPeligro, BotonSecundario } from '../ui/botones';
 import { clases } from '../ui/clases';
+import { IconoBasura, IconoLapiz, IconoOjo } from '../ui/iconos';
 import { useEliminarUsuario } from './consultas';
+import { formatearFecha } from './fechas';
 import estilos from './FilaUsuario.module.css';
 import { erroresDeServidor } from './formulario/errores-formulario';
 import { idBotonEditar } from './ids';
 import { formatearRutParcial } from './rut/formato-rut';
+
+/** Columnas de la tabla: la confirmación de borrado ocupa la fila completa. */
+const COLUMNAS = 4;
 
 function CeldasDatos({ usuario }: { usuario: Usuario }) {
   return (
@@ -22,6 +29,11 @@ function CeldasDatos({ usuario }: { usuario: Usuario }) {
       <td className={clases(estilos.rut, 'cifras')} translate="no">
         {formatearRutParcial(usuario.rut)}
       </td>
+      <td className={estilos.fecha}>
+        <time dateTime={usuario.creadoEn}>
+          {formatearFecha(usuario.creadoEn)}
+        </time>
+      </td>
     </>
   );
 }
@@ -30,6 +42,9 @@ interface PropsNormal {
   usuario: Usuario;
   /** Recién registrado: se destaca un instante para mostrar qué cambió. */
   resaltada: boolean;
+  /** Abierta en la ventana de detalle: queda marcada mientras tanto. */
+  seleccionada: boolean;
+  onVer: (usuario: Usuario) => void;
   onEditar: (usuario: Usuario) => void;
   onEliminado: (usuario: Usuario) => void;
 }
@@ -37,6 +52,8 @@ interface PropsNormal {
 export function Normal({
   usuario,
   resaltada,
+  seleccionada,
+  onVer,
   onEditar,
   onEliminado,
 }: PropsNormal) {
@@ -58,39 +75,55 @@ export function Normal({
   }
 
   return (
-    <tr className={clases(estilos.fila, resaltada && estilos.resaltada)}>
+    // [ANTES] <tr className={clases(estilos.fila, resaltada && estilos.resaltada)}>
+    <tr
+      className={clases(
+        estilos.fila,
+        resaltada && estilos.resaltada,
+        seleccionada && estilos.seleccionada,
+      )}
+    >
       <CeldasDatos usuario={usuario} />
       <td className={estilos.acciones}>
-        <BotonEnLinea
+        {/* [ANTES] <BotonEnLinea id={idBotonEditar(usuario.id)} onClick={() => onEditar(usuario)} aria-label={`Editar a ${usuario.nombre}`}>Editar</BotonEnLinea> */}
+        {/* [ANTES] <BotonEnLinea ref={refEliminar} onClick={() => setConfirmando(true)} aria-label={`Eliminar a ${usuario.nombre}`}>Eliminar</BotonEnLinea> */}
+        <BotonIcono
+          etiqueta={`Ver detalle de ${usuario.nombre}`}
+          onClick={() => onVer(usuario)}
+        >
+          <IconoOjo />
+        </BotonIcono>
+        <BotonIcono
           id={idBotonEditar(usuario.id)}
+          etiqueta={`Editar a ${usuario.nombre}`}
           onClick={() => onEditar(usuario)}
-          aria-label={`Editar a ${usuario.nombre}`}
         >
-          Editar
-        </BotonEnLinea>
-        <BotonEnLinea
+          <IconoLapiz />
+        </BotonIcono>
+        <BotonIcono
           ref={refEliminar}
+          etiqueta={`Eliminar a ${usuario.nombre}`}
+          className={estilos.eliminar}
           onClick={() => setConfirmando(true)}
-          aria-label={`Eliminar a ${usuario.nombre}`}
         >
-          Eliminar
-        </BotonEnLinea>
+          <IconoBasura />
+        </BotonIcono>
       </td>
     </tr>
   );
 }
 
-/** La fila del usuario que se está editando en el formulario. */
-export function EnEdicion({ usuario }: { usuario: Usuario }) {
-  return (
-    <tr className={clases(estilos.fila, estilos.enEdicion)} aria-current="true">
-      <CeldasDatos usuario={usuario} />
-      <td className={estilos.acciones}>
-        <span className={estilos.marcaEdicion}>Editando</span>
-      </td>
-    </tr>
-  );
-}
+// [ANTES] /** La fila del usuario que se está editando en el formulario. */
+// [ANTES] export function EnEdicion({ usuario }: { usuario: Usuario }) {
+// [ANTES]   return (
+// [ANTES]     <tr className={clases(estilos.fila, estilos.enEdicion)} aria-current="true">
+// [ANTES]       <CeldasDatos usuario={usuario} />
+// [ANTES]       <td className={estilos.acciones}>
+// [ANTES]         <span className={estilos.marcaEdicion}>Editando</span>
+// [ANTES]       </td>
+// [ANTES]     </tr>
+// [ANTES]   );
+// [ANTES] }
 
 interface PropsConfirmacion {
   usuario: Usuario;
@@ -135,7 +168,8 @@ function Confirmacion({ usuario, onCancelar, onEliminado }: PropsConfirmacion) {
 
   return (
     <tr className={estilos.confirmacion}>
-      <td colSpan={3}>
+      {/* [ANTES] <td colSpan={3}> */}
+      <td colSpan={COLUMNAS}>
         <div
           className={estilos.contenidoConfirmacion}
           role="group"

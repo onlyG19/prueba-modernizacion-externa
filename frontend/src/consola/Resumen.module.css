@@ -1,0 +1,235 @@
+.resumen {
+  display: grid;
+  gap: var(--esp-6);
+}
+
+.titulo {
+  font-size: var(--texto-xl);
+  font-weight: var(--peso-negrita);
+}
+
+.saludo {
+  margin-top: var(--esp-1);
+  color: var(--color-tinta-suave);
+}
+
+/* ── Cifras ──────────────────────────────────────────────────────────────── */
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--esp-4);
+}
+
+.cifra {
+  display: grid;
+  align-content: start;
+  gap: var(--esp-1);
+  padding: var(--esp-4) var(--esp-5);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde);
+  border-top: 4px solid var(--marca-morado);
+  border-radius: var(--radio-panel);
+}
+
+.cifra:first-child {
+  border-top-color: var(--marca-magenta);
+}
+
+.etiquetaCifra {
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  color: var(--color-tinta-suave);
+}
+
+.valorCifra {
+  font-size: 1.75rem;
+  font-weight: var(--peso-negrita);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Un nombre no es una cifra: más chico, y se corta si no cabe. */
+.valorTexto {
+  font-size: var(--texto-lg);
+  overflow-wrap: anywhere;
+}
+
+.notaCifra {
+  font-size: var(--texto-sm);
+  color: var(--color-tinta-suave);
+}
+
+/* ── Recientes y accesos ─────────────────────────────────────────────────── */
+
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+  align-items: start;
+  gap: var(--esp-5);
+}
+
+.panel {
+  padding: var(--esp-5);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-panel);
+}
+
+.cabeceraPanel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-3);
+}
+
+.tituloPanel {
+  font-size: var(--texto-lg);
+}
+
+.verTodos {
+  font-weight: var(--peso-fuerte);
+  color: var(--color-accion);
+  white-space: nowrap;
+}
+
+.estado {
+  margin-top: var(--esp-4);
+  color: var(--color-tinta-suave);
+}
+
+.estado a {
+  color: var(--color-accion);
+}
+
+.recientes {
+  margin-top: var(--esp-3);
+}
+
+.reciente {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--esp-3);
+  padding: var(--esp-3) 0;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.reciente:last-child {
+  border-bottom: 0;
+}
+
+.inicial {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-negrita);
+  color: var(--marca-morado);
+  background: var(--marca-morado-tenue);
+  border-radius: 50%;
+}
+
+.nombreReciente {
+  font-weight: var(--peso-fuerte);
+  overflow-wrap: anywhere;
+}
+
+.fechaReciente {
+  min-width: 6.5rem;
+  font-size: var(--texto-sm);
+  text-align: right;
+  color: var(--color-tinta-suave);
+}
+
+.accesos {
+  display: grid;
+  gap: var(--esp-3);
+  margin-top: var(--esp-3);
+}
+
+.acceso {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--esp-3);
+  padding: var(--esp-4);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde);
+  border-left: 6px solid var(--marca-morado);
+  border-radius: var(--radio-panel);
+}
+
+.iconoAcceso {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--marca-morado);
+  background: var(--marca-morado-tenue);
+  border-radius: 50%;
+}
+
+.enlaceAcceso {
+  font-weight: var(--peso-negrita);
+  color: var(--color-tinta);
+  text-decoration: none;
+}
+
+/* Toda la tarjeta es el enlace. */
+.enlaceAcceso::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.enlaceAcceso:focus-visible {
+  outline: none;
+}
+
+.acceso:has(.enlaceAcceso:focus-visible) {
+  outline: 3px solid var(--color-accion);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .acceso:hover .enlaceAcceso {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+.textoAcceso {
+  margin-top: var(--esp-1);
+  font-size: var(--texto-sm);
+  color: var(--color-tinta-suave);
+}
+
+@media (max-width: 64rem) {
+  .columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .cifras {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reciente {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 0;
+  }
+
+  .inicial {
+    grid-row: span 3;
+    align-self: start;
+  }
+
+  .reciente > :nth-child(n + 3) {
+    grid-column: 2;
+    text-align: left;
+  }
+}

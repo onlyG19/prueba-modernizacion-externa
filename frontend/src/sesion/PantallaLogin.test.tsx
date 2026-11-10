@@ -43,8 +43,9 @@ describe('Login', () => {
     );
     await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
 
+    // [ANTES] expect(await screen.findByRole('heading', { name: 'Registro de usuarios' })).toBeInTheDocument();
     expect(
-      await screen.findByRole('heading', { name: 'Registro de usuarios' }),
+      await screen.findByRole('heading', { name: 'Resumen' }),
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe(RUTAS.panel);
     expect(sessionStorage.getItem('consola-usuarios:sesion:v1')).toContain(
@@ -61,7 +62,7 @@ describe('Login', () => {
     await ingresarComoAdmin(usuario);
 
     expect(
-      await screen.findByRole('heading', { name: 'Registro de usuarios' }),
+      await screen.findByRole('heading', { name: 'Usuarios' }),
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe(RUTAS.usuarios);
     expect(screen.getByLabelText('Buscar por nombre o RUT')).toHaveValue(
@@ -79,7 +80,7 @@ describe('Login', () => {
     await ingresarComoAdmin(usuario);
 
     expect(
-      await screen.findByRole('heading', { name: 'Registro de usuarios' }),
+      await screen.findByRole('heading', { name: 'Resumen' }),
     ).toBeInTheDocument();
     expect(window.location.origin).toBe(origen);
     expect(window.location.pathname).toBe(RUTAS.panel);

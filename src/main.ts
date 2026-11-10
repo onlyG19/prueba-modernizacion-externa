@@ -10,6 +10,10 @@ async function bootstrap() {
 
   const config = app.get<AppConfigService>(ConfigService);
 
+  // ── Apagado ordenado ───────────────────────────────────────────────────────
+  // Ante SIGTERM/SIGINT ejecuta los hooks de cierre (p. ej. cerrar Redis).
+  app.enableShutdownHooks();
+
   // ── Seguridad HTTP ─────────────────────────────────────────────────────────
   app.use(helmet());
 

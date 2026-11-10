@@ -7,9 +7,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { Public } from '../../common/decorators/public.decorator';
 import { LIMITE_LOGIN } from '../../config/limites';
-// [ANTES] import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { ProblemDetailsDto } from '../../common/dto/problem-details.dto';
-// [ANTES] import { AccessTokenResponse, AuthService } from './auth.service';
 import { AuthService } from './auth.service';
 import { AccessTokenDto } from './dto/access-token.dto';
 import { LoginDto } from './dto/login.dto';
@@ -37,7 +35,6 @@ export class AuthController {
   @Throttle({ default: LIMITE_LOGIN })
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  // [ANTES] login(@Body() dto: LoginDto): Promise<AccessTokenResponse> {
   login(@Body() dto: LoginDto): Promise<AccessTokenDto> {
     return this.authService.login(dto);
   }

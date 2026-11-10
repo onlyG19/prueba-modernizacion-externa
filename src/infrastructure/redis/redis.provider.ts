@@ -1,4 +1,3 @@
-// [ANTES] import { Provider } from '@nestjs/common';
 import { Logger, Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
@@ -9,13 +8,9 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
 export const RedisProvider: Provider = {
   provide: REDIS_CLIENT,
   inject: [ConfigService],
-  // [ANTES] useFactory: (): Redis => {
   useFactory: (config: AppConfigService): Redis => {
-    // [ANTES] return new Redis({
     const client = new Redis({
-      // [ANTES] host: process.env.REDIS_HOST ?? 'localhost',
       host: config.get('REDIS_HOST', { infer: true }),
-      // [ANTES] port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
       port: config.get('REDIS_PORT', { infer: true }),
       // Vacía equivale a "sin contraseña" (Redis sin requirepass).
       password: config.get('REDIS_PASSWORD', { infer: true }) || undefined,

@@ -3,7 +3,6 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { LevelWithSilent } from 'pino';
 import type { Options } from 'pino-http';
 import { Environment } from '../../config/env.validation';
-// [ANTES] import { serializarPeticion } from './datos-personales';
 import { limpiarUrl, serializarPeticion } from './datos-personales';
 
 /** Cabecera con el identificador de la petición, de entrada y de salida. */
@@ -92,7 +91,6 @@ export function crearOpcionesLog({ NODE_ENV, LOG_LEVEL }: EntornoLog): Options {
     customErrorMessage: (req, res, error) =>
       `${req.method} ${rutaDe(req)} → ${res.statusCode}: ${error.message}`,
     ...(NODE_ENV === Environment.Development && {
-      // [ANTES] transport: { target: 'pino-pretty', options: { singleLine: true } },
       // En la terminal basta el mensaje; el detalle (cabeceras, ids) sigue en
       // el JSON de producción.
       transport: {

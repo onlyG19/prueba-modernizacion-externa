@@ -1,4 +1,3 @@
-// [ANTES] import { Inject, Injectable } from '@nestjs/common';
 import {
   Inject,
   Injectable,
@@ -24,10 +23,6 @@ export class VisitCounterService {
 
   constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {}
 
-  // [ANTES] /** Registra una visita y devuelve el total acumulado. */
-  // [ANTES] async increment(): Promise<number> {
-  // [ANTES]   return this.redis.incr(VISIT_COUNTER_KEY);
-  // [ANTES] }
   /**
    * Registra una visita y devuelve el total acumulado.
    *
@@ -46,11 +41,6 @@ export class VisitCounterService {
     }
   }
 
-  // [ANTES] /** Devuelve el total de visitas (0 si todavía no hay ninguna). */
-  // [ANTES] async getCount(): Promise<number> {
-  // [ANTES]   const value = await this.redis.get(VISIT_COUNTER_KEY);
-  // [ANTES]   return value ? parseInt(value, 10) : 0;
-  // [ANTES] }
   /**
    * Devuelve el total de visitas (0 si todavía no hay ninguna).
    *

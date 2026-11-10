@@ -21,7 +21,6 @@ const proxyApi = {
   '/api': {
     target: API_DESTINO,
     changeOrigin: true,
-    // [ANTES] rewrite: (ruta: string) => ruta.replace(/^\/api/, ''),
   },
 };
 

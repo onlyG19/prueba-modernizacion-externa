@@ -28,7 +28,6 @@ export async function iniciarSesion(
   app: NestExpressApplication,
 ): Promise<string> {
   const respuesta = await request(app.getHttpServer())
-    // [ANTES] .post('/auth/login')
     .post(`${RUTA_API}/auth/login`)
     .send(ADMIN_E2E)
     .expect(200);

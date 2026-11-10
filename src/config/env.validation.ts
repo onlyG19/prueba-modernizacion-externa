@@ -55,17 +55,14 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  // [ANTES] DB_NAME: string;
   DB_NAME!: string;
 
   @IsString()
   @IsNotEmpty()
-  // [ANTES] DB_USER: string;
   DB_USER!: string;
 
   @IsString()
   @IsNotEmpty()
-  // [ANTES] DB_PASSWORD: string;
   DB_PASSWORD!: string;
 
   @IsString()
@@ -101,7 +98,6 @@ export class EnvironmentVariables {
   /** Secreto con que se firman los JWT. Sin valor por defecto, a propósito. */
   @IsString()
   @MinLength(32, { message: 'JWT_SECRET debe tener al menos 32 caracteres' })
-  // [ANTES] JWT_SECRET: string;
   JWT_SECRET!: string;
 
   @IsInt()
@@ -111,7 +107,6 @@ export class EnvironmentVariables {
   /** Usuario administrador de la API. */
   @IsString()
   @IsNotEmpty()
-  // [ANTES] AUTH_USER: string;
   AUTH_USER!: string;
 
   /** Hash scrypt de la contraseña del administrador (nunca la contraseña). */
@@ -119,7 +114,6 @@ export class EnvironmentVariables {
     message:
       'AUTH_PASSWORD_HASH debe generarse con: pnpm auth:hash-password <contraseña>',
   })
-  // [ANTES] AUTH_PASSWORD_HASH: string;
   AUTH_PASSWORD_HASH!: string;
 }
 
@@ -138,13 +132,6 @@ export function validateEnv(
   });
   const errores = validateSync(env);
 
-  // [ANTES] if (errores.length > 0) {
-  // [ANTES]   const detalle = errores
-  // [ANTES]     .flatMap((error) => Object.values(error.constraints ?? {}))
-  // [ANTES]     .map((mensaje) => `  - ${mensaje}`)
-  // [ANTES]     .join('\n');
-  // [ANTES]   throw new Error(`Variables de entorno inválidas:\n${detalle}`);
-  // [ANTES] }
   const mensajes = errores.flatMap((error) =>
     Object.values(error.constraints ?? {}),
   );

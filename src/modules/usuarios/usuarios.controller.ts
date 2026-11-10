@@ -8,7 +8,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  // [ANTES] ParseIntPipe,
   ParseUUIDPipe,
   Patch,
   Post,
@@ -28,7 +27,6 @@ import {
   ApiNotFoundResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-// [ANTES] import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { ProblemDetailsDto } from '../../common/dto/problem-details.dto';
 import { NonEmptyBodyPipe } from '../../common/pipes/non-empty-body.pipe';
 import { etagDeVersion, versionesDeIfMatch } from '../../common/http/etag';
@@ -38,8 +36,6 @@ import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
 import { PaginaUsuariosDto } from './dto/pagina-usuarios.dto';
 import { UsuarioDto } from './dto/usuario.dto';
-// [ANTES] import { Usuario } from './usuario.entity';
-// [ANTES] import { Usuario } from './entities/usuario.entity';
 
 /** Cabecera ETag documentada en las respuestas con un usuario. */
 const CABECERA_ETAG = {
@@ -65,20 +61,12 @@ const ID_UUID = new ParseUUIDPipe({
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
-  // [ANTES] /** Lista todos los usuarios. */
-  // [ANTES] @Get()
-  // [ANTES] findAll(): Promise<Usuario[]> {
-  // [ANTES]   return this.usuariosService.findAll();
-  // [ANTES] }
   /** Lista los usuarios por páginas, ordenados por nombre, con búsqueda opcional. */
   @ApiBadRequestResponse({
     description: 'Parámetros de paginación o búsqueda inválidos',
     type: ProblemDetailsDto,
   })
   @Get()
-  // [ANTES] findAll(@Query() query: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
-  // [ANTES]   return this.usuariosService.findAll(query);
-  // [ANTES] }
   async findAll(@Query() query: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
     const { data, meta } = await this.usuariosService.findAll(query);
     return { data: data.map((usuario) => UsuarioDto.desde(usuario)), meta };
@@ -91,13 +79,6 @@ export class UsuariosController {
   })
   @ApiOkResponse({ type: UsuarioDto, headers: CABECERA_ETAG })
   @Get(':id')
-  // [ANTES] findOne(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
-  // [ANTES]   return this.usuariosService.findOne(id);
-  // [ANTES] }
-  // [ANTES] async findOne(@Param('id', ParseIntPipe) id: number): Promise<UsuarioDto> {
-  // [ANTES] async findOne(@Param('id', ID_UUID) id: string): Promise<UsuarioDto> {
-  // [ANTES]   return UsuarioDto.desde(await this.usuariosService.findOne(id));
-  // [ANTES] }
   async findOne(
     @Param('id', ID_UUID) id: string,
     @Res({ passthrough: true }) res: Response,
@@ -133,12 +114,6 @@ export class UsuariosController {
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  // [ANTES] create(@Body() dto: CreateUsuarioDto): Promise<Usuario> {
-  // [ANTES]   return this.usuariosService.create(dto);
-  // [ANTES] }
-  // [ANTES] async create(@Body() dto: CreateUsuarioDto): Promise<UsuarioDto> {
-  // [ANTES]   return UsuarioDto.desde(await this.usuariosService.create(dto));
-  // [ANTES] }
   async create(
     @Body() dto: CreateUsuarioDto,
     @Req() req: Request,
@@ -154,7 +129,6 @@ export class UsuariosController {
     return creado;
   }
 
-  // [ANTES] /** Actualiza parcialmente un usuario. */
   /**
    * Actualiza parcialmente un usuario. Con `If-Match: "<versión>"` el cambio
    * solo se aplica si nadie lo modificó entretanto (concurrencia optimista).
@@ -171,7 +145,6 @@ export class UsuariosController {
     type: ProblemDetailsDto,
   })
   @ApiBadRequestResponse({
-    // [ANTES] description: 'Datos inválidos',
     description: 'Datos inválidos, o ningún campo que actualizar',
     type: ProblemDetailsDto,
   })
@@ -184,18 +157,12 @@ export class UsuariosController {
     type: ProblemDetailsDto,
   })
   @Patch(':id')
-  // [ANTES] update(
   async update(
-    // [ANTES] @Param('id', ParseIntPipe) id: number,
     @Param('id', ID_UUID) id: string,
-    // [ANTES] @Body() dto: UpdateUsuarioDto,
     @Body(NonEmptyBodyPipe) dto: UpdateUsuarioDto,
     @Headers('if-match') ifMatch: string | undefined,
     @Res({ passthrough: true }) res: Response,
-    // [ANTES] ): Promise<Usuario> {
-    // [ANTES]   return this.usuariosService.update(id, dto);
   ): Promise<UsuarioDto> {
-    // [ANTES] return UsuarioDto.desde(await this.usuariosService.update(id, dto));
     const actualizado = UsuarioDto.desde(
       await this.usuariosService.update(id, dto, versionesDeIfMatch(ifMatch)),
     );
@@ -210,7 +177,6 @@ export class UsuariosController {
   })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  // [ANTES] remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
   remove(@Param('id', ID_UUID) id: string): Promise<void> {
     return this.usuariosService.remove(id);
   }

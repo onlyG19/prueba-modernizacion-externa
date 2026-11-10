@@ -3,7 +3,6 @@ import request from 'supertest';
 import { DataSource } from 'typeorm';
 import type { ProblemDetailsDto } from '../src/common/dto/problem-details.dto';
 import type { PaginaUsuariosDto } from '../src/modules/usuarios/dto/pagina-usuarios.dto';
-// [ANTES] import type { Usuario } from '../src/modules/usuarios/entities/usuario.entity';
 import type { UsuarioDto } from '../src/modules/usuarios/dto/usuario.dto';
 import { RUTA_API } from '../src/config/app-setup';
 import { crearAppE2e, iniciarSesion } from './utilidades/app-e2e';
@@ -24,38 +23,31 @@ describe('/usuarios (e2e)', () => {
   let app: NestExpressApplication;
   let token: string;
 
-  // [ANTES] /** Petición autenticada como el administrador de los e2e. */
   /** Petición autenticada como el administrador; la ruta va bajo /api/v1. */
   const api = {
     get: (ruta: string) =>
-      // [ANTES] request(app.getHttpServer()).get(ruta).auth(token, { type: 'bearer' }),
       request(app.getHttpServer())
         .get(`${RUTA_API}${ruta}`)
         .auth(token, { type: 'bearer' }),
     post: (ruta: string) =>
-      // [ANTES] request(app.getHttpServer()).post(ruta).auth(token, { type: 'bearer' }),
       request(app.getHttpServer())
         .post(`${RUTA_API}${ruta}`)
         .auth(token, { type: 'bearer' }),
     patch: (ruta: string) =>
-      // [ANTES] request(app.getHttpServer()).patch(ruta).auth(token, { type: 'bearer' }),
       request(app.getHttpServer())
         .patch(`${RUTA_API}${ruta}`)
         .auth(token, { type: 'bearer' }),
     delete: (ruta: string) =>
-      // [ANTES] request(app.getHttpServer()).delete(ruta).auth(token, { type: 'bearer' }),
       request(app.getHttpServer())
         .delete(`${RUTA_API}${ruta}`)
         .auth(token, { type: 'bearer' }),
   };
 
-  // [ANTES] async function crear(nombre: string, rut: string): Promise<Usuario> {
   async function crear(nombre: string, rut: string): Promise<UsuarioJson> {
     const respuesta = await api
       .post('/usuarios')
       .send({ nombre, rut })
       .expect(201);
-    // [ANTES] return respuesta.body as Usuario;
     return respuesta.body as UsuarioJson;
   }
 
@@ -88,7 +80,6 @@ describe('/usuarios (e2e)', () => {
     const creado = await crear('  Ana   Rojas ', '11.111.111-1');
     // Se guarda normalizado: sin espacios de sobra y el RUT sin puntos.
     expect(creado).toEqual({
-      // [ANTES] id: expect.any(Number) as number,
       id: expect.stringMatching(UUID) as string,
       nombre: 'Ana Rojas',
       rut: '11111111-1',
@@ -99,12 +90,10 @@ describe('/usuarios (e2e)', () => {
 
     await api.get(`/usuarios/${creado.id}`).expect(200, creado);
 
-    // [ANTES] const actualizado = await api
     const respuesta = await api
       .patch(`/usuarios/${creado.id}`)
       .send({ nombre: 'Ana María Rojas' })
       .expect(200);
-    // [ANTES] expect(actualizado.body).toEqual({ ...creado, nombre: 'Ana María Rojas' });
     const actualizado = respuesta.body as UsuarioJson;
     expect(actualizado).toEqual({
       ...creado,

@@ -59,7 +59,6 @@ export function Encabezado() {
             </span>
           )}
         </Enlace>
-        {/* [ANTES] <h1 className={estilos.titulo}>Registro de usuarios</h1> */}
         {/* Cada página tiene su propio h1: el nombre del producto no es un título. */}
         <p className={estilos.titulo}>Consola de usuarios</p>
       </div>
@@ -75,7 +74,6 @@ export function Encabezado() {
           <span className="sr-only">Sesión iniciada como </span>
           <span translate="no">{sesion.usuario}</span>
         </p>
-        {/* [ANTES] <BotonSecundario onClick={() => actions.cerrarSesion('manual')}> */}
         <BotonSecundario onClick={cerrarSesion}>
           <IconoSalir />
           Cerrar sesión

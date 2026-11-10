@@ -1,11 +1,9 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-// [ANTES] import { useState } from 'react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Enlace } from '../rutas/Enlace';
 import { useRuta } from '../rutas/navegacion';
 import { RUTAS } from '../rutas/rutas';
 import { useSesion } from '../sesion/sesion-contexto';
-// [ANTES] import { RegistroUsuarios } from '../usuarios/RegistroUsuarios';
 import { PaginaUsuarios } from '../usuarios/PaginaUsuarios';
 import { crearClienteConsultas } from './cliente-consultas';
 import estilos from './Consola.module.css';
@@ -66,10 +64,6 @@ export default function Consola() {
       <a className="saltar-contenido" href="#contenido">
         Saltar al contenido
       </a>
-      {/* [ANTES] <Encabezado /> */}
-      {/* [ANTES] <main id="contenido" className={estilos.contenido} tabIndex={-1}> */}
-      {/* [ANTES]   <RegistroUsuarios /> */}
-      {/* [ANTES] </main> */}
       <div className={estilos.consola}>
         <Encabezado />
         <NavegacionLateral />

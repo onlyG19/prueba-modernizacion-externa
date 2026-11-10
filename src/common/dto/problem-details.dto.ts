@@ -9,28 +9,24 @@ export class ProblemDetailsDto {
    * el código HTTP: el `title` es entonces la frase estándar de ese código.
    * @example 'about:blank'
    */
-  // [ANTES] type: string;
   type!: string;
 
   /**
    * Resumen del problema (la frase estándar del código HTTP).
    * @example 'Conflict'
    */
-  // [ANTES] title: string;
   title!: string;
 
   /**
    * Código de estado HTTP.
    * @example 409
    */
-  // [ANTES] status: number;
   status!: number;
 
   /**
    * Explicación de esta ocurrencia del problema.
    * @example 'Ya existe un usuario con el RUT 12345678-5'
    */
-  // [ANTES] detail: string;
   detail!: string;
 
   /**
@@ -38,7 +34,6 @@ export class ProblemDetailsDto {
    * personales como un RUT buscado).
    * @example '/usuarios'
    */
-  // [ANTES] instance: string;
   instance!: string;
 
   /**

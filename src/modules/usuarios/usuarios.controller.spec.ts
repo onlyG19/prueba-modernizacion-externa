@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { UsuariosController } from './usuarios.controller';
 import { UsuariosService } from './usuarios.service';
-// [ANTES] import { Usuario } from './usuario.entity';
 import type { Request, Response } from 'express';
 import { Usuario } from './entities/usuario.entity';
 
@@ -24,10 +23,8 @@ describe('UsuariosController', () => {
   let service: ReturnType<typeof mockUsuariosService>;
 
   const usuarioBase: Usuario = {
-    // [ANTES] id: 1,
     id: ID,
     nombre: 'Juan Pérez',
-    // [ANTES] rut: '12345678-9', van a fallar los test si dejamos ese DV mal
     rut: '12345678-5',
     creadoEn: new Date('2026-11-10T14:03:00.000Z'),
     actualizadoEn: new Date('2026-11-10T14:03:00.000Z'),
@@ -54,11 +51,6 @@ describe('UsuariosController', () => {
 
   // ── findAll ──────────────────────────────────────────────────────────────
   describe('findAll', () => {
-    // [ANTES] it('debe retornar el arreglo de usuarios del service', async () => {
-    // [ANTES]   service.findAll.mockResolvedValue([usuarioBase]);
-    // [ANTES]   expect(await controller.findAll()).toEqual([usuarioBase]);
-    // [ANTES]   expect(service.findAll).toHaveBeenCalledTimes(1);
-    // [ANTES] });
     it('debe pasar la paginación y la búsqueda al service', async () => {
       const pagina = {
         data: [usuarioBase],
@@ -76,10 +68,7 @@ describe('UsuariosController', () => {
   describe('findOne', () => {
     it('debe retornar el usuario encontrado', async () => {
       service.findOne.mockResolvedValue(usuarioBase);
-      // [ANTES] expect(await controller.findOne(1)).toEqual(usuarioBase);
-      // [ANTES] expect(await controller.findOne(ID)).toEqual(usuarioBase);
       expect(await controller.findOne(ID, respuesta())).toEqual(usuarioBase);
-      // [ANTES] expect(service.findOne).toHaveBeenCalledWith(1);
       expect(service.findOne).toHaveBeenCalledWith(ID);
     });
 
@@ -97,10 +86,7 @@ describe('UsuariosController', () => {
       const conColumnaInterna = { ...usuarioBase, notaInterna: 'privada' };
       service.findOne.mockResolvedValue(conColumnaInterna);
 
-      // [ANTES] expect(await controller.findOne(1)).toStrictEqual({
-      // [ANTES] expect(await controller.findOne(ID)).toStrictEqual({
       expect(await controller.findOne(ID, respuesta())).toStrictEqual({
-        // [ANTES] id: 1,
         id: ID,
         nombre: 'Juan Pérez',
         rut: '12345678-5',
@@ -112,11 +98,8 @@ describe('UsuariosController', () => {
 
     it('debe propagar NotFoundException del service', async () => {
       service.findOne.mockRejectedValue(
-        // [ANTES] new NotFoundException('Usuario con id 99 no encontrado'),
         new NotFoundException(`Usuario con id ${ID_INEXISTENTE} no encontrado`),
       );
-      // [ANTES] await expect(controller.findOne(99)).rejects.toThrow(NotFoundException);
-      // [ANTES] await expect(controller.findOne(ID_INEXISTENTE)).rejects.toThrow(
       await expect(
         controller.findOne(ID_INEXISTENTE, respuesta()),
       ).rejects.toThrow(NotFoundException);
@@ -126,14 +109,10 @@ describe('UsuariosController', () => {
   // ── create ───────────────────────────────────────────────────────────────
   describe('create', () => {
     it('debe retornar el usuario creado', async () => {
-      // [ANTES] const dto = { nombre: 'María López', rut: '98765432-1' };
       const dto = { nombre: 'María López', rut: '98765432-5' };
-      // [ANTES] const creado = { id: 2, ...dto };
       const creado = { id: OTRO_ID, ...dto };
       service.create.mockResolvedValue(creado);
-      // [ANTES] expect(await controller.create(dto)).toEqual(creado);
       const req = { originalUrl: '/api/v1/usuarios' } as Request;
-      // [ANTES] const res = { location: jest.fn() } as unknown as Response;
       const res = respuesta();
 
       expect(await controller.create(dto, req, res)).toEqual(creado);
@@ -148,11 +127,9 @@ describe('UsuariosController', () => {
       await controller.create(
         { nombre: usuarioBase.nombre, rut: usuarioBase.rut },
         req,
-        // [ANTES] { location } as unknown as Response,
         { location, setHeader: jest.fn() } as unknown as Response,
       );
 
-      // [ANTES] expect(location).toHaveBeenCalledWith('/api/v1/usuarios/1');
       expect(location).toHaveBeenCalledWith(`/api/v1/usuarios/${ID}`);
     });
   });
@@ -164,13 +141,9 @@ describe('UsuariosController', () => {
       const actualizado = { ...usuarioBase, ...dto };
       service.update.mockResolvedValue(actualizado);
 
-      // [ANTES] expect(await controller.update(1, dto)).toEqual(actualizado);
-      // [ANTES] expect(await controller.update(ID, dto)).toEqual(actualizado);
       expect(await controller.update(ID, dto, undefined, respuesta())).toEqual(
         actualizado,
       );
-      // [ANTES] expect(service.update).toHaveBeenCalledWith(1, dto);
-      // [ANTES] expect(service.update).toHaveBeenCalledWith(ID, dto);
       expect(service.update).toHaveBeenCalledWith(ID, dto, undefined);
     });
 
@@ -186,12 +159,9 @@ describe('UsuariosController', () => {
 
     it('debe propagar NotFoundException del service', async () => {
       service.update.mockRejectedValue(
-        // [ANTES] new NotFoundException('Usuario con id 99 no encontrado'),
         new NotFoundException(`Usuario con id ${ID_INEXISTENTE} no encontrado`),
       );
-      // [ANTES] await expect(controller.update(99, { nombre: 'X' })).rejects.toThrow(
       await expect(
-        // [ANTES] controller.update(ID_INEXISTENTE, { nombre: 'X' }),
         controller.update(
           ID_INEXISTENTE,
           { nombre: 'X' },
@@ -206,18 +176,14 @@ describe('UsuariosController', () => {
   describe('remove', () => {
     it('debe llamar al service con el id correcto', async () => {
       service.remove.mockResolvedValue(undefined);
-      // [ANTES] await expect(controller.remove(1)).resolves.toBeUndefined();
       await expect(controller.remove(ID)).resolves.toBeUndefined();
-      // [ANTES] expect(service.remove).toHaveBeenCalledWith(1);
       expect(service.remove).toHaveBeenCalledWith(ID);
     });
 
     it('debe propagar NotFoundException del service', async () => {
       service.remove.mockRejectedValue(
-        // [ANTES] new NotFoundException('Usuario con id 99 no encontrado'),
         new NotFoundException(`Usuario con id ${ID_INEXISTENTE} no encontrado`),
       );
-      // [ANTES] await expect(controller.remove(99)).rejects.toThrow(NotFoundException);
       await expect(controller.remove(ID_INEXISTENTE)).rejects.toThrow(
         NotFoundException,
       );

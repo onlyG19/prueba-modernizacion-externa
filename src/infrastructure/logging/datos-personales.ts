@@ -11,7 +11,6 @@ export const RUT_OCULTO = '[RUT]';
  * estar pegado a letras, puntos o guiones: así un UUID como
  * `12345678-1234-…` no se confunde con un RUT.
  */
-// [ANTES] const RUT = /\b\d{1,2}(?:\.?\d{3}){2}-?[\dkK]\b/g;
 const RUT = /(?<![\w.-])\d{1,2}(?:\.?\d{3}){2}-?[\dkK](?![\w.-])/g;
 
 /**
@@ -69,7 +68,6 @@ export function serializarPeticion(req: SerializedRequest): SerializedRequest {
   }
   return {
     ...req,
-    // [ANTES] url: enmascararRuts(req.url.replace(PARAMETRO_EN_URL, `$1${OCULTO}`)),
     url: limpiarUrl(req.url),
     query: enmascararEnValor(query) as SerializedRequest['query'],
     params: enmascararEnValor(req.params) as SerializedRequest['params'],

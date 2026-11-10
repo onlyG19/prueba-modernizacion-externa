@@ -13,7 +13,6 @@ export class UsuarioDto {
    * Identificador del usuario (UUID).
    * @example '0b5f2c1e-7d4a-4f3b-9a61-2e8c4d7f1a90'
    */
-  // [ANTES] id!: number;
   id!: string;
 
   /**
@@ -49,7 +48,6 @@ export class UsuarioDto {
 
   /** Convierte la entidad en la respuesta de la API. */
   static desde(usuario: Usuario): UsuarioDto {
-    // [ANTES] return { id: usuario.id, nombre: usuario.nombre, rut: usuario.rut };
     return {
       id: usuario.id,
       nombre: usuario.nombre,

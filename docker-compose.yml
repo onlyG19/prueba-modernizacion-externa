@@ -45,31 +45,24 @@ x-api: &api
 
 services:
   postgres:
-    # [ANTES] image: postgres:16-alpine
     image: postgres:16.15-alpine
     container_name: prueba-modernizacion-postgres
     environment:
-      # [ANTES] POSTGRES_USER: postgres
-      # [ANTES] POSTGRES_PASSWORD: postgres
-      # [ANTES] POSTGRES_DB: prueba_modernizacion
       POSTGRES_USER: ${DB_USER:?Define DB_USER en .env}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
       POSTGRES_DB: ${DB_NAME:?Define DB_NAME en .env}
     ports:
       # Solo desde este equipo, no desde la red local (para pnpm start:dev).
-      # [ANTES] - '5433:5432'
       - '127.0.0.1:${DB_PORT:-5433}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      # [ANTES] test: ['CMD-SHELL', 'pg_isready -U postgres']
       test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
-    # [ANTES] image: redis:7-alpine
     image: redis:7.4.12-alpine
     container_name: prueba-modernizacion-redis
     # AOF: el contador de visitas sobrevive a reinicios. Con contraseña.
@@ -85,7 +78,6 @@ services:
       # redis-cli (healthcheck) se autentica con esta variable.
       REDISCLI_AUTH: ${REDIS_PASSWORD:?Define REDIS_PASSWORD en .env}
     ports:
-      # [ANTES] - '6379:6379'
       - '127.0.0.1:${REDIS_PORT:-6379}:6379'
     volumes:
       - redis_data:/data

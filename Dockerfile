@@ -17,7 +17,6 @@ COPY src ./src
 # Compila y deja solo las dependencias de producción.
 # --ignore-scripts: prune vuelve a correr `prepare` (husky), que ya no está
 # instalado tras quitar las dependencias de desarrollo.
-# [ANTES] RUN pnpm build && pnpm prune --prod
 RUN pnpm build && pnpm prune --prod --ignore-scripts
 
 # ── Etapa 2: ejecutar ─────────────────────────────────────────────────────────

@@ -62,7 +62,6 @@ export function PantallaLogin() {
     INICIAL,
   );
 
-  // [ANTES] const sesionExpirada = state.motivoCierre === 'expirada';
   const aviso = state.motivoCierre ? AVISO_CIERRE[state.motivoCierre] : null;
 
   return (
@@ -94,9 +93,6 @@ export function PantallaLogin() {
           usuarios.
         </p>
 
-        {/* [ANTES] {sesionExpirada ? ( */}
-        {/* [ANTES]   <p className={estilos.aviso} role="status">Tu sesión expiró. Ingresa de nuevo para continuar.</p> */}
-        {/* [ANTES] ) : null} */}
         {aviso ? (
           <p className={estilos.aviso} role="status">
             {aviso}

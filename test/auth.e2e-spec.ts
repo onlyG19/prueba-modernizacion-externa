@@ -21,21 +21,17 @@ describe('/auth (e2e)', () => {
     const token = await iniciarSesion(app);
 
     await request(app.getHttpServer())
-      // [ANTES] .get('/usuarios')
       .get(`${RUTA_API}/usuarios`)
       .auth(token, { type: 'bearer' })
       .expect(200);
   });
 
   it('responde 401 como Problem Details con una contraseña incorrecta', () => {
-    return (
-      request(app.getHttpServer())
-        // [ANTES] .post('/auth/login')
-        .post(`${RUTA_API}/auth/login`)
-        .send({ ...ADMIN_E2E, password: 'incorrecta' })
-        .expect(401)
-        .expect('Content-Type', /^application\/problem\+json/)
-    );
+    return request(app.getHttpServer())
+      .post(`${RUTA_API}/auth/login`)
+      .send({ ...ADMIN_E2E, password: 'incorrecta' })
+      .expect(401)
+      .expect('Content-Type', /^application\/problem\+json/);
   });
 
   it(`frena la fuerza bruta: el intento ${LIMITE_LOGIN.limit + 1} en un minuto responde 429`, async () => {
@@ -43,7 +39,6 @@ describe('/auth (e2e)', () => {
     const appNueva = await crearAppE2e();
     const intentar = () =>
       request(appNueva.getHttpServer())
-        // [ANTES] .post('/auth/login')
         .post(`${RUTA_API}/auth/login`)
         .send({ ...ADMIN_E2E, password: 'incorrecta' });
     try {

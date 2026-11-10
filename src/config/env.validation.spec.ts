@@ -28,7 +28,6 @@ describe('validateEnv', () => {
     expect(env.DB_PORT).toBe(5433);
   });
 
-  // [ANTES] it.each(['DB_NAME', 'DB_USER', 'DB_PASSWORD'])(
   it.each([
     'DB_NAME',
     'DB_USER',

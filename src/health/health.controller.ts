@@ -1,10 +1,3 @@
-// [ANTES] import {
-// [ANTES]   Controller,
-// [ANTES]   Get,
-// [ANTES]   Inject,
-// [ANTES]   ServiceUnavailableException,
-// [ANTES] } from '@nestjs/common';
-// [ANTES] import { Controller, Get, HttpStatus, Inject, Res } from '@nestjs/common';
 import {
   Controller,
   Get,
@@ -31,7 +24,6 @@ export const PROBE_TIMEOUT_MS = 3000;
 @Public()
 // Los healthchecks consultan seguido: no deben consumir el límite de nadie.
 @SkipThrottle()
-// [ANTES] @Controller('health')
 // Sin prefijo ni versión: siempre en /health, para Docker y balanceadores.
 @Controller({ path: 'health', version: VERSION_NEUTRAL })
 export class HealthController {
@@ -54,7 +46,6 @@ export class HealthController {
     type: HealthStatusDto,
   })
   @Get()
-  // [ANTES] async check(): Promise<HealthStatusDto> {
   async check(
     @Res({ passthrough: true }) res: Response,
   ): Promise<HealthStatusDto> {
@@ -69,9 +60,6 @@ export class HealthController {
       database,
       redis,
     };
-    // [ANTES] if (salud.status === 'error') {
-    // [ANTES]   throw new ServiceUnavailableException(salud);
-    // [ANTES] }
     // Un 503 de salud no es un error de la API: se responde con el mismo
     // formato (no como Problem Details) para que el monitoreo lo lea igual.
     if (salud.status === 'error') {

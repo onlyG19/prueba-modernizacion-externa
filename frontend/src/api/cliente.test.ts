@@ -20,7 +20,6 @@ async function errorDe(ruta: string): Promise<unknown> {
 describe('cliente de la API (Problem Details)', () => {
   it('debe tomar las reglas incumplidas de un 400 desde errors', async () => {
     servidor.use(
-      // [ANTES] http.get('/api/x', () =>
       http.get('/api/v1/x', () =>
         problema(400, {
           detail: 'La solicitud tiene datos inválidos.',
@@ -40,7 +39,6 @@ describe('cliente de la API (Problem Details)', () => {
 
   it('debe usar detail cuando no hay lista de errores', async () => {
     servidor.use(
-      // [ANTES] http.get('/api/x', () =>
       http.get('/api/v1/x', () =>
         problema(409, { detail: 'Ya existe un usuario con el RUT 1-9' }),
       ),
@@ -55,7 +53,6 @@ describe('cliente de la API (Problem Details)', () => {
   it('debe tolerar un error sin cuerpo JSON', async () => {
     servidor.use(
       http.get(
-        // [ANTES] '/api/x',
         '/api/v1/x',
         () => new HttpResponse('Bad Gateway', { status: 502 }),
       ),
@@ -65,7 +62,6 @@ describe('cliente de la API (Problem Details)', () => {
   });
 
   it('debe distinguir la falta de respuesta como ErrorDeConexion', async () => {
-    // [ANTES] servidor.use(http.get('/api/x', () => HttpResponse.error()));
     servidor.use(http.get('/api/v1/x', () => HttpResponse.error()));
 
     expect(await errorDe('/x')).toBeInstanceOf(ErrorDeConexion);

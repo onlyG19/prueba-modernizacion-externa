@@ -43,7 +43,6 @@ describe('Login', () => {
     );
     await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
 
-    // [ANTES] expect(await screen.findByRole('heading', { name: 'Registro de usuarios' })).toBeInTheDocument();
     expect(
       await screen.findByRole('heading', { name: 'Resumen' }),
     ).toBeInTheDocument();
@@ -132,7 +131,6 @@ describe('Login', () => {
   });
 
   it('debe avisar cuando el servidor no responde', async () => {
-    // [ANTES] servidor.use(http.post('/api/auth/login', () => HttpResponse.error()));
     servidor.use(http.post('/api/v1/auth/login', () => HttpResponse.error()));
     const { usuario } = renderizarSinSesion();
 
@@ -147,7 +145,6 @@ describe('Login', () => {
 
   it('debe pedir esperar si la API limitó los intentos (429)', async () => {
     servidor.use(
-      // [ANTES] http.post('/api/auth/login', () =>
       http.post('/api/v1/auth/login', () =>
         HttpResponse.json(
           { type: 'about:blank', title: 'Too Many Requests', status: 429 },

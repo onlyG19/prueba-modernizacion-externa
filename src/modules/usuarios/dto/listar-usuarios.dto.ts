@@ -1,5 +1,3 @@
-// [ANTES] import { Transform } from 'class-transformer';
-// [ANTES] import { IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { NormalizeWhitespace } from '../../../common/decorators/normalize-whitespace.decorator';
@@ -17,7 +15,6 @@ export const ORDENES_USUARIOS = [
 ] as const;
 export type OrdenUsuarios = (typeof ORDENES_USUARIOS)[number];
 
-// [ANTES] /** Parámetros de `GET /usuarios`: paginación y búsqueda. */
 /** Parámetros de `GET /usuarios`: paginación, búsqueda y orden. */
 export class ListarUsuariosDto extends PaginationQueryDto {
   /**
@@ -26,11 +23,6 @@ export class ListarUsuariosDto extends PaginationQueryDto {
    * @example 'perez'
    */
   @IsOptional()
-  // [ANTES] @Transform(({ value }: { value: unknown }) =>
-  // [ANTES]   typeof value === 'string' ? value.trim() : value,
-  // [ANTES] )
-  // [ANTES] @IsString()
-  // [ANTES] @MaxLength(50)
   @NormalizeWhitespace()
   @IsString({ message: 'buscar debe ser texto' })
   @MaxLength(50, { message: 'buscar no puede superar los 50 caracteres' })

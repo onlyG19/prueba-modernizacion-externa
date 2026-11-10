@@ -11,8 +11,6 @@ describe('/logo (e2e)', () => {
 
   async function visitas(servidor: NestExpressApplication): Promise<number> {
     const respuesta = await request(servidor.getHttpServer())
-      // [ANTES] .get('/logo/count')
-      // [ANTES] .get(`${RUTA_API}/logo/count`)
       .get(`${RUTA_API}/logo/visitas`)
       .expect(200);
     return (respuesta.body as VisitCountDto).count;
@@ -30,7 +28,6 @@ describe('/logo (e2e)', () => {
     const antes = await visitas(app);
 
     const respuesta = await request(app.getHttpServer())
-      // [ANTES] .get('/logo')
       .get(`${RUTA_API}/logo`)
       .expect(200)
       .expect('Content-Type', /^image\//)
@@ -44,7 +41,6 @@ describe('/logo (e2e)', () => {
   it(`aplica su propio límite: la visita ${LIMITE_LOGO.limit + 1} en un minuto responde 429 y no suma`, async () => {
     // App nueva: el conteo del límite (en memoria) parte de cero.
     const appNueva = await crearAppE2e();
-    // [ANTES] const pedirLogo = () => request(appNueva.getHttpServer()).get('/logo');
     const pedirLogo = () =>
       request(appNueva.getHttpServer()).get(`${RUTA_API}/logo`);
     try {

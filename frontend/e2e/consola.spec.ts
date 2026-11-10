@@ -11,12 +11,10 @@ declare global {
 const ADMIN = { usuario: 'admin', clave: 'e2e-clave-de-prueba' };
 
 async function ingresar(pagina: Page) {
-  // [ANTES] await pagina.goto('/');
   await pagina.goto('/ingresar');
   await pagina.getByLabel('Usuario').fill(ADMIN.usuario);
   await pagina.getByLabel('Contraseña').fill(ADMIN.clave);
   await pagina.getByRole('button', { name: 'Ingresar' }).click();
-  // [ANTES] await expect(pagina.getByRole('heading', { name: 'Registro de usuarios' })).toBeVisible();
   await expect(pagina.getByRole('heading', { name: 'Resumen' })).toBeVisible();
 }
 
@@ -74,9 +72,6 @@ test('ciclo completo: registrar, editar, buscar, recargar y eliminar', async ({
     '11.111.111-1',
   );
 
-  // [ANTES] await page.getByRole('button', { name: 'Editar a Ana Rojas' }).click();
-  // [ANTES] await page.getByLabel('Nombre', { exact: true }).fill('Ana María Rojas');
-  // [ANTES] await page.getByRole('button', { name: 'Guardar cambios' }).click();
   // El ojo abre el detalle en una ventana modal; el lápiz, dentro, la edición.
   await page.getByRole('button', { name: 'Ver detalle de Ana Rojas' }).click();
   const ventana = page.getByRole('dialog', { name: 'Ana Rojas' });
@@ -140,7 +135,6 @@ test('un RUT duplicado lo rechaza Postgres (UNIQUE) y la interfaz lo explica', a
   await abrirPestana(page, 'Registrar usuario');
 
   await registrar(page, 'Primera Persona', '10000013k');
-  // [ANTES] await expect(page.getByRole('row', { name: /Primera Persona/ })).toBeVisible();
   await expect(
     page
       .getByRole('status')
@@ -162,7 +156,6 @@ test('un RUT duplicado lo rechaza Postgres (UNIQUE) y la interfaz lo explica', a
 });
 
 test('la API rechaza peticiones sin token (401)', async ({ request }) => {
-  // [ANTES] const respuesta = await request.get('/api/usuarios');
   const respuesta = await request.get('/api/v1/usuarios');
 
   expect(respuesta.status()).toBe(401);
@@ -189,8 +182,6 @@ test('cerrar sesión vuelve al login y una recarga no recupera la consola', asyn
 test('sin violaciones de accesibilidad en el navegador real, contraste incluido', async ({
   page,
 }) => {
-  // [ANTES] await page.goto('/');
-  // [ANTES] expect(await violacionesDeAccesibilidad(page)).toEqual([]);
   await page.goto('/');
   await expect(page.getByText(/Actualizado a las/)).toBeVisible();
   expect(await violacionesDeAccesibilidad(page)).toEqual([]);

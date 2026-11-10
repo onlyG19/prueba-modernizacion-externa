@@ -64,8 +64,6 @@ function paginar(usuarios: Usuario[], url: URL): PaginaUsuarios {
         normalizar(u.nombre).includes(texto) ||
         (rut !== '' && u.rut.replace('-', '').toLowerCase().includes(rut)),
     )
-    // [ANTES] .toSorted((a, b) => COLECCION.compare(a.nombre, b.nombre) || a.id - b.id);
-    // [ANTES] .toSorted((a, b) => sentido * comparar(a, b) || a.id - b.id);
     .toSorted((a, b) => sentido * comparar(a, b) || a.id.localeCompare(b.id));
   const total = coincidentes.length;
   return {
@@ -93,29 +91,20 @@ const error = (status: number, detail: string, title: string) =>
  * Backend falso en memoria, con las mismas reglas que la API real: exige el
  * token, responde 409 ante un RUT duplicado y 204 al eliminar.
  */
-// [ANTES] export function crearApiFalsa(inicial: Partial<EstadoApiFalsa> = {}) {
 export function crearApiFalsa({
   usuarios = [
-    // [ANTES] { id: 2, nombre: 'Juan Pérez', rut: '12345678-5' },
     { id: 'u2', nombre: 'Juan Pérez', rut: '12345678-5' },
-    // [ANTES] { id: 3, nombre: 'María López', rut: '9876543-3' },
     { id: 'u3', nombre: 'María López', rut: '9876543-3' },
   ],
   ...inicial
 }: EscenarioApiFalsa = {}) {
   const estado: EstadoApiFalsa = {
-    // [ANTES] usuarios: [
-    // [ANTES]   { id: 2, nombre: 'Juan Pérez', rut: '12345678-5' },
-    // [ANTES]   { id: 3, nombre: 'María López', rut: '9876543-3' },
-    // [ANTES] ],
     usuarios: usuarios.map(conFechas),
     visitas: 41,
     redisDisponible: true,
     recibidos: { creaciones: [], cambios: [] },
     ...inicial,
   };
-  // [ANTES] let siguienteId = 100;
-  // Ids como los de la API real: UUID (crypto.randomUUID() al crear).
 
   const autorizado = (request: Request) =>
     request.headers.get('Authorization') === `Bearer ${TOKEN_PRUEBA}`;
@@ -123,7 +112,6 @@ export function crearApiFalsa({
     error(401, 'Token inválido o expirado', 'Unauthorized');
 
   const handlers = [
-    // [ANTES] http.post('/api/auth/login', async ({ request }) => {
     http.post('/api/v1/auth/login', async ({ request }) => {
       const { username, password } = (await request.json()) as Credenciales;
       if (
@@ -139,9 +127,7 @@ export function crearApiFalsa({
       return error(401, 'Credenciales inválidas', 'Unauthorized');
     }),
 
-    // [ANTES] http.get('/api/usuarios', ({ request }) =>
     http.get('/api/v1/usuarios', ({ request }) =>
-      // [ANTES] autorizado(request) ? HttpResponse.json(estado.usuarios) : noAutorizado(),
       autorizado(request)
         ? HttpResponse.json(paginar(estado.usuarios, new URL(request.url)))
         : noAutorizado(),
@@ -157,7 +143,6 @@ export function crearApiFalsa({
         : error(404, 'Usuario no encontrado', 'Not Found');
     }),
 
-    // [ANTES] http.post('/api/usuarios', async ({ request }) => {
     http.post('/api/v1/usuarios', async ({ request }) => {
       if (!autorizado(request)) {
         return noAutorizado();
@@ -171,10 +156,9 @@ export function crearApiFalsa({
           'Conflict',
         );
       }
-      // [ANTES] const creado = { id: siguienteId++, ...datos };
       const ahora = new Date().toISOString();
       const creado = {
-        // [ANTES] id: siguienteId++,
+        // Un UUID, como el id que asigna la API real.
         id: crypto.randomUUID(),
         ...datos,
         creadoEn: ahora,
@@ -185,14 +169,12 @@ export function crearApiFalsa({
       return HttpResponse.json(creado, { status: 201 });
     }),
 
-    // [ANTES] http.patch('/api/usuarios/:id', async ({ request, params }) => {
     http.patch('/api/v1/usuarios/:id', async ({ request, params }) => {
       if (!autorizado(request)) {
         return noAutorizado();
       }
       const cambios = (await request.json()) as CambiosUsuario;
       estado.recibidos.cambios.push(cambios);
-      // [ANTES] const usuario = estado.usuarios.find((u) => u.id === Number(params.id));
       const usuario = estado.usuarios.find((u) => u.id === params.id);
       if (!usuario) {
         return error(404, 'Usuario no encontrado', 'Not Found');
@@ -206,10 +188,6 @@ export function crearApiFalsa({
           'Precondition Failed',
         );
       }
-      // [ANTES] Object.assign(usuario, cambios);
-      // [ANTES] Object.assign(usuario, cambios, {
-      // [ANTES]   actualizadoEn: new Date().toISOString(),
-      // [ANTES] });
       Object.assign(usuario, cambios, {
         actualizadoEn: new Date().toISOString(),
         version: usuario.version + 1,
@@ -217,19 +195,14 @@ export function crearApiFalsa({
       return HttpResponse.json(usuario);
     }),
 
-    // [ANTES] http.delete('/api/usuarios/:id', ({ request, params }) => {
     http.delete('/api/v1/usuarios/:id', ({ request, params }) => {
       if (!autorizado(request)) {
         return noAutorizado();
       }
-      estado.usuarios = estado.usuarios.filter(
-        // [ANTES] (u) => u.id !== Number(params.id),
-        (u) => u.id !== params.id,
-      );
+      estado.usuarios = estado.usuarios.filter((u) => u.id !== params.id);
       return new HttpResponse(null, { status: 204 });
     }),
 
-    // [ANTES] http.get('/api/logo', () => {
     http.get('/api/v1/logo', () => {
       const cabeceras: Record<string, string> = {
         'Content-Type': 'image/svg+xml',

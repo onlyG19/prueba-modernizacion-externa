@@ -1,7 +1,5 @@
-// [ANTES] import { Global, Module } from '@nestjs/common';
 import { Global, Inject, Module, OnApplicationShutdown } from '@nestjs/common';
 import Redis from 'ioredis';
-// [ANTES] import { RedisProvider } from './redis.provider';
 import { REDIS_CLIENT, RedisProvider } from './redis.provider';
 
 @Global()
@@ -9,7 +7,6 @@ import { REDIS_CLIENT, RedisProvider } from './redis.provider';
   providers: [RedisProvider],
   exports: [RedisProvider],
 })
-// [ANTES] export class RedisModule {}
 export class RedisModule implements OnApplicationShutdown {
   constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {}
 

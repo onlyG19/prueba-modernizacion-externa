@@ -16,7 +16,6 @@ interface Props {
   onGuardado?: (actualizado: Usuario) => void;
 }
 
-// [ANTES] export function FormularioEditarUsuario({ usuario, onTerminar }: Props) {
 export function FormularioEditarUsuario({
   usuario,
   onTerminar,

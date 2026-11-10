@@ -5,12 +5,10 @@
  * y no se regeneran los tipos, el frontend deja de compilar en vez de fallar
  * en producción.
  */
-// [ANTES] import type { components } from './esquema';
 import type { components, operations } from './esquema';
 
 type Esquemas = components['schemas'];
 
-// [ANTES] export type Usuario = Esquemas['Usuario'];
 export type Usuario = Esquemas['UsuarioDto'];
 export type PaginaUsuarios = Esquemas['PaginaUsuariosDto'];
 export type NuevoUsuario = Esquemas['CreateUsuarioDto'];

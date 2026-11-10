@@ -7,7 +7,6 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { Usuario } from '../api/tipos';
 import { useAnunciar } from '../ui/avisos-contexto';
-// [ANTES] import { BotonEnLinea, BotonPeligro, BotonSecundario } from '../ui/botones';
 import { BotonIcono, BotonPeligro, BotonSecundario } from '../ui/botones';
 import { clases } from '../ui/clases';
 import { IconoBasura, IconoLapiz, IconoOjo } from '../ui/iconos';
@@ -15,7 +14,6 @@ import { useEliminarUsuario } from './consultas';
 import { formatearFecha } from './fechas';
 import estilos from './FilaUsuario.module.css';
 import { erroresDeServidor } from './formulario/errores-formulario';
-import { idBotonEditar } from './ids';
 import { formatearRutParcial } from './rut/formato-rut';
 
 /** Columnas de la tabla: la confirmación de borrado ocupa la fila completa. */
@@ -75,7 +73,6 @@ export function Normal({
   }
 
   return (
-    // [ANTES] <tr className={clases(estilos.fila, resaltada && estilos.resaltada)}>
     <tr
       className={clases(
         estilos.fila,
@@ -85,8 +82,6 @@ export function Normal({
     >
       <CeldasDatos usuario={usuario} />
       <td className={estilos.acciones}>
-        {/* [ANTES] <BotonEnLinea id={idBotonEditar(usuario.id)} onClick={() => onEditar(usuario)} aria-label={`Editar a ${usuario.nombre}`}>Editar</BotonEnLinea> */}
-        {/* [ANTES] <BotonEnLinea ref={refEliminar} onClick={() => setConfirmando(true)} aria-label={`Eliminar a ${usuario.nombre}`}>Eliminar</BotonEnLinea> */}
         <BotonIcono
           etiqueta={`Ver detalle de ${usuario.nombre}`}
           onClick={() => onVer(usuario)}
@@ -94,7 +89,6 @@ export function Normal({
           <IconoOjo />
         </BotonIcono>
         <BotonIcono
-          id={idBotonEditar(usuario.id)}
           etiqueta={`Editar a ${usuario.nombre}`}
           onClick={() => onEditar(usuario)}
         >
@@ -112,18 +106,6 @@ export function Normal({
     </tr>
   );
 }
-
-// [ANTES] /** La fila del usuario que se está editando en el formulario. */
-// [ANTES] export function EnEdicion({ usuario }: { usuario: Usuario }) {
-// [ANTES]   return (
-// [ANTES]     <tr className={clases(estilos.fila, estilos.enEdicion)} aria-current="true">
-// [ANTES]       <CeldasDatos usuario={usuario} />
-// [ANTES]       <td className={estilos.acciones}>
-// [ANTES]         <span className={estilos.marcaEdicion}>Editando</span>
-// [ANTES]       </td>
-// [ANTES]     </tr>
-// [ANTES]   );
-// [ANTES] }
 
 interface PropsConfirmacion {
   usuario: Usuario;
@@ -168,7 +150,6 @@ function Confirmacion({ usuario, onCancelar, onEliminado }: PropsConfirmacion) {
 
   return (
     <tr className={estilos.confirmacion}>
-      {/* [ANTES] <td colSpan={3}> */}
       <td colSpan={COLUMNAS}>
         <div
           className={estilos.contenidoConfirmacion}

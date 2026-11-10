@@ -1,11 +1,9 @@
 import type { components } from './esquema';
 
-// [ANTES] type ErrorRespuesta = components['schemas']['ErrorResponseDto'];
 /** Errores de la API: Problem Details (RFC 9457). */
 type ErrorRespuesta = components['schemas']['ProblemDetailsDto'];
 
 /** URL base de la API (ver `VITE_API_URL` en env.d.ts). */
-// [ANTES] const BASE = import.meta.env.VITE_API_URL ?? '/api';
 const BASE = import.meta.env.VITE_API_URL ?? '/api/v1';
 
 /** La API respondió con un código de error (4xx o 5xx). */
@@ -61,7 +59,6 @@ export function urlApi(ruta: string): string {
  */
 export async function solicitar(
   ruta: string,
-  // [ANTES] { metodo = 'GET', cuerpo, token, signal }: OpcionesSolicitud = {},
   {
     metodo = 'GET',
     cuerpo,
@@ -70,7 +67,6 @@ export async function solicitar(
     cabeceras: extra,
   }: OpcionesSolicitud = {},
 ): Promise<Response> {
-  // [ANTES] const cabeceras = new Headers();
   const cabeceras = new Headers(extra);
   if (cuerpo !== undefined) {
     cabeceras.set('Content-Type', 'application/json');
@@ -112,13 +108,6 @@ export async function solicitarJson<T>(
 
 async function leerMensajes(respuesta: Response): Promise<string[]> {
   try {
-    // [ANTES] const { message } = (await respuesta.json()) as Partial<ErrorRespuesta>;
-    // [ANTES] if (Array.isArray(message)) {
-    // [ANTES]   return message;
-    // [ANTES] }
-    // [ANTES] if (typeof message === 'string') {
-    // [ANTES]   return [message];
-    // [ANTES] }
     const { errors, detail } =
       (await respuesta.json()) as Partial<ErrorRespuesta>;
     if (Array.isArray(errors) && errors.length > 0) {

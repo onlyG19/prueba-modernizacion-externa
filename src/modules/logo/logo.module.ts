@@ -5,7 +5,6 @@ import { VisitCounterService } from './visit-counter.service';
 
 @Module({
   controllers: [LogoController],
-  // [ANTES] providers: [LogoService],
   providers: [LogoService, VisitCounterService],
 })
 export class LogoModule {}

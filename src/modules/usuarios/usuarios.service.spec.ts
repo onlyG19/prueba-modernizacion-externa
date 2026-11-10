@@ -1,14 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-// [ANTES] import { NotFoundException } from '@nestjs/common';
-// [ANTES] import { ConflictException, NotFoundException } from '@nestjs/common';
 import {
   ConflictException,
   NotFoundException,
   PreconditionFailedException,
 } from '@nestjs/common';
-// [ANTES] import { ObjectLiteral, Repository } from 'typeorm';
-// [ANTES] import { ObjectLiteral, QueryFailedError, Repository } from 'typeorm';
 import {
   Brackets,
   ObjectLiteral,
@@ -20,7 +16,6 @@ import {
   MENSAJE_VERSION_DESACTUALIZADA,
   UsuariosService,
 } from './usuarios.service';
-// [ANTES] import { Usuario } from './usuario.entity';
 import { Usuario } from './entities/usuario.entity';
 
 /** Ids UUID de prueba (los usuarios ya no tienen ids seriales). */
@@ -53,7 +48,6 @@ const mockQueryBuilder = () => {
 };
 
 const mockRepository = () => ({
-  // [ANTES] find: jest.fn(),
   createQueryBuilder: jest.fn(),
   findOneBy: jest.fn(),
   create: jest.fn(),
@@ -78,10 +72,8 @@ describe('UsuariosService', () => {
   let repo: MockRepository<Usuario>;
 
   const usuarioBase: Usuario = {
-    // [ANTES] id: 1,
     id: ID,
     nombre: 'Juan Pérez',
-    // [ANTES] rut: '12345678-9', van a fallar los test si dejamos ese DV mal
     rut: '12345678-5',
     creadoEn: new Date('2026-11-10T14:03:00.000Z'),
     actualizadoEn: new Date('2026-11-10T14:03:00.000Z'),
@@ -102,17 +94,6 @@ describe('UsuariosService', () => {
 
   // ── findAll ──────────────────────────────────────────────────────────────
   describe('findAll', () => {
-    // [ANTES] it('debe retornar un arreglo de usuarios', async () => {
-    // [ANTES]   repo.find!.mockResolvedValue([usuarioBase]);
-    // [ANTES]   const result = await service.findAll();
-    // [ANTES]   expect(result).toEqual([usuarioBase]);
-    // [ANTES]   expect(repo.find).toHaveBeenCalledTimes(1);
-    // [ANTES] });
-    // [ANTES]
-    // [ANTES] it('debe retornar arreglo vacío cuando no hay usuarios', async () => {
-    // [ANTES]   repo.find!.mockResolvedValue([]);
-    // [ANTES]   expect(await service.findAll()).toEqual([]);
-    // [ANTES] });
     let qb: ReturnType<typeof mockQueryBuilder>;
 
     beforeEach(() => {
@@ -213,18 +194,14 @@ describe('UsuariosService', () => {
   describe('findOne', () => {
     it('debe retornar el usuario si existe', async () => {
       repo.findOneBy!.mockResolvedValue(usuarioBase);
-      // [ANTES] const result = await service.findOne(1);
       const result = await service.findOne(ID);
       expect(result).toEqual(usuarioBase);
-      // [ANTES] expect(repo.findOneBy).toHaveBeenCalledWith({ id: 1 });
       expect(repo.findOneBy).toHaveBeenCalledWith({ id: ID });
     });
 
     it('debe lanzar NotFoundException si el usuario no existe', async () => {
       repo.findOneBy!.mockResolvedValue(null);
-      // [ANTES] await expect(service.findOne(99)).rejects.toThrow(
       await expect(service.findOne(ID_INEXISTENTE)).rejects.toThrow(
-        // [ANTES] new NotFoundException('Usuario con id 99 no encontrado'),
         new NotFoundException(`Usuario con id ${ID_INEXISTENTE} no encontrado`),
       );
     });
@@ -233,9 +210,7 @@ describe('UsuariosService', () => {
   // ── create ───────────────────────────────────────────────────────────────
   describe('create', () => {
     it('debe crear y retornar el nuevo usuario', async () => {
-      // [ANTES] const dto = { nombre: 'María López', rut: '98765432-1' }; IDEM, si lo dejamos mal el DV del RUT, fallan los test
       const dto = { nombre: 'María López', rut: '98765432-5' };
-      // [ANTES] const creado = { id: 2, ...dto };
       const creado = { id: OTRO_ID, ...dto };
       repo.create!.mockReturnValue(creado);
       repo.save!.mockResolvedValue(creado);
@@ -268,37 +243,6 @@ describe('UsuariosService', () => {
   });
 
   // ── update ───────────────────────────────────────────────────────────────
-  // [ANTES] describe('update', () => {
-  // [ANTES]   it('debe actualizar y retornar el usuario modificado', async () => {
-  // [ANTES]     const dto = { nombre: 'Juan Pablo Pérez' };
-  // [ANTES]     const actualizado = { ...usuarioBase, ...dto };
-  // [ANTES]     repo.findOneBy!.mockResolvedValue({ ...usuarioBase });
-  // [ANTES]     repo.save!.mockResolvedValue(actualizado);
-  // [ANTES]
-  // [ANTES]     // [ANTES] const result = await service.update(1, dto);
-  // [ANTES]     const result = await service.update(ID, dto);
-  // [ANTES]     expect(result).toEqual(actualizado);
-  // [ANTES]     expect(repo.save).toHaveBeenCalled();
-  // [ANTES]   });
-  // [ANTES]
-  // [ANTES]   it('debe lanzar NotFoundException si el usuario no existe', async () => {
-  // [ANTES]     repo.findOneBy!.mockResolvedValue(null);
-  // [ANTES]     // [ANTES] await expect(service.update(99, { nombre: 'Nuevo' })).rejects.toThrow(
-  // [ANTES]     await expect(
-  // [ANTES]       service.update(ID_INEXISTENTE, { nombre: 'Nuevo' }),
-  // [ANTES]     ).rejects.toThrow(NotFoundException);
-  // [ANTES]   });
-  // [ANTES]
-  // [ANTES]   it('debe lanzar ConflictException si el nuevo RUT ya pertenece a otro usuario', async () => {
-  // [ANTES]     repo.findOneBy!.mockResolvedValue({ ...usuarioBase });
-  // [ANTES]     repo.save!.mockRejectedValue(errorDeUnicidad());
-  // [ANTES]
-  // [ANTES]     // [ANTES] await expect(service.update(1, { rut: '11111111-1' })).rejects.toThrow(
-  // [ANTES]     await expect(service.update(ID, { rut: '11111111-1' })).rejects.toThrow(
-  // [ANTES]       ConflictException,
-  // [ANTES]     );
-  // [ANTES]   });
-  // [ANTES] });
   describe('update', () => {
     let qb: ReturnType<typeof mockQueryBuilder>;
 
@@ -387,14 +331,12 @@ describe('UsuariosService', () => {
       repo.findOneBy!.mockResolvedValue(usuarioBase);
       repo.remove!.mockResolvedValue(undefined);
 
-      // [ANTES] await expect(service.remove(1)).resolves.toBeUndefined();
       await expect(service.remove(ID)).resolves.toBeUndefined();
       expect(repo.remove).toHaveBeenCalledWith(usuarioBase);
     });
 
     it('debe lanzar NotFoundException si el usuario no existe', async () => {
       repo.findOneBy!.mockResolvedValue(null);
-      // [ANTES] await expect(service.remove(99)).rejects.toThrow(NotFoundException);
       await expect(service.remove(ID_INEXISTENTE)).rejects.toThrow(
         NotFoundException,
       );

@@ -1,13 +1,10 @@
-// [ANTES] import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-// [ANTES] import { solicitar, solicitarJson } from '../api/cliente';
 import { ApiError, solicitar, solicitarJson } from '../api/cliente';
-// [ANTES] import type { CambiosUsuario, NuevoUsuario, Usuario } from '../api/tipos';
 import type {
   CambiosUsuario,
   NuevoUsuario,
@@ -30,21 +27,10 @@ export interface FiltroUsuarios {
   orden: OrdenUsuarios;
 }
 
-// [ANTES] /** Lista de usuarios (cacheada y deduplicada por TanStack Query). */
-// [ANTES] export function useUsuarios() {
-// [ANTES]   const { token } = useSesionActiva();
-// [ANTES]   return useQuery({
-// [ANTES]     queryKey: CLAVE_USUARIOS,
-// [ANTES]     queryFn: ({ signal }) =>
-// [ANTES]       solicitarJson<Usuario[]>('/usuarios', { token, signal }),
-// [ANTES]   });
-// [ANTES] }
 /** Una página de usuarios, filtrada y ordenada por el servidor. */
-// [ANTES] export function useUsuarios({ pagina, busqueda }: FiltroUsuarios) {
 export function useUsuarios({ pagina, busqueda, orden }: FiltroUsuarios) {
   const { token } = useSesionActiva();
   return useQuery({
-    // [ANTES] queryKey: [...CLAVE_USUARIOS, { pagina, busqueda }],
     queryKey: [...CLAVE_USUARIOS, { pagina, busqueda, orden }],
     queryFn: async ({ signal }) => {
       const parametros = new URLSearchParams({
@@ -86,10 +72,6 @@ export function useUsuario(deLaFila: Usuario) {
   });
 }
 
-// [ANTES] /*
-// [ANTES]  * Las mutaciones actualizan la caché con la respuesta del servidor en vez de
-// [ANTES]  * volver a pedir toda la lista: un viaje de red menos por operación.
-// [ANTES]  */
 /*
  * Con paginación, tras cada mutación se invalida la lista y se vuelve a pedir
  * la página: un usuario nuevo puede quedar en otra página según el orden.
@@ -105,12 +87,6 @@ export function useCrearUsuario() {
         cuerpo: datos,
         token,
       }),
-    // [ANTES] onSuccess: (creado) => {
-    // [ANTES]   cliente.setQueryData<Usuario[]>(CLAVE_USUARIOS, (actuales = []) => [
-    // [ANTES]     ...actuales,
-    // [ANTES]     creado,
-    // [ANTES]   ]);
-    // [ANTES] },
     onSuccess: () => cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS }),
   });
 }
@@ -119,7 +95,6 @@ export function useActualizarUsuario() {
   const { token } = useSesionActiva();
   const cliente = useQueryClient();
   return useMutation({
-    // [ANTES] mutationFn: ({ id, cambios }: { id: number; cambios: CambiosUsuario }) =>
     mutationFn: ({
       id,
       version,
@@ -136,12 +111,6 @@ export function useActualizarUsuario() {
         token,
         cabeceras: { 'If-Match': `"${version}"` },
       }),
-    // [ANTES] onSuccess: (actualizado) => {
-    // [ANTES]   cliente.setQueryData<Usuario[]>(CLAVE_USUARIOS, (actuales = []) =>
-    // [ANTES]     actuales.map((u) => (u.id === actualizado.id ? actualizado : u)),
-    // [ANTES]   );
-    // [ANTES] },
-    // [ANTES] onSuccess: () => cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS }),
     onSuccess: (actualizado) => {
       // El detalle abierto muestra al instante lo que respondió el servidor,
       // sin pasar un momento por los datos de antes.
@@ -162,15 +131,9 @@ export function useEliminarUsuario() {
   const cliente = useQueryClient();
   return useMutation({
     // 204 sin cuerpo: no se interpreta como JSON.
-    // [ANTES] mutationFn: async (id: number) => {
     mutationFn: async (id: Usuario['id']) => {
       await solicitar(`/usuarios/${id}`, { metodo: 'DELETE', token });
     },
-    // [ANTES] onSuccess: (_respuesta, id) => {
-    // [ANTES]   cliente.setQueryData<Usuario[]>(CLAVE_USUARIOS, (actuales = []) =>
-    // [ANTES]     actuales.filter((u) => u.id !== id),
-    // [ANTES]   );
-    // [ANTES] },
     onSuccess: () => cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS }),
   });
 }

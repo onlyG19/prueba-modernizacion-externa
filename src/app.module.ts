@@ -1,22 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-// [ANTES] import { APP_FILTER } from '@nestjs/core';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
-// [ANTES] import { AppController } from './app.controller';
-// [ANTES] import { AppService } from './app.service';
-// [ANTES] import { RedisModule } from './redis/redis.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
-// [ANTES] import { LogoModule } from './logo/logo.module';
 import { LogoModule } from './modules/logo/logo.module';
-// [ANTES] import { UsuariosModule } from './usuarios/usuarios.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
-// [ANTES] import { Usuario } from './modules/usuarios/entities/usuario.entity';
 import { validateEnv } from './config/env.validation';
 import { LIMITE_GENERAL, MENSAJE_LIMITE } from './config/limites';
 import { AppConfigService } from './config/app-config';
@@ -25,7 +18,6 @@ import { crearOpcionesLog } from './infrastructure/logging/logger.options';
 
 @Module({
   imports: [
-    // [ANTES] ConfigModule.forRoot({ isGlobal: true }),
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     // Logs estructurados (JSON) con un id por petición; ver logger.options.ts.
     LoggerModule.forRootAsync({
@@ -44,7 +36,6 @@ import { crearOpcionesLog } from './infrastructure/logging/logger.options';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      // [ANTES] useFactory: (config: ConfigService) => ({
       useFactory: (config: AppConfigService) =>
         buildDataSourceOptions({
           DB_HOST: config.get('DB_HOST', { infer: true }),
@@ -60,12 +51,9 @@ import { crearOpcionesLog } from './infrastructure/logging/logger.options';
     AuthModule,
     HealthModule,
   ],
-  // [ANTES] controllers: [AppController],
-  // [ANTES] providers: [AppService],
   // Sin controlador raíz: el "Hello World" de la plantilla de Nest no aportaba
   // nada, y para saber si la API está viva existe GET /health.
   providers: [
-    // [ANTES] AppService,
     // Todas las respuestas de error en formato Problem Details (RFC 9457).
     { provide: APP_FILTER, useClass: ProblemDetailsFilter },
     // Límite de peticiones por IP en toda la API (ver config/limites.ts).

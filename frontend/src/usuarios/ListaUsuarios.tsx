@@ -1,12 +1,4 @@
-// [ANTES] import {
-// [ANTES]   useDeferredValue,
-// [ANTES]   useMemo,
-// [ANTES]   useRef,
-// [ANTES]   useState,
-// [ANTES]   type ReactNode,
-// [ANTES] } from 'react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-// [ANTES] import type { Usuario } from '../api/tipos';
 import type { OrdenUsuarios, Usuario } from '../api/tipos';
 import { Enlace } from '../rutas/Enlace';
 import { RUTAS } from '../rutas/rutas';
@@ -19,10 +11,7 @@ import * as FilaUsuario from './FilaUsuario';
 import estilos from './ListaUsuarios.module.css';
 import { Paginacion } from './Paginacion';
 
-// [ANTES] /** Creado una vez: ordena en español y sin distinguir tildes. */
-// [ANTES] const COLECCION = new Intl.Collator('es', { sensitivity: 'base' });
 const FORMATO_NUMERO = new Intl.NumberFormat('es-CL');
-// [ANTES] /** Parámetro de la URL con la búsqueda: un enlace o una recarga la conservan. */
 /** Parámetros de la URL: un enlace o una recarga conservan búsqueda y página. */
 const PARAMETRO_BUSQUEDA = 'buscar';
 const PARAMETRO_PAGINA = 'pagina';
@@ -58,29 +47,6 @@ const ORDENES: ReadonlyArray<{
 const ORDEN_POR_DEFECTO = ORDENES[0];
 /** Pausa tras la última tecla antes de preguntarle al servidor. */
 const RETRASO_BUSQUEDA_MS = 300;
-// [ANTES] const SIN_TILDES = /\p{Diacritic}/gu;
-// [ANTES] const SEPARADORES_RUT = /[.\-\s]/g;
-// [ANTES]
-// [ANTES] const normalizar = (texto: string) =>
-// [ANTES]   texto.normalize('NFD').replace(SIN_TILDES, '').toLowerCase();
-// [ANTES]
-// [ANTES] /** Coincide por nombre (sin tildes) o por RUT (con o sin puntos y guion). */
-// [ANTES] function filtrar(usuarios: Usuario[], busqueda: string): Usuario[] {
-// [ANTES]   const texto = normalizar(busqueda.trim());
-// [ANTES]   if (!texto) {
-// [ANTES]     return usuarios;
-// [ANTES]   }
-// [ANTES]   const rutBuscado = texto.replace(SEPARADORES_RUT, '');
-// [ANTES]   return usuarios.filter(
-// [ANTES]     (usuario) =>
-// [ANTES]       normalizar(usuario.nombre).includes(texto) ||
-// [ANTES]       (rutBuscado !== '' &&
-// [ANTES]         usuario.rut
-// [ANTES]           .replace(SEPARADORES_RUT, '')
-// [ANTES]           .toLowerCase()
-// [ANTES]           .includes(rutBuscado)),
-// [ANTES]   );
-// [ANTES] }
 
 /** Con espacio duro: el número nunca queda separado de su palabra. */
 const contar = (n: number) =>
@@ -111,17 +77,7 @@ function leerOrdenDeUrl(): OrdenUsuarios {
   return (ORDENES.find((o) => o.valor === valor) ?? ORDEN_POR_DEFECTO).valor;
 }
 
-// [ANTES] function escribirBusquedaEnUrl(busqueda: string) {
-// [ANTES]   const url = new URL(window.location.href);
-// [ANTES]   if (busqueda.trim()) {
-// [ANTES]     url.searchParams.set(PARAMETRO_BUSQUEDA, busqueda.trim());
-// [ANTES]   } else {
-// [ANTES]     url.searchParams.delete(PARAMETRO_BUSQUEDA);
-// [ANTES]   }
-// [ANTES]   window.history.replaceState(window.history.state, '', url);
-// [ANTES] }
 /** Los valores por defecto (sin búsqueda, primera página) no ensucian la URL. */
-// [ANTES] function escribirFiltroEnUrl(busqueda: string, pagina: number) {
 function escribirFiltroEnUrl(
   busqueda: string,
   pagina: number,
@@ -147,30 +103,22 @@ function escribirFiltroEnUrl(
 }
 
 interface Props {
-  // [ANTES] idEnEdicion: number | null;
-  // [ANTES] idEnEdicion: Usuario['id'] | null;
   /** El usuario abierto en la ventana de detalle: su fila queda marcada. */
   idSeleccionado: Usuario['id'] | null;
-  // [ANTES] idResaltado: number | null;
   idResaltado: Usuario['id'] | null;
   onVer: (usuario: Usuario) => void;
   onEditar: (usuario: Usuario) => void;
-  // [ANTES] onEliminado: (usuario: Usuario) => void;
   onEliminado?: (usuario: Usuario) => void;
 }
 
 export function ListaUsuarios({
-  // [ANTES] idEnEdicion,
   idSeleccionado,
   idResaltado,
   onVer,
   onEditar,
   onEliminado,
 }: Props) {
-  // [ANTES] const usuarios = useUsuarios();
   const [busqueda, setBusqueda] = useState(leerBusquedaDeUrl);
-  // [ANTES] // El campo responde de inmediato; el filtrado puede esperar un instante.
-  // [ANTES] const busquedaDiferida = useDeferredValue(busqueda);
   const [pagina, setPagina] = useState(leerPaginaDeUrl);
   const [orden, setOrden] = useState(leerOrdenDeUrl);
   // El campo responde de inmediato; al servidor se le pregunta al dejar de
@@ -179,17 +127,9 @@ export function ListaUsuarios({
     busqueda.trim(),
     RETRASO_BUSQUEDA_MS,
   );
-  // [ANTES] const usuarios = useUsuarios({ pagina, busqueda: busquedaParaApi });
   const usuarios = useUsuarios({ pagina, busqueda: busquedaParaApi, orden });
   const refTitulo = useRef<HTMLHeadingElement>(null);
 
-  // [ANTES] const visibles = useMemo(
-  // [ANTES]   () =>
-  // [ANTES]     filtrar(usuarios.data ?? [], busquedaDiferida).toSorted((a, b) =>
-  // [ANTES]       COLECCION.compare(a.nombre, b.nombre),
-  // [ANTES]     ),
-  // [ANTES]   [usuarios.data, busquedaDiferida],
-  // [ANTES] );
   // El servidor ya filtra, ordena y pagina: se muestra tal cual llega.
   const visibles = usuarios.data?.data ?? [];
   const totalPaginas = usuarios.data?.meta.totalPages ?? 0;
@@ -201,18 +141,14 @@ export function ListaUsuarios({
     setPagina(ultimaPagina);
   }
 
-  // [ANTES] // En el manejador del evento, no en un efecto: es la respuesta a escribir.
   // La URL es un sistema externo: un efecto la sincroniza venga de donde venga
   // el cambio (escribir, cambiar de página o la corrección de arriba).
   useEffect(() => {
-    // [ANTES] escribirFiltroEnUrl(busqueda, pagina);
     escribirFiltroEnUrl(busqueda, pagina, orden);
-    // [ANTES] }, [busqueda, pagina]);
   }, [busqueda, pagina, orden]);
 
   function cambiarBusqueda(valor: string) {
     setBusqueda(valor);
-    // [ANTES] escribirBusquedaEnUrl(valor);
     // Otra búsqueda, otros resultados: se parte de la primera página.
     setPagina(1);
   }
@@ -226,12 +162,9 @@ export function ListaUsuarios({
   function manejarEliminado(usuario: Usuario) {
     // La fila desaparece: el foco pasa al título de la lista y no se pierde.
     refTitulo.current?.focus();
-    // [ANTES] onEliminado(usuario);
     onEliminado?.(usuario);
   }
 
-  // [ANTES] const total = usuarios.data?.length ?? 0;
-  // [ANTES] const terminoBuscado = busquedaDiferida.trim();
   const total = usuarios.data?.meta.total ?? 0;
   // La búsqueda que produjo lo que se ve: mientras llega la nueva, la anterior.
   const terminoBuscado = usuarios.data?.busqueda ?? '';
@@ -241,9 +174,6 @@ export function ListaUsuarios({
 
   let conteo: string | null = null;
   if (usuarios.data) {
-    // [ANTES] conteo = terminoBuscado
-    // [ANTES]   ? `${visibles.length} de ${contar(total)}`
-    // [ANTES]   : contar(total);
     conteo = terminoBuscado ? contarEncontrados(total) : contar(total);
   }
 
@@ -262,14 +192,7 @@ export function ListaUsuarios({
         </BotonSecundario>
       </div>
     );
-    // [ANTES] } else if (total === 0) {
   } else if (total === 0 && !terminoBuscado) {
-    // [ANTES] contenido = (
-    // [ANTES]   <p className={estilos.estado}>
-    // [ANTES]     Todavía no hay usuarios registrados. Registra el primero con el
-    // [ANTES]     formulario.
-    // [ANTES]   </p>
-    // [ANTES] );
     // El formulario está en otra pestaña: un enlace lleva directo a él.
     contenido = (
       <p className={estilos.estado}>
@@ -280,7 +203,6 @@ export function ListaUsuarios({
         .
       </p>
     );
-    // [ANTES] } else if (visibles.length === 0) {
   } else if (total === 0) {
     contenido = (
       <p className={estilos.estado}>
@@ -294,7 +216,6 @@ export function ListaUsuarios({
     contenido = (
       <>
         <table className={estilos.tabla}>
-          {/* [ANTES] <caption className="sr-only">Usuarios registrados, ordenados por nombre</caption> */}
           <caption className="sr-only">
             Usuarios registrados, ordenados por{' '}
             {
@@ -307,20 +228,12 @@ export function ListaUsuarios({
               <th scope="col">Nombre</th>
               <th scope="col">RUT</th>
               <th scope="col">Registrado</th>
-              {/* [ANTES] <th scope="col"><span className="sr-only">Acciones</span></th> */}
               <th scope="col" className={estilos.columnaAcciones}>
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            {/* [ANTES] {visibles.map((usuario) => */}
-            {/* [ANTES]   usuario.id === idEnEdicion ? ( */}
-            {/* [ANTES]     <FilaUsuario.EnEdicion key={usuario.id} usuario={usuario} /> */}
-            {/* [ANTES]   ) : ( */}
-            {/* [ANTES]     <FilaUsuario.Normal key={usuario.id} usuario={usuario} resaltada={usuario.id === idResaltado} onEditar={onEditar} onEliminado={manejarEliminado} /> */}
-            {/* [ANTES]   ), */}
-            {/* [ANTES] )} */}
             {visibles.map((usuario) => (
               <FilaUsuario.Normal
                 key={usuario.id}
@@ -402,7 +315,6 @@ export function ListaUsuarios({
         </div>
       </div>
 
-      {/* [ANTES] {contenido} */}
       <div
         className={clases(
           estilos.resultados,

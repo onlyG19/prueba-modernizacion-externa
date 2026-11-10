@@ -7,14 +7,6 @@ import { AccessTokenDto } from './dto/access-token.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './jwt-auth.guard';
 
-// [ANTES] /** Respuesta del login. */
-// [ANTES] export interface AccessTokenResponse {
-// [ANTES]   accessToken: string;
-// [ANTES]   tokenType: 'Bearer';
-// [ANTES]   /** Segundos de vigencia del token. */
-// [ANTES]   expiresIn: number;
-// [ANTES] }
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -32,7 +24,6 @@ export class AuthService {
    *
    * @throws UnauthorizedException Si el usuario o la contraseña no son válidos.
    */
-  // [ANTES] async login({ username, password }: LoginDto): Promise<AccessTokenResponse> {
   async login({ username, password }: LoginDto): Promise<AccessTokenDto> {
     const passwordValida = await verifyPassword(
       password,

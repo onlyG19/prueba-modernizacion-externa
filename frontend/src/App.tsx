@@ -17,7 +17,6 @@ import { PantallaCarga } from './ui/PantallaCarga';
 
 const Consola = lazy(cargarConsola);
 
-// [ANTES] /** Sin sesión, el login; con sesión, la consola (cargada bajo demanda). */
 /**
  * Decide qué página mostrar según la ruta y la sesión:
  *
@@ -31,13 +30,6 @@ export function App() {
   const ruta = useRuta();
   const conSesion = state.sesion !== null;
 
-  // [ANTES] return state.sesion ? (
-  // [ANTES]   <Suspense fallback={<PantallaCarga />}>
-  // [ANTES]     <Consola />
-  // [ANTES]   </Suspense>
-  // [ANTES] ) : (
-  // [ANTES]   <PantallaLogin />
-  // [ANTES] );
   if (ruta === RUTAS.inicio) {
     return <PaginaInicio />;
   }

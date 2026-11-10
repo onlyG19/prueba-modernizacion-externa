@@ -19,10 +19,14 @@ export interface EstadoApiFalsa {
   recibidos: { creaciones: NuevoUsuario[]; cambios: CambiosUsuario[] };
 }
 
-const error = (statusCode: number, message: string, nombre: string) =>
+/** Errores con el mismo formato que la API real: Problem Details (RFC 9457). */
+const error = (status: number, detail: string, title: string) =>
   HttpResponse.json(
-    { statusCode, message, error: nombre },
-    { status: statusCode },
+    { type: 'about:blank', title, status, detail, instance: '/' },
+    {
+      status,
+      headers: { 'Content-Type': 'application/problem+json' },
+    },
   );
 
 /**

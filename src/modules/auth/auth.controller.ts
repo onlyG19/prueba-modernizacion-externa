@@ -5,7 +5,8 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
-import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+// [ANTES] import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+import { ProblemDetailsDto } from '../../common/dto/problem-details.dto';
 // [ANTES] import { AccessTokenResponse, AuthService } from './auth.service';
 import { AuthService } from './auth.service';
 import { AccessTokenDto } from './dto/access-token.dto';
@@ -24,11 +25,11 @@ export class AuthController {
   @ApiOkResponse({ type: AccessTokenDto })
   @ApiBadRequestResponse({
     description: 'Falta el usuario o la contraseña',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @ApiUnauthorizedResponse({
     description: 'Credenciales inválidas',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @Post('login')
   @HttpCode(HttpStatus.OK)

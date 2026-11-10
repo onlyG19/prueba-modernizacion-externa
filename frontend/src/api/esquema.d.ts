@@ -115,6 +115,29 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/health': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Estado de la API y de sus dependencias, para healthchecks (Docker,
+     *     balanceadores de carga).
+     * @description Sin base de datos la API no puede operar: responde 503. Sin Redis
+     *     solo se pierde el contador de visitas: responde 200 con `degraded`, para
+     *     que un orquestador no reinicie una API que sigue funcionando.
+     */
+    get: operations['HealthController_check'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -126,19 +149,41 @@ export interface components {
        */
       count: number;
     };
-    ErrorResponseDto: {
-      /** @description Mensaje del error, o la lista de errores de validación (400). */
-      message: string | string[];
+    ProblemDetailsDto: {
+      /**
+       * @description URI que identifica el tipo de problema. `about:blank` indica que basta con
+       *     el código HTTP: el `title` es entonces la frase estándar de ese código.
+       * @example about:blank
+       */
+      type: string;
+      /**
+       * @description Resumen del problema (la frase estándar del código HTTP).
+       * @example Conflict
+       */
+      title: string;
       /**
        * @description Código de estado HTTP.
-       * @example 404
+       * @example 409
        */
-      statusCode: number;
+      status: number;
       /**
-       * @description Nombre del estado HTTP.
-       * @example Not Found
+       * @description Explicación de esta ocurrencia del problema.
+       * @example Ya existe un usuario con el RUT 12345678-5
        */
-      error: string;
+      detail: string;
+      /**
+       * @description Ruta de la petición que falló (sin query string, para no repetir datos
+       *     personales como un RUT buscado).
+       * @example /usuarios
+       */
+      instance: string;
+      /**
+       * @description Reglas de validación incumplidas, una por elemento (solo en errores 400).
+       * @example [
+       *       "rut debe ser un RUT válido (ej: 12.345.678-5)"
+       *     ]
+       */
+      errors?: string[];
     };
     Usuario: {
       /**
@@ -211,6 +256,27 @@ export interface components {
        * @example 3600
        */
       expiresIn: number;
+    };
+    HealthStatusDto: {
+      /**
+       * @description `ok`: todo disponible. `degraded`: sin Redis (la API funciona, pero sin
+       *     contador de visitas). `error`: sin base de datos (la API no puede operar).
+       * @example ok
+       * @enum {string}
+       */
+      status: 'error' | 'ok' | 'degraded';
+      /**
+       * @description Postgres.
+       * @example up
+       * @enum {string}
+       */
+      database: 'up' | 'down';
+      /**
+       * @description Redis.
+       * @example up
+       * @enum {string}
+       */
+      redis: 'up' | 'down';
     };
   };
   responses: never;
@@ -286,7 +352,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
     };
@@ -314,7 +380,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
     };
@@ -346,7 +412,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
       /** @description Falta el token de acceso, o es inválido o expiró */
@@ -355,7 +421,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
       /** @description Ya existe un usuario con ese RUT */
@@ -364,7 +430,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
     };
@@ -394,7 +460,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
       /** @description No existe un usuario con ese id */
@@ -403,7 +469,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
     };
@@ -431,7 +497,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
       /** @description No existe un usuario con ese id */
@@ -440,7 +506,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
     };
@@ -474,7 +540,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
       /** @description Falta el token de acceso, o es inválido o expiró */
@@ -483,7 +549,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
       /** @description No existe un usuario con ese id */
@@ -492,7 +558,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
       /** @description El nuevo RUT ya pertenece a otro usuario */
@@ -501,7 +567,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
     };
@@ -533,7 +599,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
         };
       };
       /** @description Credenciales inválidas */
@@ -542,7 +608,35 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorResponseDto'];
+          'application/json': components['schemas']['ProblemDetailsDto'];
+        };
+      };
+    };
+  };
+  HealthController_check: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HealthStatusDto'];
+        };
+      };
+      /** @description La base de datos no responde */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HealthStatusDto'];
         };
       };
     };

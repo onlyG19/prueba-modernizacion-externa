@@ -1,9 +1,11 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+// [ANTES] import {
+// [ANTES]   Controller,
+// [ANTES]   Get,
+// [ANTES]   Inject,
+// [ANTES]   ServiceUnavailableException,
+// [ANTES] } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiOkResponse, ApiServiceUnavailableResponse } from '@nestjs/swagger';
 import Redis from 'ioredis';
 import { DataSource } from 'typeorm';
@@ -39,7 +41,10 @@ export class HealthController {
     type: HealthStatusDto,
   })
   @Get()
-  async check(): Promise<HealthStatusDto> {
+  // [ANTES] async check(): Promise<HealthStatusDto> {
+  async check(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<HealthStatusDto> {
     // Independientes entre sí: se verifican en paralelo.
     const [database, redis] = await Promise.all([
       probe(() => this.dataSource.query('SELECT 1')),
@@ -51,8 +56,13 @@ export class HealthController {
       database,
       redis,
     };
+    // [ANTES] if (salud.status === 'error') {
+    // [ANTES]   throw new ServiceUnavailableException(salud);
+    // [ANTES] }
+    // Un 503 de salud no es un error de la API: se responde con el mismo
+    // formato (no como Problem Details) para que el monitoreo lo lea igual.
     if (salud.status === 'error') {
-      throw new ServiceUnavailableException(salud);
+      res.status(HttpStatus.SERVICE_UNAVAILABLE);
     }
     return salud;
   }

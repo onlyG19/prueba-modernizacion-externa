@@ -17,7 +17,8 @@ import {
   ApiNotFoundResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+// [ANTES] import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+import { ProblemDetailsDto } from '../../common/dto/problem-details.dto';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
@@ -27,7 +28,7 @@ import { Usuario } from './entities/usuario.entity';
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({
   description: 'Falta el token de acceso, o es inválido o expiró',
-  type: ErrorResponseDto,
+  type: ProblemDetailsDto,
 })
 @Controller('usuarios')
 export class UsuariosController {
@@ -42,7 +43,7 @@ export class UsuariosController {
   /** Obtiene un usuario por su id. */
   @ApiNotFoundResponse({
     description: 'No existe un usuario con ese id',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
@@ -55,11 +56,11 @@ export class UsuariosController {
   @ApiBadRequestResponse({
     description:
       'Datos inválidos (p. ej. RUT con dígito verificador incorrecto)',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @ApiConflictResponse({
     description: 'Ya existe un usuario con ese RUT',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -70,15 +71,15 @@ export class UsuariosController {
   /** Actualiza parcialmente un usuario. */
   @ApiBadRequestResponse({
     description: 'Datos inválidos',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @ApiNotFoundResponse({
     description: 'No existe un usuario con ese id',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @ApiConflictResponse({
     description: 'El nuevo RUT ya pertenece a otro usuario',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @Patch(':id')
   update(
@@ -91,7 +92,7 @@ export class UsuariosController {
   /** Elimina un usuario. */
   @ApiNotFoundResponse({
     description: 'No existe un usuario con ese id',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

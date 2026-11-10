@@ -9,7 +9,8 @@ import {
   ApiServiceUnavailableResponse,
 } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
-import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+// [ANTES] import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+import { ProblemDetailsDto } from '../../common/dto/problem-details.dto';
 import { VisitCountDto } from './dto/visit-count.dto';
 
 @Public()
@@ -65,7 +66,7 @@ export class LogoController {
   /** Devuelve el total de visitas al logo. */
   @ApiServiceUnavailableResponse({
     description: 'Redis no está disponible',
-    type: ErrorResponseDto,
+    type: ProblemDetailsDto,
   })
   @Get('count')
   // [ANTES] async getCount(): Promise<{ count: number }> {

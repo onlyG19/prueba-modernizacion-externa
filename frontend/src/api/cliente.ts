@@ -1,6 +1,8 @@
 import type { components } from './esquema';
 
-type ErrorRespuesta = components['schemas']['ErrorResponseDto'];
+// [ANTES] type ErrorRespuesta = components['schemas']['ErrorResponseDto'];
+/** Errores de la API: Problem Details (RFC 9457). */
+type ErrorRespuesta = components['schemas']['ProblemDetailsDto'];
 
 /** URL base de la API (ver `VITE_API_URL` en env.d.ts). */
 const BASE = import.meta.env.VITE_API_URL ?? '/api';
@@ -8,7 +10,7 @@ const BASE = import.meta.env.VITE_API_URL ?? '/api';
 /** La API respondió con un código de error (4xx o 5xx). */
 export class ApiError extends Error {
   readonly status: number;
-  /** Mensajes del backend; un 400 de validación puede traer varios. */
+  /** Mensajes del backend: las reglas incumplidas de un 400, o el `detail`. */
   readonly mensajes: string[];
 
   constructor(status: number, mensajes: string[]) {
@@ -99,12 +101,20 @@ export async function solicitarJson<T>(
 
 async function leerMensajes(respuesta: Response): Promise<string[]> {
   try {
-    const { message } = (await respuesta.json()) as Partial<ErrorRespuesta>;
-    if (Array.isArray(message)) {
-      return message;
+    // [ANTES] const { message } = (await respuesta.json()) as Partial<ErrorRespuesta>;
+    // [ANTES] if (Array.isArray(message)) {
+    // [ANTES]   return message;
+    // [ANTES] }
+    // [ANTES] if (typeof message === 'string') {
+    // [ANTES]   return [message];
+    // [ANTES] }
+    const { errors, detail } =
+      (await respuesta.json()) as Partial<ErrorRespuesta>;
+    if (Array.isArray(errors) && errors.length > 0) {
+      return errors;
     }
-    if (typeof message === 'string') {
-      return [message];
+    if (typeof detail === 'string') {
+      return [detail];
     }
   } catch {
     // Cuerpo vacío o que no es JSON: no hay mensajes que mostrar.

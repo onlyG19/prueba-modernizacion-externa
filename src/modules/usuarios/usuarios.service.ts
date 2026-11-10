@@ -9,13 +9,11 @@ import { Brackets, Repository } from 'typeorm';
 import { Usuario } from './entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
-import {
-  ListarUsuariosDto,
-  type OrdenUsuarios,
-} from './dto/listar-usuarios.dto';
+import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
 import { Pagina } from '../../common/dto/pagina';
 import { isUniqueViolation } from '../../infrastructure/database/postgres-errors';
 import { escaparLike } from '../../infrastructure/database/like';
+import { interpretarOrden } from '../../infrastructure/database/orden';
 
 /**
  * Columna de cada campo ordenable. Es una lista cerrada: lo que pide el
@@ -25,18 +23,6 @@ const COLUMNA_DE_ORDEN = {
   nombre: 'usuario.nombre',
   creadoEn: 'usuario.creadoEn',
 } as const;
-
-/** `-creadoEn` → columna de `creadoEn`, descendente. */
-function interpretarOrden(orden: OrdenUsuarios) {
-  const descendente = orden.startsWith('-');
-  const campo = (
-    descendente ? orden.slice(1) : orden
-  ) as keyof typeof COLUMNA_DE_ORDEN;
-  return {
-    columna: COLUMNA_DE_ORDEN[campo],
-    direccion: descendente ? ('DESC' as const) : ('ASC' as const),
-  };
-}
 
 /** Detalle del 412 cuando la versión enviada en If-Match ya no es la actual. */
 export const MENSAJE_VERSION_DESACTUALIZADA =
@@ -65,7 +51,7 @@ export class UsuariosService {
     buscar,
     orden = 'nombre',
   }: ListarUsuariosDto): Promise<Pagina<Usuario>> {
-    const { columna, direccion } = interpretarOrden(orden);
+    const { columna, direccion } = interpretarOrden(orden, COLUMNA_DE_ORDEN);
     const consulta = this.usuarioRepository
       .createQueryBuilder('usuario')
       .orderBy(columna, direccion)

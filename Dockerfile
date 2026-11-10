@@ -15,7 +15,10 @@ RUN pnpm install --frozen-lockfile
 COPY nest-cli.json tsconfig.json tsconfig.build.json ./
 COPY src ./src
 # Compila y deja solo las dependencias de producción.
-RUN pnpm build && pnpm prune --prod
+# --ignore-scripts: prune vuelve a correr `prepare` (husky), que ya no está
+# instalado tras quitar las dependencias de desarrollo.
+# [ANTES] RUN pnpm build && pnpm prune --prod
+RUN pnpm build && pnpm prune --prod --ignore-scripts
 
 # ── Etapa 2: ejecutar ─────────────────────────────────────────────────────────
 FROM node:26.13.0-alpine

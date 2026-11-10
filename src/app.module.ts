@@ -9,6 +9,7 @@ import { RedisModule } from './infrastructure/redis/redis.module';
 import { LogoModule } from './modules/logo/logo.module';
 // [ANTES] import { UsuariosModule } from './usuarios/usuarios.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
+import { AuthModule } from './modules/auth/auth.module';
 // [ANTES] import { Usuario } from './modules/usuarios/entities/usuario.entity';
 import { validateEnv } from './config/env.validation';
 import { AppConfigService } from './config/app-config';
@@ -34,6 +35,7 @@ import { buildDataSourceOptions } from './infrastructure/database/database.optio
     RedisModule,
     LogoModule,
     UsuariosModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

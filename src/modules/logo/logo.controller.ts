@@ -3,7 +3,9 @@ import { Controller, Get, Res, StreamableFile } from '@nestjs/common';
 import type { Response } from 'express';
 import { LogoService } from './logo.service';
 import { VisitCounterService } from './visit-counter.service';
+import { Public } from '../../common/decorators/public.decorator';
 
+@Public()
 @Controller('logo')
 export class LogoController {
   // [ANTES] constructor(private readonly logoService: LogoService) {}

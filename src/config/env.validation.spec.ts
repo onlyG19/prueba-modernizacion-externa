@@ -5,6 +5,9 @@ const minimas = {
   DB_NAME: 'prueba',
   DB_USER: 'postgres',
   DB_PASSWORD: 'secreto',
+  JWT_SECRET: 'x'.repeat(32),
+  AUTH_USER: 'admin',
+  AUTH_PASSWORD_HASH: `${'a'.repeat(32)}:${'b'.repeat(128)}`,
 };
 
 describe('validateEnv', () => {
@@ -25,15 +28,20 @@ describe('validateEnv', () => {
     expect(env.DB_PORT).toBe(5433);
   });
 
-  it.each(['DB_NAME', 'DB_USER', 'DB_PASSWORD'])(
-    'debe fallar si falta la variable obligatoria %s',
-    (variable) => {
-      const config: Record<string, unknown> = { ...minimas };
-      delete config[variable];
+  // [ANTES] it.each(['DB_NAME', 'DB_USER', 'DB_PASSWORD'])(
+  it.each([
+    'DB_NAME',
+    'DB_USER',
+    'DB_PASSWORD',
+    'JWT_SECRET',
+    'AUTH_USER',
+    'AUTH_PASSWORD_HASH',
+  ])('debe fallar si falta la variable obligatoria %s', (variable) => {
+    const config: Record<string, unknown> = { ...minimas };
+    delete config[variable];
 
-      expect(() => validateEnv(config)).toThrow(variable);
-    },
-  );
+    expect(() => validateEnv(config)).toThrow(variable);
+  });
 
   it.each([
     ['PORT', 'abc'],
@@ -44,6 +52,21 @@ describe('validateEnv', () => {
     expect(() => validateEnv({ ...minimas, [variable]: valor })).toThrow(
       variable,
     );
+  });
+
+  it('debe rechazar un JWT_SECRET de menos de 32 caracteres', () => {
+    expect(() => validateEnv({ ...minimas, JWT_SECRET: 'corto' })).toThrow(
+      'JWT_SECRET debe tener al menos 32 caracteres',
+    );
+  });
+
+  it('debe explicar cómo generar AUTH_PASSWORD_HASH si no tiene el formato', () => {
+    expect(() =>
+      validateEnv({
+        ...minimas,
+        AUTH_PASSWORD_HASH: 'contraseña-en-texto-plano',
+      }),
+    ).toThrow('pnpm auth:hash-password');
   });
 
   it('debe rechazar CORS_ORIGIN="*" en producción', () => {

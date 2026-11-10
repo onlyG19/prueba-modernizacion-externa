@@ -4,10 +4,13 @@ import {
   IsInt,
   IsNotEmpty,
   IsString,
+  Matches,
   Max,
   Min,
+  MinLength,
   validateSync,
 } from 'class-validator';
+import { PASSWORD_HASH_FORMAT } from '../common/security/password';
 import { validateCorsOrigins } from './cors';
 
 /** Entornos de ejecución soportados. */
@@ -67,6 +70,27 @@ export class EnvironmentVariables {
   @Min(1)
   @Max(65535)
   REDIS_PORT: number = 6379;
+
+  /** Secreto con que se firman los JWT. Sin valor por defecto, a propósito. */
+  @IsString()
+  @MinLength(32, { message: 'JWT_SECRET debe tener al menos 32 caracteres' })
+  JWT_SECRET: string;
+
+  @IsInt()
+  @Min(60)
+  JWT_EXPIRES_IN_SECONDS: number = 3600;
+
+  /** Usuario administrador de la API. */
+  @IsString()
+  @IsNotEmpty()
+  AUTH_USER: string;
+
+  /** Hash scrypt de la contraseña del administrador (nunca la contraseña). */
+  @Matches(PASSWORD_HASH_FORMAT, {
+    message:
+      'AUTH_PASSWORD_HASH debe generarse con: pnpm auth:hash-password <contraseña>',
+  })
+  AUTH_PASSWORD_HASH: string;
 }
 
 /**

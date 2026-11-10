@@ -26,10 +26,39 @@
   color: var(--color-tinta-suave);
 }
 
+/* Búsqueda y orden en una fila; si no caben, uno bajo el otro. */
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--esp-3) var(--esp-4);
+}
+
 .busqueda {
   display: grid;
   gap: var(--esp-1);
   max-width: 26rem;
+  flex: 1 1 16rem;
+}
+
+.orden {
+  display: grid;
+  gap: var(--esp-1);
+}
+
+.selector {
+  min-height: var(--alto-control);
+  padding: 0 var(--esp-3);
+  font: inherit;
+  color: var(--color-tinta);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-control);
+}
+
+.selector:focus-visible {
+  outline: 3px solid var(--color-accion);
+  outline-offset: 2px;
 }
 
 .etiqueta {

@@ -11,11 +11,36 @@ import { Brackets, Repository } from 'typeorm';
 import { Usuario } from './entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
-import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
+// [ANTES] import { ListarUsuariosDto } from './dto/listar-usuarios.dto';
+import {
+  ListarUsuariosDto,
+  type OrdenUsuarios,
+} from './dto/listar-usuarios.dto';
 // [ANTES] import { PaginaUsuariosDto } from './dto/pagina-usuarios.dto';
 import { Pagina } from '../../common/dto/pagina';
 import { isUniqueViolation } from '../../infrastructure/database/postgres-errors';
 import { escaparLike } from '../../infrastructure/database/like';
+
+/**
+ * Columna de cada campo ordenable. Es una lista cerrada: lo que pide el
+ * cliente se valida contra ella y nunca llega tal cual al SQL.
+ */
+const COLUMNA_DE_ORDEN = {
+  nombre: 'usuario.nombre',
+  creadoEn: 'usuario.creadoEn',
+} as const;
+
+/** `-creadoEn` → columna de `creadoEn`, descendente. */
+function interpretarOrden(orden: OrdenUsuarios) {
+  const descendente = orden.startsWith('-');
+  const campo = (
+    descendente ? orden.slice(1) : orden
+  ) as keyof typeof COLUMNA_DE_ORDEN;
+  return {
+    columna: COLUMNA_DE_ORDEN[campo],
+    direccion: descendente ? ('DESC' as const) : ('ASC' as const),
+  };
+}
 
 /** Puntos, guiones y espacios: se ignoran al buscar por RUT. */
 const SEPARADORES_RUT = /[.\-\s]/g;
@@ -35,17 +60,20 @@ export class UsuariosService {
    *
    * @remarks El nombre se compara sin tildes ni mayúsculas (`unaccent` +
    * `ILIKE`); el RUT, sin puntos ni guion. Los comodines del texto buscado se
-   * escapan para que se busque literal.
+   * escapan para que se busque literal. Por defecto se ordena por nombre.
    */
   async findAll({
     page,
     limit,
     buscar,
+    orden = 'nombre',
     // [ANTES] }: ListarUsuariosDto): Promise<PaginaUsuariosDto> {
   }: ListarUsuariosDto): Promise<Pagina<Usuario>> {
+    const { columna, direccion } = interpretarOrden(orden);
     const consulta = this.usuarioRepository
       .createQueryBuilder('usuario')
-      .orderBy('usuario.nombre', 'ASC')
+      // [ANTES] .orderBy('usuario.nombre', 'ASC')
+      .orderBy(columna, direccion)
       // Desempate estable: la misma fila no salta entre páginas.
       .addOrderBy('usuario.id', 'ASC')
       .skip((page - 1) * limit)

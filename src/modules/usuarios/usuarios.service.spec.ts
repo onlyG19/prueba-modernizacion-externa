@@ -125,6 +125,22 @@ describe('UsuariosService', () => {
       });
     });
 
+    it.each([
+      ['-nombre', 'usuario.nombre', 'DESC'],
+      ['creadoEn', 'usuario.creadoEn', 'ASC'],
+      ['-creadoEn', 'usuario.creadoEn', 'DESC'],
+    ] as const)(
+      'debe ordenar según %s, con el id como desempate',
+      async (orden, columna, direccion) => {
+        qb.getManyAndCount.mockResolvedValue([[], 0]);
+
+        await service.findAll({ page: 1, limit: 20, orden });
+
+        expect(qb.orderBy).toHaveBeenCalledWith(columna, direccion);
+        expect(qb.addOrderBy).toHaveBeenCalledWith('usuario.id', 'ASC');
+      },
+    );
+
     it('no debe filtrar si no hay texto de búsqueda', async () => {
       qb.getManyAndCount.mockResolvedValue([[], 0]);
 

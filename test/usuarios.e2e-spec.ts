@@ -202,6 +202,29 @@ describe('/usuarios (e2e)', () => {
     expect(nombres(pagina2)).toEqual(['Carla Soto']);
   });
 
+  it('ordena por fecha de registro o por nombre, también al revés', async () => {
+    await crear('Beatriz Díaz', '11.111.111-1');
+    await crear('Carla Soto', '22.222.222-2');
+    await crear('Ana Rojas', '33.333.333-3');
+    const listar = async (orden: string) =>
+      nombres(
+        (await api.get('/usuarios').query({ orden }).expect(200))
+          .body as PaginaUsuariosDto,
+      );
+
+    expect(await listar('-creadoEn')).toEqual([
+      'Ana Rojas',
+      'Carla Soto',
+      'Beatriz Díaz',
+    ]);
+    expect(await listar('-nombre')).toEqual([
+      'Carla Soto',
+      'Beatriz Díaz',
+      'Ana Rojas',
+    ]);
+    await api.get('/usuarios?orden=rut').expect(400);
+  });
+
   it('busca en Postgres: nombre sin tildes, RUT con o sin puntos, sin comodines', async () => {
     await crear('José Núñez', '11.111.111-1');
     await crear('María López', '22.222.222-2');

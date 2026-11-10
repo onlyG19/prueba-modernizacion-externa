@@ -371,6 +371,11 @@ export interface operations {
         /** @description Elementos por página (máximo 100). */
         limit?: number;
         /**
+         * @description Orden de la lista: `nombre` (por defecto) o `creadoEn`; con `-` delante,
+         *     descendente.
+         */
+        orden?: 'nombre' | '-nombre' | 'creadoEn' | '-creadoEn';
+        /**
          * @description Texto a buscar en el nombre (sin distinguir tildes ni mayúsculas) o en el
          *     RUT (con o sin puntos y guion).
          */

@@ -49,6 +49,13 @@ function paginar(usuarios: Usuario[], url: URL): PaginaUsuarios {
   const limit = Number(url.searchParams.get('limit') ?? 20);
   const texto = normalizar(url.searchParams.get('buscar')?.trim() ?? '');
   const rut = texto.replace(SEPARADORES_RUT, '');
+  // `?orden=-creadoEn`: por fecha de registro, de la más nueva a la más vieja.
+  const orden = url.searchParams.get('orden') ?? 'nombre';
+  const sentido = orden.startsWith('-') ? -1 : 1;
+  const comparar = (a: Usuario, b: Usuario) =>
+    orden.endsWith('creadoEn')
+      ? a.creadoEn.localeCompare(b.creadoEn)
+      : COLECCION.compare(a.nombre, b.nombre);
   const coincidentes = usuarios
     .filter(
       (u) =>
@@ -56,7 +63,8 @@ function paginar(usuarios: Usuario[], url: URL): PaginaUsuarios {
         normalizar(u.nombre).includes(texto) ||
         (rut !== '' && u.rut.replace('-', '').toLowerCase().includes(rut)),
     )
-    .toSorted((a, b) => COLECCION.compare(a.nombre, b.nombre) || a.id - b.id);
+    // [ANTES] .toSorted((a, b) => COLECCION.compare(a.nombre, b.nombre) || a.id - b.id);
+    .toSorted((a, b) => sentido * comparar(a, b) || a.id - b.id);
   const total = coincidentes.length;
   return {
     data: coincidentes.slice((page - 1) * limit, page * limit),

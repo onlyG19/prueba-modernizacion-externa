@@ -10,6 +10,7 @@ import { solicitar, solicitarJson } from '../api/cliente';
 import type {
   CambiosUsuario,
   NuevoUsuario,
+  OrdenUsuarios,
   PaginaUsuarios,
   Usuario,
 } from '../api/tipos';
@@ -23,6 +24,7 @@ export interface FiltroUsuarios {
   pagina: number;
   /** Texto a buscar en el servidor (nombre sin tildes o RUT). */
   busqueda: string;
+  orden: OrdenUsuarios;
 }
 
 // [ANTES] /** Lista de usuarios (cacheada y deduplicada por TanStack Query). */
@@ -35,14 +37,17 @@ export interface FiltroUsuarios {
 // [ANTES]   });
 // [ANTES] }
 /** Una página de usuarios, filtrada y ordenada por el servidor. */
-export function useUsuarios({ pagina, busqueda }: FiltroUsuarios) {
+// [ANTES] export function useUsuarios({ pagina, busqueda }: FiltroUsuarios) {
+export function useUsuarios({ pagina, busqueda, orden }: FiltroUsuarios) {
   const { token } = useSesionActiva();
   return useQuery({
-    queryKey: [...CLAVE_USUARIOS, { pagina, busqueda }],
+    // [ANTES] queryKey: [...CLAVE_USUARIOS, { pagina, busqueda }],
+    queryKey: [...CLAVE_USUARIOS, { pagina, busqueda, orden }],
     queryFn: async ({ signal }) => {
       const parametros = new URLSearchParams({
         page: String(pagina),
         limit: String(USUARIOS_POR_PAGINA),
+        orden,
       });
       if (busqueda) {
         parametros.set('buscar', busqueda);

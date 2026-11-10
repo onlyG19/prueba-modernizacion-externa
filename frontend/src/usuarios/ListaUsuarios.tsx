@@ -6,7 +6,8 @@
 // [ANTES]   type ReactNode,
 // [ANTES] } from 'react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import type { Usuario } from '../api/tipos';
+// [ANTES] import type { Usuario } from '../api/tipos';
+import type { OrdenUsuarios, Usuario } from '../api/tipos';
 import { BotonSecundario } from '../ui/botones';
 import { clases } from '../ui/clases';
 import { IconoBuscar } from '../ui/iconos';
@@ -23,6 +24,36 @@ const FORMATO_NUMERO = new Intl.NumberFormat('es-CL');
 /** Parámetros de la URL: un enlace o una recarga conservan búsqueda y página. */
 const PARAMETRO_BUSQUEDA = 'buscar';
 const PARAMETRO_PAGINA = 'pagina';
+const PARAMETRO_ORDEN = 'orden';
+
+/** Opciones de orden, con la frase que completa «ordenados por…». */
+const ORDENES: ReadonlyArray<{
+  valor: OrdenUsuarios;
+  etiqueta: string;
+  descripcion: string;
+}> = [
+  {
+    valor: 'nombre',
+    etiqueta: 'Nombre (A–Z)',
+    descripcion: 'nombre, de la A a la Z',
+  },
+  {
+    valor: '-nombre',
+    etiqueta: 'Nombre (Z–A)',
+    descripcion: 'nombre, de la Z a la A',
+  },
+  {
+    valor: '-creadoEn',
+    etiqueta: 'Más recientes',
+    descripcion: 'fecha de registro, de los más recientes a los más antiguos',
+  },
+  {
+    valor: 'creadoEn',
+    etiqueta: 'Más antiguos',
+    descripcion: 'fecha de registro, de los más antiguos a los más recientes',
+  },
+];
+const ORDEN_POR_DEFECTO = ORDENES[0];
 /** Pausa tras la última tecla antes de preguntarle al servidor. */
 const RETRASO_BUSQUEDA_MS = 300;
 // [ANTES] const SIN_TILDES = /\p{Diacritic}/gu;
@@ -70,6 +101,14 @@ function leerPaginaDeUrl(): number {
   return Number.isSafeInteger(pagina) && pagina > 0 ? pagina : 1;
 }
 
+/** El orden de la URL; si falta o no es uno conocido, por nombre. */
+function leerOrdenDeUrl(): OrdenUsuarios {
+  const valor = new URLSearchParams(window.location.search).get(
+    PARAMETRO_ORDEN,
+  );
+  return (ORDENES.find((o) => o.valor === valor) ?? ORDEN_POR_DEFECTO).valor;
+}
+
 // [ANTES] function escribirBusquedaEnUrl(busqueda: string) {
 // [ANTES]   const url = new URL(window.location.href);
 // [ANTES]   if (busqueda.trim()) {
@@ -80,7 +119,12 @@ function leerPaginaDeUrl(): number {
 // [ANTES]   window.history.replaceState(window.history.state, '', url);
 // [ANTES] }
 /** Los valores por defecto (sin búsqueda, primera página) no ensucian la URL. */
-function escribirFiltroEnUrl(busqueda: string, pagina: number) {
+// [ANTES] function escribirFiltroEnUrl(busqueda: string, pagina: number) {
+function escribirFiltroEnUrl(
+  busqueda: string,
+  pagina: number,
+  orden: OrdenUsuarios,
+) {
   const url = new URL(window.location.href);
   if (busqueda.trim()) {
     url.searchParams.set(PARAMETRO_BUSQUEDA, busqueda.trim());
@@ -91,6 +135,11 @@ function escribirFiltroEnUrl(busqueda: string, pagina: number) {
     url.searchParams.set(PARAMETRO_PAGINA, String(pagina));
   } else {
     url.searchParams.delete(PARAMETRO_PAGINA);
+  }
+  if (orden !== ORDEN_POR_DEFECTO.valor) {
+    url.searchParams.set(PARAMETRO_ORDEN, orden);
+  } else {
+    url.searchParams.delete(PARAMETRO_ORDEN);
   }
   window.history.replaceState(window.history.state, '', url);
 }
@@ -113,13 +162,15 @@ export function ListaUsuarios({
   // [ANTES] // El campo responde de inmediato; el filtrado puede esperar un instante.
   // [ANTES] const busquedaDiferida = useDeferredValue(busqueda);
   const [pagina, setPagina] = useState(leerPaginaDeUrl);
+  const [orden, setOrden] = useState(leerOrdenDeUrl);
   // El campo responde de inmediato; al servidor se le pregunta al dejar de
   // escribir, no una vez por tecla.
   const busquedaParaApi = useValorConRetraso(
     busqueda.trim(),
     RETRASO_BUSQUEDA_MS,
   );
-  const usuarios = useUsuarios({ pagina, busqueda: busquedaParaApi });
+  // [ANTES] const usuarios = useUsuarios({ pagina, busqueda: busquedaParaApi });
+  const usuarios = useUsuarios({ pagina, busqueda: busquedaParaApi, orden });
   const refTitulo = useRef<HTMLHeadingElement>(null);
 
   // [ANTES] const visibles = useMemo(
@@ -144,13 +195,21 @@ export function ListaUsuarios({
   // La URL es un sistema externo: un efecto la sincroniza venga de donde venga
   // el cambio (escribir, cambiar de página o la corrección de arriba).
   useEffect(() => {
-    escribirFiltroEnUrl(busqueda, pagina);
-  }, [busqueda, pagina]);
+    // [ANTES] escribirFiltroEnUrl(busqueda, pagina);
+    escribirFiltroEnUrl(busqueda, pagina, orden);
+    // [ANTES] }, [busqueda, pagina]);
+  }, [busqueda, pagina, orden]);
 
   function cambiarBusqueda(valor: string) {
     setBusqueda(valor);
     // [ANTES] escribirBusquedaEnUrl(valor);
     // Otra búsqueda, otros resultados: se parte de la primera página.
+    setPagina(1);
+  }
+
+  function cambiarOrden(valor: OrdenUsuarios) {
+    setOrden(valor);
+    // Otro orden: la página 3 ya no muestra lo mismo, se vuelve a la primera.
     setPagina(1);
   }
 
@@ -214,8 +273,13 @@ export function ListaUsuarios({
     contenido = (
       <>
         <table className={estilos.tabla}>
+          {/* [ANTES] <caption className="sr-only">Usuarios registrados, ordenados por nombre</caption> */}
           <caption className="sr-only">
-            Usuarios registrados, ordenados por nombre
+            Usuarios registrados, ordenados por{' '}
+            {
+              (ORDENES.find((o) => o.valor === orden) ?? ORDEN_POR_DEFECTO)
+                .descripcion
+            }
           </caption>
           <thead>
             <tr>
@@ -267,22 +331,46 @@ export function ListaUsuarios({
         </p>
       </div>
 
-      <div className={estilos.busqueda}>
-        <label htmlFor="buscar-usuarios" className={estilos.etiqueta}>
-          Buscar por nombre o RUT
-        </label>
-        <div className={estilos.controlBusqueda}>
-          <IconoBuscar />
-          <input
-            id="buscar-usuarios"
-            name="buscar"
-            type="search"
-            className={estilos.entrada}
-            value={busqueda}
-            onChange={(evento) => cambiarBusqueda(evento.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-          />
+      {/* Búsqueda y orden en una fila; en pantallas angostas, apilados. */}
+      <div className={estilos.controles}>
+        <div className={estilos.busqueda}>
+          <label htmlFor="buscar-usuarios" className={estilos.etiqueta}>
+            Buscar por nombre o RUT
+          </label>
+          <div className={estilos.controlBusqueda}>
+            <IconoBuscar />
+            <input
+              id="buscar-usuarios"
+              name="buscar"
+              type="search"
+              className={estilos.entrada}
+              value={busqueda}
+              onChange={(evento) => cambiarBusqueda(evento.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </div>
+        </div>
+
+        <div className={estilos.orden}>
+          <label htmlFor="orden-usuarios" className={estilos.etiqueta}>
+            Ordenar por
+          </label>
+          <select
+            id="orden-usuarios"
+            name="orden"
+            className={estilos.selector}
+            value={orden}
+            onChange={(evento) =>
+              cambiarOrden(evento.target.value as OrdenUsuarios)
+            }
+          >
+            {ORDENES.map((opcion) => (
+              <option key={opcion.valor} value={opcion.valor}>
+                {opcion.etiqueta}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

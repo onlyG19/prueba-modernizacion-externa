@@ -105,6 +105,10 @@ describe('ListarUsuariosDto', () => {
     [{ page: 'abc' }, 'page debe ser un número entero'],
     [{ limit: '101' }, 'limit no puede ser mayor que 100'],
     [{ buscar: 'x'.repeat(51) }, 'buscar no puede superar los 50 caracteres'],
+    [
+      { orden: 'rut' },
+      'orden debe ser uno de: nombre, -nombre, creadoEn, -creadoEn',
+    ],
   ])('debe rechazar %j', async (query, mensaje) => {
     const mensajes = await mensajesDeError(ListarUsuariosDto, query, 'query');
 

@@ -166,6 +166,37 @@ describe('Lista de usuarios', () => {
     expect(window.location.search).toBe('?buscar=Persona+2');
   });
 
+  it('debe ordenar por fecha de registro y recordar el orden en la URL', async () => {
+    prepararApi({
+      usuarios: [
+        {
+          id: 1,
+          nombre: 'Ana Rojas',
+          rut: '11111111-1',
+          creadoEn: '2026-11-01T10:00:00.000Z',
+        },
+        {
+          id: 2,
+          nombre: 'Zoe Díaz',
+          rut: '22222222-2',
+          creadoEn: '2026-11-09T10:00:00.000Z',
+        },
+      ],
+    });
+    const { usuario } = renderizarConSesion();
+    expect((await filas())[0]).toHaveTextContent('Ana Rojas');
+
+    await usuario.selectOptions(
+      screen.getByLabelText('Ordenar por'),
+      'Más recientes',
+    );
+
+    await waitFor(() =>
+      expect(filasVisibles()[0]).toHaveTextContent('Zoe Díaz'),
+    );
+    expect(window.location.search).toBe('?orden=-creadoEn');
+  });
+
   it('debe corregir una página fuera de rango que venga en la URL', async () => {
     prepararApi();
     window.history.replaceState(null, '', '/?pagina=7');

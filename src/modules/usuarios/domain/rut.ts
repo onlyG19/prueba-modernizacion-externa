@@ -3,8 +3,10 @@
  * + dígito verificador.
  *
  * @remarks
- * Es la fuente única de verdad para el largo del RUT: la usan el DTO
- * (`@MaxLength`) y la entidad (`length` de la columna).
+ * Esta es la fuente de verdad para el largo del RUT: la usa la entidad
+ * (`length` de la columna).
+ * El DTO no la necesita porque `@IsRut()` ya
+ * garantiza el largo.
  */
 export const RUT_MAX_LENGTH = 10;
 

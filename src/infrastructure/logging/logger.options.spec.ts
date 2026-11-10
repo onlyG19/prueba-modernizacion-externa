@@ -4,6 +4,7 @@ import {
   asignarRequestId,
   CABECERA_REQUEST_ID,
   crearOpcionesLog,
+  mensajeDePeticion,
   nivelSegunRespuesta,
 } from './logger.options';
 import { serializarPeticion } from './datos-personales';
@@ -61,6 +62,21 @@ describe('nivelSegunRespuesta', () => {
   it('un error no controlado debe registrarse como error', () => {
     expect(nivelSegunRespuesta(peticion(), respuesta(200), new Error())).toBe(
       'error',
+    );
+  });
+});
+
+describe('mensajeDePeticion', () => {
+  it('debe resumir la petición en una línea, sin datos personales', () => {
+    const req = {
+      method: 'GET',
+      url: '/usuarios',
+      originalUrl: '/api/v1/usuarios?buscar=12.345.678-5',
+      headers: {},
+    } as unknown as IncomingMessage;
+
+    expect(mensajeDePeticion(req, respuesta(200), 3)).toBe(
+      'GET /api/v1/usuarios?buscar=[Redacted] → 200 (3 ms)',
     );
   });
 });

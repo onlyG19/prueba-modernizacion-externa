@@ -3,7 +3,8 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { LevelWithSilent } from 'pino';
 import type { Options } from 'pino-http';
 import { Environment } from '../../config/env.validation';
-import { serializarPeticion } from './datos-personales';
+// [ANTES] import { serializarPeticion } from './datos-personales';
+import { limpiarUrl, serializarPeticion } from './datos-personales';
 
 /** Cabecera con el identificador de la petición, de entrada y de salida. */
 export const CABECERA_REQUEST_ID = 'X-Request-Id';
@@ -47,6 +48,21 @@ export function nivelSegunRespuesta(
   return 'info';
 }
 
+/** Ruta original de la petición (Express la reescribe dentro de sus routers). */
+function rutaDe(req: IncomingMessage): string {
+  const { originalUrl } = req as IncomingMessage & { originalUrl?: string };
+  return limpiarUrl(originalUrl ?? req.url ?? '');
+}
+
+/** Una línea por petición: `GET /api/v1/usuarios → 200 (3 ms)`. */
+export function mensajeDePeticion(
+  req: IncomingMessage,
+  res: ServerResponse,
+  milisegundos: number,
+): string {
+  return `${req.method} ${rutaDe(req)} → ${res.statusCode} (${milisegundos} ms)`;
+}
+
 export interface EntornoLog {
   NODE_ENV: Environment;
   LOG_LEVEL?: LevelWithSilent;
@@ -71,8 +87,21 @@ export function crearOpcionesLog({ NODE_ENV, LOG_LEVEL }: EntornoLog): Options {
     // Docker consulta /health cada pocos segundos: registrarlo sería ruido.
     autoLogging: { ignore: (req) => req.url === '/health' },
     customLogLevel: nivelSegunRespuesta,
+    // El mensaje lleva la URL: pasa por el mismo enmascarado que `req`.
+    customSuccessMessage: mensajeDePeticion,
+    customErrorMessage: (req, res, error) =>
+      `${req.method} ${rutaDe(req)} → ${res.statusCode}: ${error.message}`,
     ...(NODE_ENV === Environment.Development && {
-      transport: { target: 'pino-pretty', options: { singleLine: true } },
+      // [ANTES] transport: { target: 'pino-pretty', options: { singleLine: true } },
+      // En la terminal basta el mensaje; el detalle (cabeceras, ids) sigue en
+      // el JSON de producción.
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          singleLine: true,
+          ignore: 'pid,hostname,req,res,responseTime',
+        },
+      },
     }),
   };
 }

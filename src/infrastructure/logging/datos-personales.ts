@@ -30,6 +30,11 @@ export function enmascararRuts(texto: string): string {
   return texto.replace(RUT, RUT_OCULTO);
 }
 
+/** La URL sin datos personales: `buscar` oculto y cualquier RUT enmascarado. */
+export function limpiarUrl(url: string): string {
+  return enmascararRuts(url.replace(PARAMETRO_EN_URL, `$1${OCULTO}`));
+}
+
 /** Aplica `enmascararRuts` a todo texto dentro de un valor (objetos y listas). */
 function enmascararEnValor(valor: unknown): unknown {
   if (typeof valor === 'string') {
@@ -64,7 +69,8 @@ export function serializarPeticion(req: SerializedRequest): SerializedRequest {
   }
   return {
     ...req,
-    url: enmascararRuts(req.url.replace(PARAMETRO_EN_URL, `$1${OCULTO}`)),
+    // [ANTES] url: enmascararRuts(req.url.replace(PARAMETRO_EN_URL, `$1${OCULTO}`)),
+    url: limpiarUrl(req.url),
     query: enmascararEnValor(query) as SerializedRequest['query'],
     params: enmascararEnValor(req.params) as SerializedRequest['params'],
   };

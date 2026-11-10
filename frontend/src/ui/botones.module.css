@@ -1,0 +1,77 @@
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--esp-2);
+  min-height: var(--alto-control);
+  padding: 0 var(--esp-4);
+  border: 1px solid transparent;
+  border-radius: var(--radio-control);
+  font-weight: var(--peso-medio);
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--duracion-corta) var(--curva),
+    border-color var(--duracion-corta) var(--curva),
+    color var(--duracion-corta) var(--curva);
+}
+
+/* Mientras se procesa: sigue siendo enfocable, pero se nota que espera. */
+.boton[aria-disabled='true'],
+.boton:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+
+.primario {
+  color: var(--color-hoja);
+  background: var(--color-accion);
+}
+
+.secundario {
+  color: var(--color-tinta);
+  background: var(--color-hoja);
+  border-color: var(--color-borde-control);
+}
+
+.peligro {
+  color: var(--color-hoja);
+  background: var(--color-error);
+}
+
+.enLinea {
+  min-height: 2.5rem;
+  padding: 0 var(--esp-3);
+  color: var(--color-accion);
+  background: transparent;
+}
+
+/* Cuadrado de 40px: área táctil suficiente aun dentro de una fila de tabla. */
+.icono {
+  width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0;
+  color: var(--color-accion);
+  background: transparent;
+  border-radius: var(--radio-sello);
+}
+
+@media (hover: hover) {
+  .primario:hover {
+    background: var(--color-accion-hover);
+  }
+
+  .secundario:hover {
+    background: var(--color-papel);
+  }
+
+  .peligro:hover {
+    background: #8f1c13;
+  }
+
+  .enLinea:hover,
+  .icono:hover {
+    background: var(--color-accion-tenue);
+  }
+}

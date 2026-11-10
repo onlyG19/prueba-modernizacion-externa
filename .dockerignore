@@ -1,0 +1,23 @@
+# Lista de permitidos: al contexto de build solo entra lo necesario (nada de
+# .env, .git, node_modules ni archivos locales). Es un único archivo para ambas
+# imágenes porque el constructor clásico de Docker no admite un .dockerignore
+# por Dockerfile.
+*
+
+# API (Dockerfile)
+!package.json
+!pnpm-lock.yaml
+!nest-cli.json
+!tsconfig.json
+!tsconfig.build.json
+!src/
+src/**/*.spec.ts
+
+# Frontend (frontend/Dockerfile): su contexto también es la raíz porque usa el
+# dominio compartido de src/modules/usuarios/domain.
+!frontend/
+frontend/node_modules
+frontend/dist
+frontend/test-results
+frontend/playwright-report
+frontend/blob-report

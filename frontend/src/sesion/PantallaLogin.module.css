@@ -1,0 +1,140 @@
+.pagina {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 100dvh;
+  background: var(--color-hoja);
+}
+
+/* ── Banda de la marca ───────────────────────────────────────────────────── */
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--esp-8);
+  padding: var(--esp-8) clamp(2rem, 6vw, 5rem);
+  overflow: hidden;
+  color: var(--color-hoja);
+  background: var(--degradado-marca);
+}
+
+/* Texto grande (≥ 24px en negrita): el blanco cumple AA sobre el degradado. */
+.lema {
+  max-width: 15ch;
+  font-size: clamp(1.75rem, 1.1rem + 1.9vw, 2.5rem);
+  font-weight: var(--peso-negrita);
+  line-height: 1.2;
+}
+
+.lema span {
+  display: block;
+  font-weight: var(--peso-medio);
+}
+
+/* ── Formulario ──────────────────────────────────────────────────────────── */
+
+/* Columna alineada a la izquierda, no una tarjeta centrada con sombra. */
+.columna {
+  align-self: center;
+  width: 100%;
+  max-width: 26rem;
+  margin: 0 auto;
+  padding: var(--esp-7) var(--esp-5);
+}
+
+.volver {
+  display: inline-block;
+  margin-bottom: var(--esp-6);
+  font-weight: var(--peso-fuerte);
+  color: var(--color-accion);
+  text-underline-offset: 0.2em;
+}
+
+.logo {
+  display: block;
+  width: 134px;
+  height: 56px;
+}
+
+.titulo {
+  margin-top: var(--esp-5);
+  font-size: var(--texto-xl);
+  font-weight: var(--peso-negrita);
+}
+
+.bajada {
+  margin-top: var(--esp-2);
+  color: var(--color-tinta-suave);
+}
+
+.aviso {
+  margin-top: var(--esp-5);
+  padding: var(--esp-3) var(--esp-4);
+  background: var(--color-accion-tenue);
+  border-left: 4px solid var(--color-accion);
+  border-radius: var(--radio-control);
+}
+
+.formulario {
+  display: grid;
+  gap: var(--esp-4);
+  margin-top: var(--esp-5);
+}
+
+.campo {
+  display: grid;
+  gap: var(--esp-1);
+  font-weight: var(--peso-fuerte);
+}
+
+.entrada {
+  min-height: var(--alto-control);
+  padding: 0 var(--esp-3);
+  font-weight: var(--peso-normal);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-control);
+}
+
+.entrada[aria-invalid='true'] {
+  border: 2px solid var(--color-error);
+}
+
+.error {
+  font-weight: var(--peso-medio);
+  color: var(--color-error);
+}
+
+.ingresar {
+  justify-self: stretch;
+  margin-top: var(--esp-2);
+}
+
+/* ── Pantallas angostas: la marca queda como una franja arriba ───────────── */
+
+@media (max-width: 56rem) {
+  .pagina {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .marca {
+    gap: var(--esp-5);
+    padding: var(--esp-5) var(--esp-4);
+  }
+
+  .marca > :last-child {
+    display: none;
+  }
+
+  .lema {
+    max-width: none;
+    font-size: 1.5rem;
+  }
+
+  .columna {
+    align-self: start;
+    padding: var(--esp-6) var(--esp-4) var(--esp-7);
+  }
+}

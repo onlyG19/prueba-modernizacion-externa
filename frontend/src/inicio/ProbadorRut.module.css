@@ -1,0 +1,62 @@
+.probador {
+  display: grid;
+  gap: var(--esp-4);
+  padding: var(--esp-5);
+  background: var(--color-hoja);
+  border-radius: var(--radio-destacado);
+  box-shadow: 0 18px 40px rgb(80 10 70 / 0.22);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-3);
+}
+
+.icono {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: var(--marca-magenta-texto);
+  background: #fdeaf2;
+  border-radius: 50%;
+}
+
+.titulo {
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-negrita);
+}
+
+.texto {
+  color: var(--color-tinta-suave);
+}
+
+/* Altura reservada: el texto cambia al escribir y la tarjeta no salta. */
+.resultado {
+  min-height: 3em;
+  font-weight: var(--peso-medio);
+}
+
+.sinCorte {
+  white-space: nowrap;
+}
+
+.explicacion {
+  padding-top: var(--esp-3);
+  font-size: var(--texto-sm);
+  border-top: 1px solid var(--color-borde);
+}
+
+.explicacion summary {
+  width: fit-content;
+  font-weight: var(--peso-fuerte);
+  color: var(--color-accion);
+  cursor: pointer;
+}
+
+.explicacion p {
+  margin-top: var(--esp-2);
+  color: var(--color-tinta-suave);
+}

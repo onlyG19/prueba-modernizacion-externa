@@ -1,0 +1,26 @@
+.region {
+  position: fixed;
+  left: var(--esp-4);
+  right: var(--esp-4);
+  bottom: var(--esp-4);
+  z-index: 20;
+  display: flex;
+  justify-content: flex-start;
+  pointer-events: none;
+}
+
+.aviso {
+  max-width: 32rem;
+  padding: var(--esp-3) var(--esp-4);
+  color: var(--color-hoja);
+  background: var(--color-tinta);
+  border-radius: var(--radio-control);
+  animation: aparecer var(--duracion-corta) var(--curva);
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}

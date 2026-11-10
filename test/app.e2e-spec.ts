@@ -1,29 +1,73 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import { RUTA_API } from '../src/config/app-setup';
+import { ORIGEN_E2E } from './setup/entorno-e2e';
+import { crearAppE2e } from './utilidades/app-e2e';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+/**
+ * La API completa (todos los módulos, filtro y guards globales) contra
+ * Postgres y Redis en contenedores desechables (ver setup/global-setup.ts):
+ * solo requiere Docker.
+ */
+describe('API (e2e)', () => {
+  let app: NestExpressApplication;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+  // Arrancar la aplicación completa es lento: una vez para todo el archivo.
+  beforeAll(async () => {
+    app = await crearAppE2e();
   });
 
-  it('/ (GET)', () => {
+  it('GET /health responde 200 con la base de datos y Redis arriba', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/health')
       .expect(200)
-      .expect('Hello World!');
+      .expect({ status: 'ok', database: 'up', redis: 'up' });
   });
 
-  afterEach(async () => {
+  it('una ruta inexistente responde 404 como Problem Details', () => {
+    return request(app.getHttpServer())
+      .get('/no-existe')
+      .expect(404)
+      .expect('Content-Type', /^application\/problem\+json/)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({ status: 404, instance: '/no-existe' });
+      });
+  });
+
+  it('GET /usuarios sin token responde 401', () => {
+    return request(app.getHttpServer()).get(`${RUTA_API}/usuarios`).expect(401);
+  });
+
+  it('aplica la configuración de main.ts: cabeceras de seguridad y CORS', () => {
+    return (
+      request(app.getHttpServer())
+        .get('/health')
+        .set('Origin', ORIGEN_E2E)
+        // helmet
+        .expect('X-Content-Type-Options', 'nosniff')
+        // CORS: solo el origen configurado, y las cabeceras propias legibles
+        .expect('Access-Control-Allow-Origin', ORIGEN_E2E)
+        .expect(
+          'Access-Control-Expose-Headers',
+          'ETag,Location,X-Request-Count,X-Request-Id',
+        )
+    );
+  });
+
+  it('identifica cada petición con X-Request-Id y respeta uno válido que ya venga', async () => {
+    const nueva = await request(app.getHttpServer()).get('/health').expect(200);
+    expect(nueva.headers['x-request-id']).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+
+    // nginx asigna el suyo: la API lo conserva para correlacionar ambos logs.
+    await request(app.getHttpServer())
+      .get('/health')
+      .set('X-Request-Id', 'b7e1c2d4f5a6')
+      .expect('X-Request-Id', 'b7e1c2d4f5a6');
+  });
+
+  afterAll(async () => {
     await app.close();
   });
 });

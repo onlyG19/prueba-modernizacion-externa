@@ -1,0 +1,45 @@
+.pagina {
+  min-height: 100dvh;
+  background: var(--color-hoja);
+  border-top: 6px solid transparent;
+  border-image: var(--degradado-marca) 1;
+}
+
+.contenido {
+  display: grid;
+  justify-items: start;
+  gap: var(--esp-4);
+  max-width: var(--ancho-sitio);
+  margin: 0 auto;
+  padding: var(--esp-8) var(--esp-5);
+}
+
+.codigo {
+  font-size: 5rem;
+  font-weight: var(--peso-negrita);
+  line-height: 1;
+  color: transparent;
+  background: var(--degradado-marca);
+  background-clip: text;
+}
+
+.titulo {
+  font-size: var(--texto-2xl);
+  font-weight: var(--peso-negrita);
+}
+
+.texto {
+  max-width: 50ch;
+  margin-bottom: var(--esp-3);
+  color: var(--color-tinta-suave);
+}
+
+@media (max-width: 40rem) {
+  .contenido {
+    padding: var(--esp-7) var(--esp-4);
+  }
+
+  .titulo {
+    font-size: 1.75rem;
+  }
+}

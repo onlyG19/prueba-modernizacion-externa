@@ -1,0 +1,2 @@
+# Antes de cada commit: lint y formato de los archivos en stage (ver .lintstagedrc.json).
+pnpm exec lint-staged

@@ -1,0 +1,37 @@
+/* Un operador que llegó por la URL: se explica, sin parecer un error. */
+.sinPermiso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--esp-4);
+  max-width: 40rem;
+  padding: var(--esp-5);
+  color: var(--color-tinta);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-panel);
+}
+
+.sinPermiso > svg {
+  flex-shrink: 0;
+  color: var(--marca-morado);
+}
+
+.subtitulo {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-negrita);
+}
+
+.nota {
+  margin-top: var(--esp-2);
+  color: var(--color-tinta-suave);
+}
+
+.enlace {
+  display: inline-block;
+  margin-top: var(--esp-3);
+  font-weight: var(--peso-fuerte);
+  color: var(--color-accion);
+}

@@ -1,31 +1,149 @@
+# Stack completo:        docker compose up -d --build   → http://localhost:8080
+# Solo infraestructura:  docker compose up -d postgres redis   (para pnpm start:dev)
+#
+# Las credenciales y los secretos se leen del archivo .env (ver .env.example):
+# este archivo no contiene ninguno. Si falta uno obligatorio, Compose se detiene
+# indicando cuál.
+
+name: prueba-modernizacion-externa
+
+# Configuración común de la API y de su tarea de migraciones.
+x-api: &api
+  build: .
+  image: prueba-modernizacion-api:local
+  environment:
+    NODE_ENV: production
+    PORT: 3000
+    DB_HOST: postgres
+    DB_PORT: 5432
+    DB_NAME: ${DB_NAME:?Define DB_NAME en .env}
+    DB_USER: ${DB_USER:?Define DB_USER en .env}
+    DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
+    REDIS_PASSWORD: ${REDIS_PASSWORD:?Define REDIS_PASSWORD en .env}
+    # nginx es un salto de proxy: así la API ve la IP real de cada cliente
+    # (necesario para el límite de peticiones por IP).
+    TRUST_PROXY: 1
+    JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
+    JWT_EXPIRES_IN_SECONDS: ${JWT_EXPIRES_IN_SECONDS:-3600}
+    AUTH_USER: ${AUTH_USER:?Define AUTH_USER en .env}
+    AUTH_PASSWORD_HASH: ${AUTH_PASSWORD_HASH:?Define AUTH_PASSWORD_HASH en .env}
+    # El navegador entra por nginx (mismo origen); en producción la validación
+    # exige un origen explícito en vez de "*".
+    CORS_ORIGIN: http://localhost:${WEB_PORT:-8080}
+  # Endurecimiento: sistema de archivos de solo lectura, sin capacidades del
+  # kernel, sin escalar privilegios y con un init que reenvía las señales.
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  init: true
+
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine
     container_name: prueba-modernizacion-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: prueba_modernizacion
+      POSTGRES_USER: ${DB_USER:?Define DB_USER en .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+      POSTGRES_DB: ${DB_NAME:?Define DB_NAME en .env}
     ports:
-      - '5433:5432'
+      # Solo desde este equipo, no desde la red local (para pnpm start:dev).
+      - '127.0.0.1:${DB_PORT:-5433}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.12-alpine
     container_name: prueba-modernizacion-redis
+    # AOF: el contador de visitas sobrevive a reinicios. Con contraseña.
+    command:
+      [
+        'redis-server',
+        '--appendonly',
+        'yes',
+        '--requirepass',
+        '${REDIS_PASSWORD:?Define REDIS_PASSWORD en .env}',
+      ]
+    environment:
+      # redis-cli (healthcheck) se autentica con esta variable.
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Define REDIS_PASSWORD en .env}
     ports:
-      - '6379:6379'
+      - '127.0.0.1:${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # Aplica las migraciones pendientes y termina; la API espera a que acabe bien.
+  migraciones:
+    <<: *api
+    command:
+      [
+        'node',
+        'node_modules/typeorm/cli.js',
+        'migration:run',
+        '-d',
+        'dist/infrastructure/database/data-source.js',
+      ]
+    restart: 'no'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Datos de demostración, opcional:  docker compose --profile demo run --rm seed
+  # (--forzar: este stack corre con NODE_ENV=production, y el seed lo exige).
+  seed:
+    <<: *api
+    profiles: ['demo']
+    command: ['node', 'dist/infrastructure/database/seed/seed.js', '--forzar']
+    restart: 'no'
+    depends_on:
+      migraciones:
+        condition: service_completed_successfully
+
+  api:
+    <<: *api
+    # Sin puertos publicados: solo es accesible a través de nginx (web).
+    restart: unless-stopped
+    depends_on:
+      migraciones:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      # La raíz: el frontend usa el dominio compartido del backend.
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: prueba-modernizacion-web:local
+    ports:
+      - '127.0.0.1:${WEB_PORT:-8080}:8080'
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+
 volumes:
   postgres_data:
+  redis_data:

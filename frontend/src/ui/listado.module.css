@@ -1,0 +1,180 @@
+/*
+ * Listados de la consola (usuarios y cuentas): cabecera con conteo, búsqueda,
+ * orden, la tabla y los estados de carga, error y vacío.
+ */
+
+/* La tabla es la superficie de trabajo de la página: una hoja sobre el papel. */
+.lista {
+  display: grid;
+  gap: var(--esp-4);
+  min-width: 0;
+  padding: var(--esp-5);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-panel);
+}
+
+.enlace {
+  font-weight: var(--peso-fuerte);
+  color: var(--color-accion);
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-2) var(--esp-4);
+}
+
+.titulo {
+  font-size: var(--texto-lg);
+}
+
+/* Destino del foco tras eliminar una fila: sin contorno por clic, sí por teclado. */
+.titulo:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.conteo {
+  color: var(--color-tinta-suave);
+}
+
+/* Búsqueda y orden en una fila; si no caben, uno bajo el otro. */
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--esp-3) var(--esp-4);
+}
+
+.busqueda {
+  display: grid;
+  gap: var(--esp-1);
+  max-width: 26rem;
+  flex: 1 1 16rem;
+}
+
+.orden {
+  display: grid;
+  gap: var(--esp-1);
+}
+
+.selector {
+  min-height: var(--alto-control);
+  padding: 0 var(--esp-3);
+  font: inherit;
+  color: var(--color-tinta);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-control);
+}
+
+.selector:focus-visible {
+  outline: 3px solid var(--color-accion);
+  outline-offset: 2px;
+}
+
+.etiqueta {
+  font-weight: var(--peso-medio);
+}
+
+.controlBusqueda {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: var(--alto-control);
+  padding: 0 var(--esp-3);
+  color: var(--color-tinta-suave);
+  background: var(--color-hoja);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-control);
+}
+
+.controlBusqueda:focus-within {
+  outline: 3px solid var(--color-accion);
+  outline-offset: 2px;
+}
+
+.entrada {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.5rem;
+  color: var(--color-tinta);
+  background: transparent;
+  border: 0;
+}
+
+.entrada:focus-visible {
+  outline: none;
+}
+
+.resultados {
+  display: grid;
+  gap: var(--esp-4);
+  min-width: 0;
+}
+
+/*
+ * Mientras llega la búsqueda o la página nueva se sigue viendo la anterior,
+ * atenuada. El retraso evita un parpadeo si el servidor responde al instante.
+ */
+.actualizando {
+  opacity: 0.6;
+  transition: opacity 0.2s 0.15s;
+}
+
+.estado {
+  max-width: 60ch;
+  color: var(--color-tinta-suave);
+}
+
+.falla {
+  display: grid;
+  justify-items: start;
+  gap: var(--esp-3);
+  color: var(--color-error);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--color-borde-control);
+}
+
+.tabla thead th {
+  padding: var(--esp-3);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  text-align: left;
+  color: var(--color-tinta-suave);
+  background: var(--color-papel);
+  border-bottom: 1px solid var(--color-borde-control);
+}
+
+.tabla thead th.columnaAcciones {
+  /* Alineado con los íconos, que van a la derecha de su celda. */
+  padding-right: calc(var(--esp-3) + 0.25rem);
+  text-align: right;
+}
+
+@media (max-width: 40rem) {
+  .lista {
+    padding: var(--esp-4);
+  }
+
+  /* Con filas apiladas los encabezados sobran a la vista (no al lector). */
+  .tabla thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .tabla,
+  .tabla tbody {
+    display: block;
+  }
+}

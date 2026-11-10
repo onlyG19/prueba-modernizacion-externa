@@ -5,7 +5,8 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { solicitar, solicitarJson } from '../api/cliente';
+// [ANTES] import { solicitar, solicitarJson } from '../api/cliente';
+import { ApiError, solicitar, solicitarJson } from '../api/cliente';
 // [ANTES] import type { CambiosUsuario, NuevoUsuario, Usuario } from '../api/tipos';
 import type {
   CambiosUsuario,
@@ -101,15 +102,19 @@ export function useActualizarUsuario() {
     // [ANTES] mutationFn: ({ id, cambios }: { id: number; cambios: CambiosUsuario }) =>
     mutationFn: ({
       id,
+      version,
       cambios,
     }: {
       id: Usuario['id'];
+      /** Versión sobre la que se editó: si ya cambió, la API responde 412. */
+      version: Usuario['version'];
       cambios: CambiosUsuario;
     }) =>
       solicitarJson<Usuario>(`/usuarios/${id}`, {
         metodo: 'PATCH',
         cuerpo: cambios,
         token,
+        cabeceras: { 'If-Match': `"${version}"` },
       }),
     // [ANTES] onSuccess: (actualizado) => {
     // [ANTES]   cliente.setQueryData<Usuario[]>(CLAVE_USUARIOS, (actuales = []) =>
@@ -117,6 +122,12 @@ export function useActualizarUsuario() {
     // [ANTES]   );
     // [ANTES] },
     onSuccess: () => cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS }),
+    // 412: otra persona lo cambió. Se recarga la lista para mostrar su versión.
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 412) {
+        void cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS });
+      }
+    },
   });
 }
 

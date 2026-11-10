@@ -75,7 +75,6 @@ export interface paths {
     delete: operations['UsuariosController_remove_v1'];
     options?: never;
     head?: never;
-    /** Actualiza parcialmente un usuario. */
     patch: operations['UsuariosController_update_v1'];
     trace?: never;
   };
@@ -197,6 +196,12 @@ export interface components {
        * @example 2026-11-10T15:20:00.000Z
        */
       actualizadoEn: string;
+      /**
+       * @description Versión del registro; sube con cada cambio. Enviarla en `If-Match` al
+       *     modificar evita pisar los cambios de otra persona.
+       * @example 1
+       */
+      version: number;
     };
     PaginationMetaDto: {
       /**
@@ -433,6 +438,8 @@ export interface operations {
         headers: {
           /** @description Ruta del usuario creado (p. ej. /api/v1/usuarios/7) */
           Location?: string;
+          /** @description Versión del usuario (p. ej. "3"); se envía en If-Match al modificarlo */
+          ETag?: string;
           [name: string]: unknown;
         };
         content: {
@@ -481,6 +488,8 @@ export interface operations {
     responses: {
       200: {
         headers: {
+          /** @description Versión del usuario (p. ej. "3"); se envía en If-Match al modificarlo */
+          ETag?: string;
           [name: string]: unknown;
         };
         content: {
@@ -547,7 +556,10 @@ export interface operations {
   UsuariosController_update_v1: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description ETag de la versión sobre la que se hicieron los cambios (p. ej. "3"). Si ya no es la actual, responde 412 y no se pisa el cambio ajeno. */
+        'If-Match'?: string;
+      };
       path: {
         id: string;
       };
@@ -561,6 +573,8 @@ export interface operations {
     responses: {
       200: {
         headers: {
+          /** @description Versión del usuario (p. ej. "3"); se envía en If-Match al modificarlo */
+          ETag?: string;
           [name: string]: unknown;
         };
         content: {
@@ -596,6 +610,15 @@ export interface operations {
       };
       /** @description El nuevo RUT ya pertenece a otro usuario */
       409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ProblemDetailsDto'];
+        };
+      };
+      /** @description El usuario cambió desde la versión indicada en If-Match */
+      412: {
         headers: {
           [name: string]: unknown;
         };

@@ -5,6 +5,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  VersionColumn,
 } from 'typeorm';
 import { RUT_MAX_LENGTH } from '../domain/rut';
 import { NOMBRE_MAX_LENGTH } from '../domain/usuario.constants';
@@ -46,4 +47,8 @@ export class Usuario {
   /** Fecha del último cambio; TypeORM la actualiza en cada `save`. */
   @UpdateDateColumn({ name: 'actualizado_en', type: 'timestamptz' })
   actualizadoEn!: Date;
+
+  /** Versión para la concurrencia optimista: sube con cada cambio. */
+  @VersionColumn({ default: 1 })
+  version!: number;
 }

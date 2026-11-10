@@ -53,6 +53,11 @@ export function erroresDeServidor(
           general:
             'Este usuario ya no existe: puede que otra persona lo haya eliminado. Cancela la edición para seguir.',
         };
+      case 412:
+        return {
+          general:
+            'Otra persona modificó a este usuario mientras lo editabas. Cancela para ver sus datos actuales y vuelve a aplicar tus cambios.',
+        };
       case 400:
         return clasificarMensajes(error.mensajes);
       case 401:

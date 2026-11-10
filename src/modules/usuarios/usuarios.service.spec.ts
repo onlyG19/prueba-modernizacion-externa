@@ -1,7 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 // [ANTES] import { NotFoundException } from '@nestjs/common';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+// [ANTES] import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  PreconditionFailedException,
+} from '@nestjs/common';
 // [ANTES] import { ObjectLiteral, Repository } from 'typeorm';
 // [ANTES] import { ObjectLiteral, QueryFailedError, Repository } from 'typeorm';
 import {
@@ -11,7 +16,10 @@ import {
   Repository,
   WhereExpressionBuilder,
 } from 'typeorm';
-import { UsuariosService } from './usuarios.service';
+import {
+  MENSAJE_VERSION_DESACTUALIZADA,
+  UsuariosService,
+} from './usuarios.service';
 // [ANTES] import { Usuario } from './usuario.entity';
 import { Usuario } from './entities/usuario.entity';
 
@@ -31,6 +39,10 @@ const mockQueryBuilder = () => {
     where: jest.fn(),
     orWhere: jest.fn(),
     getManyAndCount: jest.fn(),
+    update: jest.fn(),
+    set: jest.fn(),
+    andWhere: jest.fn(),
+    execute: jest.fn(),
   };
   for (const metodo of Object.keys(qb) as (keyof typeof qb)[]) {
     if (metodo !== 'getManyAndCount') {
@@ -73,6 +85,7 @@ describe('UsuariosService', () => {
     rut: '12345678-5',
     creadoEn: new Date('2026-11-10T14:03:00.000Z'),
     actualizadoEn: new Date('2026-11-10T14:03:00.000Z'),
+    version: 1,
   };
 
   beforeEach(async () => {
@@ -255,34 +268,115 @@ describe('UsuariosService', () => {
   });
 
   // ── update ───────────────────────────────────────────────────────────────
+  // [ANTES] describe('update', () => {
+  // [ANTES]   it('debe actualizar y retornar el usuario modificado', async () => {
+  // [ANTES]     const dto = { nombre: 'Juan Pablo Pérez' };
+  // [ANTES]     const actualizado = { ...usuarioBase, ...dto };
+  // [ANTES]     repo.findOneBy!.mockResolvedValue({ ...usuarioBase });
+  // [ANTES]     repo.save!.mockResolvedValue(actualizado);
+  // [ANTES]
+  // [ANTES]     // [ANTES] const result = await service.update(1, dto);
+  // [ANTES]     const result = await service.update(ID, dto);
+  // [ANTES]     expect(result).toEqual(actualizado);
+  // [ANTES]     expect(repo.save).toHaveBeenCalled();
+  // [ANTES]   });
+  // [ANTES]
+  // [ANTES]   it('debe lanzar NotFoundException si el usuario no existe', async () => {
+  // [ANTES]     repo.findOneBy!.mockResolvedValue(null);
+  // [ANTES]     // [ANTES] await expect(service.update(99, { nombre: 'Nuevo' })).rejects.toThrow(
+  // [ANTES]     await expect(
+  // [ANTES]       service.update(ID_INEXISTENTE, { nombre: 'Nuevo' }),
+  // [ANTES]     ).rejects.toThrow(NotFoundException);
+  // [ANTES]   });
+  // [ANTES]
+  // [ANTES]   it('debe lanzar ConflictException si el nuevo RUT ya pertenece a otro usuario', async () => {
+  // [ANTES]     repo.findOneBy!.mockResolvedValue({ ...usuarioBase });
+  // [ANTES]     repo.save!.mockRejectedValue(errorDeUnicidad());
+  // [ANTES]
+  // [ANTES]     // [ANTES] await expect(service.update(1, { rut: '11111111-1' })).rejects.toThrow(
+  // [ANTES]     await expect(service.update(ID, { rut: '11111111-1' })).rejects.toThrow(
+  // [ANTES]       ConflictException,
+  // [ANTES]     );
+  // [ANTES]   });
+  // [ANTES] });
   describe('update', () => {
-    it('debe actualizar y retornar el usuario modificado', async () => {
-      const dto = { nombre: 'Juan Pablo Pérez' };
-      const actualizado = { ...usuarioBase, ...dto };
-      repo.findOneBy!.mockResolvedValue({ ...usuarioBase });
-      repo.save!.mockResolvedValue(actualizado);
+    let qb: ReturnType<typeof mockQueryBuilder>;
 
-      // [ANTES] const result = await service.update(1, dto);
-      const result = await service.update(ID, dto);
-      expect(result).toEqual(actualizado);
-      expect(repo.save).toHaveBeenCalled();
+    beforeEach(() => {
+      qb = mockQueryBuilder();
+      repo.createQueryBuilder!.mockReturnValue(qb);
+    });
+
+    it('debe actualizar solo los campos enviados y devolver el usuario recargado', async () => {
+      const recargado = {
+        ...usuarioBase,
+        nombre: 'Juan Pablo Pérez',
+        version: 2,
+      };
+      repo.findOneBy!.mockResolvedValueOnce(usuarioBase);
+      repo.findOneBy!.mockResolvedValueOnce(recargado);
+      qb.execute.mockResolvedValue({ affected: 1 });
+
+      const result = await service.update(ID, { nombre: 'Juan Pablo Pérez' });
+
+      expect(qb.set).toHaveBeenCalledWith({ nombre: 'Juan Pablo Pérez' });
+      expect(qb.where).toHaveBeenCalledWith('id = :id', { id: ID });
+      expect(qb.andWhere).not.toHaveBeenCalled();
+      expect(result).toEqual(recargado);
+    });
+
+    it('con If-Match, debe exigir la versión en el mismo UPDATE (atómico)', async () => {
+      repo.findOneBy!.mockResolvedValue(usuarioBase);
+      qb.execute.mockResolvedValue({ affected: 1 });
+
+      await service.update(ID, { nombre: 'Otro' }, [1]);
+
+      expect(qb.andWhere).toHaveBeenCalledWith('version IN (:...versiones)', {
+        versiones: [1],
+      });
+    });
+
+    it('debe responder 412 si otro cambio subió la versión antes', async () => {
+      repo.findOneBy!.mockResolvedValue(usuarioBase);
+      qb.execute.mockResolvedValue({ affected: 0 });
+
+      await expect(service.update(ID, { nombre: 'Otro' }, [1])).rejects.toThrow(
+        new PreconditionFailedException(MENSAJE_VERSION_DESACTUALIZADA),
+      );
+    });
+
+    it('debe responder 412 sin tocar la base si If-Match no traía versiones válidas', async () => {
+      repo.findOneBy!.mockResolvedValue(usuarioBase);
+
+      await expect(service.update(ID, { nombre: 'Otro' }, [])).rejects.toThrow(
+        PreconditionFailedException,
+      );
+      expect(qb.execute).not.toHaveBeenCalled();
     });
 
     it('debe lanzar NotFoundException si el usuario no existe', async () => {
       repo.findOneBy!.mockResolvedValue(null);
-      // [ANTES] await expect(service.update(99, { nombre: 'Nuevo' })).rejects.toThrow(
+
       await expect(
         service.update(ID_INEXISTENTE, { nombre: 'Nuevo' }),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('debe lanzar ConflictException si el nuevo RUT ya pertenece a otro usuario', async () => {
-      repo.findOneBy!.mockResolvedValue({ ...usuarioBase });
-      repo.save!.mockRejectedValue(errorDeUnicidad());
+    it('debe lanzar NotFoundException si lo eliminaron entre la lectura y el UPDATE', async () => {
+      repo.findOneBy!.mockResolvedValue(usuarioBase);
+      qb.execute.mockResolvedValue({ affected: 0 });
 
-      // [ANTES] await expect(service.update(1, { rut: '11111111-1' })).rejects.toThrow(
+      await expect(service.update(ID, { nombre: 'Otro' })).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('debe lanzar ConflictException si el nuevo RUT ya pertenece a otro usuario', async () => {
+      repo.findOneBy!.mockResolvedValue(usuarioBase);
+      qb.execute.mockRejectedValue(errorDeUnicidad());
+
       await expect(service.update(ID, { rut: '11111111-1' })).rejects.toThrow(
-        ConflictException,
+        new ConflictException('Ya existe un usuario con el RUT 11111111-1'),
       );
     });
   });

@@ -94,6 +94,7 @@ describe('/usuarios (e2e)', () => {
       rut: '11111111-1',
       creadoEn: expect.any(String) as string,
       actualizadoEn: creado.creadoEn,
+      version: 1,
     });
 
     await api.get(`/usuarios/${creado.id}`).expect(200, creado);
@@ -109,6 +110,7 @@ describe('/usuarios (e2e)', () => {
       ...creado,
       nombre: 'Ana María Rojas',
       actualizadoEn: expect.any(String) as string,
+      version: 2,
     });
     // La fecha de registro se conserva; la del último cambio avanza.
     expect(Date.parse(actualizado.actualizadoEn)).toBeGreaterThan(
@@ -136,6 +138,49 @@ describe('/usuarios (e2e)', () => {
       .get(respuesta.headers.location)
       .auth(token, { type: 'bearer' })
       .expect(200, creado);
+  });
+
+  it('concurrencia optimista: ETag en cada respuesta y 412 si la versión cambió', async () => {
+    const { id } = await crear('Ana Rojas', '11.111.111-1');
+
+    await api.get(`/usuarios/${id}`).expect(200).expect('ETag', '"1"');
+    // Con el mismo ETag en If-None-Match: 304, sin volver a enviar el cuerpo.
+    await api.get(`/usuarios/${id}`).set('If-None-Match', '"1"').expect(304);
+
+    const cambio = await api
+      .patch(`/usuarios/${id}`)
+      .set('If-Match', '"1"')
+      .send({ nombre: 'Ana María Rojas' })
+      .expect(200)
+      .expect('ETag', '"2"');
+    expect((cambio.body as UsuarioJson).version).toBe(2);
+
+    // Quien seguía editando la versión 1 no pisa el cambio: 412.
+    await api
+      .patch(`/usuarios/${id}`)
+      .set('If-Match', '"1"')
+      .send({ nombre: 'Cambio pisado' })
+      .expect(412)
+      .expect('Content-Type', /^application\/problem\+json/);
+    await api
+      .get(`/usuarios/${id}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect((body as UsuarioJson).nombre).toBe('Ana María Rojas');
+      });
+  });
+
+  it('de dos cambios simultáneos sobre la misma versión, uno se aplica y el otro recibe 412', async () => {
+    const { id } = await crear('Ana Rojas', '11.111.111-1');
+    const cambiar = (nombre: string) =>
+      api.patch(`/usuarios/${id}`).set('If-Match', '"1"').send({ nombre });
+
+    const respuestas = await Promise.all([
+      cambiar('Primera'),
+      cambiar('Segunda'),
+    ]);
+
+    expect(respuestas.map((r) => r.status).sort()).toEqual([200, 412]);
   });
 
   it('responde 409 si el RUT ya existe, aunque venga escrito de otra forma', async () => {

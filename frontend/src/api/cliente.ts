@@ -39,6 +39,8 @@ export interface OpcionesSolicitud {
   /** JWT para `Authorization: Bearer`. */
   token?: string;
   signal?: AbortSignal;
+  /** Cabeceras adicionales (p. ej. `If-Match` para no pisar cambios ajenos). */
+  cabeceras?: Record<string, string>;
 }
 
 /**
@@ -59,9 +61,17 @@ export function urlApi(ruta: string): string {
  */
 export async function solicitar(
   ruta: string,
-  { metodo = 'GET', cuerpo, token, signal }: OpcionesSolicitud = {},
+  // [ANTES] { metodo = 'GET', cuerpo, token, signal }: OpcionesSolicitud = {},
+  {
+    metodo = 'GET',
+    cuerpo,
+    token,
+    signal,
+    cabeceras: extra,
+  }: OpcionesSolicitud = {},
 ): Promise<Response> {
-  const cabeceras = new Headers();
+  // [ANTES] const cabeceras = new Headers();
+  const cabeceras = new Headers(extra);
   if (cuerpo !== undefined) {
     cabeceras.set('Content-Type', 'application/json');
   }

@@ -39,6 +39,7 @@ export function FormularioEditarUsuario({ usuario, onTerminar }: Props) {
       }
       const actualizado = await actualizar.mutateAsync({
         id: usuario.id,
+        version: usuario.version,
         cambios,
       });
       anunciar(`Cambios guardados: ${actualizado.nombre}.`);

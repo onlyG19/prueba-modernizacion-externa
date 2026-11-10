@@ -75,7 +75,8 @@ describe('API (e2e)', () => {
         // [ANTES] .expect('Access-Control-Expose-Headers', 'X-Request-Count,X-Request-Id')
         .expect(
           'Access-Control-Expose-Headers',
-          'Location,X-Request-Count,X-Request-Id',
+          // [ANTES] 'Location,X-Request-Count,X-Request-Id',
+          'ETag,Location,X-Request-Count,X-Request-Id',
         )
     );
   });

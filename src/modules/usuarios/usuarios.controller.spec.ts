@@ -31,7 +31,14 @@ describe('UsuariosController', () => {
     rut: '12345678-5',
     creadoEn: new Date('2026-11-10T14:03:00.000Z'),
     actualizadoEn: new Date('2026-11-10T14:03:00.000Z'),
+    version: 1,
   };
+
+  /** Respuesta de Express simulada: registra las cabeceras que se ponen. */
+  const respuesta = () =>
+    ({ setHeader: jest.fn(), location: jest.fn() }) as unknown as Response & {
+      setHeader: jest.Mock;
+    };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -70,9 +77,19 @@ describe('UsuariosController', () => {
     it('debe retornar el usuario encontrado', async () => {
       service.findOne.mockResolvedValue(usuarioBase);
       // [ANTES] expect(await controller.findOne(1)).toEqual(usuarioBase);
-      expect(await controller.findOne(ID)).toEqual(usuarioBase);
+      // [ANTES] expect(await controller.findOne(ID)).toEqual(usuarioBase);
+      expect(await controller.findOne(ID, respuesta())).toEqual(usuarioBase);
       // [ANTES] expect(service.findOne).toHaveBeenCalledWith(1);
       expect(service.findOne).toHaveBeenCalledWith(ID);
+    });
+
+    it('debe enviar la versión como ETag', async () => {
+      service.findOne.mockResolvedValue({ ...usuarioBase, version: 3 });
+      const res = respuesta();
+
+      await controller.findOne(ID, res);
+
+      expect(res.setHeader).toHaveBeenCalledWith('ETag', '"3"');
     });
 
     it('no debe exponer campos de la entidad que el DTO no declara', async () => {
@@ -81,13 +98,15 @@ describe('UsuariosController', () => {
       service.findOne.mockResolvedValue(conColumnaInterna);
 
       // [ANTES] expect(await controller.findOne(1)).toStrictEqual({
-      expect(await controller.findOne(ID)).toStrictEqual({
+      // [ANTES] expect(await controller.findOne(ID)).toStrictEqual({
+      expect(await controller.findOne(ID, respuesta())).toStrictEqual({
         // [ANTES] id: 1,
         id: ID,
         nombre: 'Juan Pérez',
         rut: '12345678-5',
         creadoEn: usuarioBase.creadoEn,
         actualizadoEn: usuarioBase.actualizadoEn,
+        version: 1,
       });
     });
 
@@ -97,9 +116,10 @@ describe('UsuariosController', () => {
         new NotFoundException(`Usuario con id ${ID_INEXISTENTE} no encontrado`),
       );
       // [ANTES] await expect(controller.findOne(99)).rejects.toThrow(NotFoundException);
-      await expect(controller.findOne(ID_INEXISTENTE)).rejects.toThrow(
-        NotFoundException,
-      );
+      // [ANTES] await expect(controller.findOne(ID_INEXISTENTE)).rejects.toThrow(
+      await expect(
+        controller.findOne(ID_INEXISTENTE, respuesta()),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -113,7 +133,8 @@ describe('UsuariosController', () => {
       service.create.mockResolvedValue(creado);
       // [ANTES] expect(await controller.create(dto)).toEqual(creado);
       const req = { originalUrl: '/api/v1/usuarios' } as Request;
-      const res = { location: jest.fn() } as unknown as Response;
+      // [ANTES] const res = { location: jest.fn() } as unknown as Response;
+      const res = respuesta();
 
       expect(await controller.create(dto, req, res)).toEqual(creado);
       expect(service.create).toHaveBeenCalledWith(dto);
@@ -127,7 +148,8 @@ describe('UsuariosController', () => {
       await controller.create(
         { nombre: usuarioBase.nombre, rut: usuarioBase.rut },
         req,
-        { location } as unknown as Response,
+        // [ANTES] { location } as unknown as Response,
+        { location, setHeader: jest.fn() } as unknown as Response,
       );
 
       // [ANTES] expect(location).toHaveBeenCalledWith('/api/v1/usuarios/1');
@@ -143,9 +165,23 @@ describe('UsuariosController', () => {
       service.update.mockResolvedValue(actualizado);
 
       // [ANTES] expect(await controller.update(1, dto)).toEqual(actualizado);
-      expect(await controller.update(ID, dto)).toEqual(actualizado);
+      // [ANTES] expect(await controller.update(ID, dto)).toEqual(actualizado);
+      expect(await controller.update(ID, dto, undefined, respuesta())).toEqual(
+        actualizado,
+      );
       // [ANTES] expect(service.update).toHaveBeenCalledWith(1, dto);
-      expect(service.update).toHaveBeenCalledWith(ID, dto);
+      // [ANTES] expect(service.update).toHaveBeenCalledWith(ID, dto);
+      expect(service.update).toHaveBeenCalledWith(ID, dto, undefined);
+    });
+
+    it('debe pasar las versiones de If-Match al service y devolver el nuevo ETag', async () => {
+      service.update.mockResolvedValue({ ...usuarioBase, version: 4 });
+      const res = respuesta();
+
+      await controller.update(ID, { nombre: 'Otro' }, '"3"', res);
+
+      expect(service.update).toHaveBeenCalledWith(ID, { nombre: 'Otro' }, [3]);
+      expect(res.setHeader).toHaveBeenCalledWith('ETag', '"4"');
     });
 
     it('debe propagar NotFoundException del service', async () => {
@@ -155,7 +191,13 @@ describe('UsuariosController', () => {
       );
       // [ANTES] await expect(controller.update(99, { nombre: 'X' })).rejects.toThrow(
       await expect(
-        controller.update(ID_INEXISTENTE, { nombre: 'X' }),
+        // [ANTES] controller.update(ID_INEXISTENTE, { nombre: 'X' }),
+        controller.update(
+          ID_INEXISTENTE,
+          { nombre: 'X' },
+          undefined,
+          respuesta(),
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });

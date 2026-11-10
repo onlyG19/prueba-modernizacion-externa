@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  PreconditionFailedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 // [ANTES] import { Repository } from 'typeorm';
@@ -41,6 +42,10 @@ function interpretarOrden(orden: OrdenUsuarios) {
     direccion: descendente ? ('DESC' as const) : ('ASC' as const),
   };
 }
+
+/** Detalle del 412 cuando la versión enviada en If-Match ya no es la actual. */
+export const MENSAJE_VERSION_DESACTUALIZADA =
+  'El usuario cambió desde que lo leíste: vuelve a cargarlo y aplica tus cambios sobre la versión actual.';
 
 /** Puntos, guiones y espacios: se ignoran al buscar por RUT. */
 const SEPARADORES_RUT = /[.\-\s]/g;
@@ -120,11 +125,61 @@ export class UsuariosService {
   }
 
   // [ANTES] async update(id: number, dto: UpdateUsuarioDto): Promise<Usuario> {
-  async update(id: string, dto: UpdateUsuarioDto): Promise<Usuario> {
-    const usuario = await this.findOne(id);
-    Object.assign(usuario, dto);
-    // [ANTES] return this.usuarioRepository.save(usuario);
-    return this.guardar(usuario);
+  // [ANTES] async update(id: string, dto: UpdateUsuarioDto): Promise<Usuario> {
+  // [ANTES]   const usuario = await this.findOne(id);
+  // [ANTES]   Object.assign(usuario, dto);
+  // [ANTES]   return this.guardar(usuario);
+  // [ANTES] }
+  /**
+   * Actualiza un usuario. Con `versiones` (de `If-Match`), solo si su versión
+   * actual es una de ellas.
+   *
+   * @remarks Concurrencia optimista: la versión se comprueba en el mismo
+   * `UPDATE ... WHERE version IN (...)`, no antes. Así, de dos cambios
+   * simultáneos sobre la misma versión, uno se aplica y el otro recibe 412.
+   * TypeORM sube la versión y la fecha de cambio en ese mismo UPDATE.
+   *
+   * @throws NotFoundException si el usuario no existe.
+   * @throws PreconditionFailedException si la versión ya no es la actual.
+   * @throws ConflictException si el nuevo RUT ya pertenece a otro usuario.
+   */
+  async update(
+    id: string,
+    dto: UpdateUsuarioDto,
+    versiones?: number[],
+  ): Promise<Usuario> {
+    await this.findOne(id);
+    const cambios: Partial<Pick<Usuario, 'nombre' | 'rut'>> = {};
+    if (dto.nombre !== undefined) {
+      cambios.nombre = dto.nombre;
+    }
+    if (dto.rut !== undefined) {
+      cambios.rut = dto.rut;
+    }
+
+    const consulta = this.usuarioRepository
+      .createQueryBuilder()
+      .update(Usuario)
+      .set(cambios)
+      .where('id = :id', { id });
+    if (versiones) {
+      if (versiones.length === 0) {
+        throw new PreconditionFailedException(MENSAJE_VERSION_DESACTUALIZADA);
+      }
+      consulta.andWhere('version IN (:...versiones)', { versiones });
+    }
+
+    const { affected } = await this.conRutUnico(
+      () => consulta.execute(),
+      cambios.rut,
+    );
+    if (!affected) {
+      // Ninguna fila: alguien guardó otra versión antes, o lo eliminó recién.
+      throw versiones
+        ? new PreconditionFailedException(MENSAJE_VERSION_DESACTUALIZADA)
+        : new NotFoundException(`Usuario con id ${id} no encontrado`);
+    }
+    return this.findOne(id);
   }
 
   // [ANTES] async remove(id: number): Promise<void> {
@@ -139,13 +194,32 @@ export class UsuariosService {
    * @throws ConflictException Si ya existe otro usuario con el mismo RUT.
    */
   private async guardar(usuario: Usuario): Promise<Usuario> {
+    // [ANTES] try {
+    // [ANTES]   return await this.usuarioRepository.save(usuario);
+    // [ANTES] } catch (error) {
+    // [ANTES]   if (isUniqueViolation(error)) {
+    // [ANTES]     throw new ConflictException(
+    // [ANTES]       `Ya existe un usuario con el RUT ${usuario.rut}`,
+    // [ANTES]     );
+    // [ANTES]   }
+    // [ANTES]   throw error;
+    // [ANTES] }
+    return this.conRutUnico(
+      () => this.usuarioRepository.save(usuario),
+      usuario.rut,
+    );
+  }
+
+  /** Ejecuta la operación traduciendo un RUT duplicado (UNIQUE) a `409`. */
+  private async conRutUnico<T>(
+    operacion: () => Promise<T>,
+    rut: string | undefined,
+  ): Promise<T> {
     try {
-      return await this.usuarioRepository.save(usuario);
+      return await operacion();
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Ya existe un usuario con el RUT ${usuario.rut}`,
-        );
+        throw new ConflictException(`Ya existe un usuario con el RUT ${rut}`);
       }
       throw error;
     }

@@ -40,6 +40,13 @@ export class UsuarioDto {
    */
   actualizadoEn!: Date;
 
+  /**
+   * Versión del registro; sube con cada cambio. Enviarla en `If-Match` al
+   * modificar evita pisar los cambios de otra persona.
+   * @example 1
+   */
+  version!: number;
+
   /** Convierte la entidad en la respuesta de la API. */
   static desde(usuario: Usuario): UsuarioDto {
     // [ANTES] return { id: usuario.id, nombre: usuario.nombre, rut: usuario.rut };
@@ -49,6 +56,7 @@ export class UsuarioDto {
       rut: usuario.rut,
       creadoEn: usuario.creadoEn,
       actualizadoEn: usuario.actualizadoEn,
+      version: usuario.version,
     };
   }
 }

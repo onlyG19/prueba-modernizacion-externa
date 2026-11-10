@@ -22,6 +22,7 @@ const FECHA_INICIAL = '2026-11-10T12:00:00.000Z';
 const conFechas = (usuario: UsuarioDePrueba): Usuario => ({
   creadoEn: FECHA_INICIAL,
   actualizadoEn: FECHA_INICIAL,
+  version: 1,
   ...usuario,
 });
 
@@ -168,6 +169,7 @@ export function crearApiFalsa({
         ...datos,
         creadoEn: ahora,
         actualizadoEn: ahora,
+        version: 1,
       };
       estado.usuarios.push(creado);
       return HttpResponse.json(creado, { status: 201 });
@@ -185,9 +187,22 @@ export function crearApiFalsa({
       if (!usuario) {
         return error(404, 'Usuario no encontrado', 'Not Found');
       }
+      // Concurrencia optimista, como la API real: If-Match con otra versión → 412.
+      const ifMatch = request.headers.get('If-Match');
+      if (ifMatch !== null && ifMatch !== `"${usuario.version}"`) {
+        return error(
+          412,
+          'El usuario cambió desde que lo leíste',
+          'Precondition Failed',
+        );
+      }
       // [ANTES] Object.assign(usuario, cambios);
+      // [ANTES] Object.assign(usuario, cambios, {
+      // [ANTES]   actualizadoEn: new Date().toISOString(),
+      // [ANTES] });
       Object.assign(usuario, cambios, {
         actualizadoEn: new Date().toISOString(),
+        version: usuario.version + 1,
       });
       return HttpResponse.json(usuario);
     }),

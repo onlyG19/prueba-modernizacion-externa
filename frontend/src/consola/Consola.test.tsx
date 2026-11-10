@@ -367,6 +367,32 @@ describe('Cambios sin guardar', () => {
 });
 
 describe('Editar usuario', () => {
+  it('debe avisar si otra persona cambió al usuario mientras se editaba (412)', async () => {
+    const api = prepararApi();
+    const { usuario } = renderizarConSesion();
+    await filas();
+
+    await usuario.click(
+      screen.getByRole('button', { name: 'Editar a Juan Pérez' }),
+    );
+    // Mientras tanto otra persona guarda un cambio: la versión sube a 2.
+    const juan = api.estado.usuarios.find((u) => u.nombre === 'Juan Pérez');
+    expect(juan).toBeDefined();
+    Object.assign(juan ?? {}, { version: 2 });
+    const nombre = screen.getByLabelText('Nombre');
+    await usuario.clear(nombre);
+    await usuario.type(nombre, 'Juan Pablo Pérez');
+    await usuario.click(
+      screen.getByRole('button', { name: 'Guardar cambios' }),
+    );
+
+    expect(
+      await screen.findByText(/Otra persona modificó a este usuario/),
+    ).toBeInTheDocument();
+    // El PATCH llevó If-Match con la versión 1: el cambio ajeno no se pisó.
+    expect(juan?.nombre).toBe('Juan Pérez');
+  });
+
   it('debe guardar solo los campos que cambiaron', async () => {
     const api = prepararApi();
     const { usuario } = renderizarConSesion();

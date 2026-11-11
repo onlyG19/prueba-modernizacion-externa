@@ -7,7 +7,7 @@ import Peticion from '../components/Peticion.astro';
 import Presentacion from '../layouts/Presentacion.astro';
 import VisorDiagramas from '../components/VisorDiagramas.astro';
 
-const TOTAL = 21;
+const TOTAL = 23;
 
 const antesYAhora = [
   { tema: 'RUT', antes: 'Solo se validaba el formato', ahora: 'Dígito verificador, único y en una sola forma' },
@@ -116,7 +116,7 @@ const codigo = (texto: string) => texto.replace(/`([^`]+)`/g, '<code>$1</code>')
         </li>
       </ol>
       <div class="cifras-enfoque">
-        <p><span class="cifra">79</span> commits atómicos; cada mensaje explica el porqué del cambio.</p>
+        <p><span class="cifra">80</span> commits atómicos; cada mensaje explica el porqué del cambio.</p>
         <p><span class="cifra">47</span> mejoras hechas y 13 propuestas, en <code>docs/MEJORAS.md</code>.</p>
       </div>
     </div>
@@ -340,15 +340,59 @@ GET /health  <span class="falla">→ 503</span>
           <li>React 19, Vite y TypeScript, con tipos generados desde OpenAPI.</li>
           <li>Inicio, login y panel con rutas que se pueden enlazar y recargar.</li>
           <li>Detalle y edición en una ventana <code>&lt;dialog&gt;</code> nativa.</li>
-          <li>WCAG AA verificado con axe en un navegador real.</li>
+          <li>Sin violaciones WCAG AA detectables por axe, en un navegador real.</li>
         </ul>
       </div>
     </div>
   </Diapositiva>
 
-  <!-- 18 ─ Tests -->
+  <!-- 18 ─ La consola: usuarios -->
+  <Diapositiva numero={18} total={TOTAL} seccion="Frontend" titulo="Usuarios">
+    <div class="galeria">
+      <figure class="pantalla" style="--ancho-pantalla: 36cqw">
+        <div class="captura">
+          <img src="/capturas/registro-dv.png" alt="Formulario de registro con el RUT 12.345.678-9: avisa que el dígito verificador debería ser 5" width="1024" height="888" />
+        </div>
+        <figcaption>Dígito verificador incorrecto, sin llamar a la API</figcaption>
+      </figure>
+      <figure class="pantalla" style="--ancho-pantalla: 30cqw">
+        <div class="captura">
+          <img src="/capturas/edicion-412.png" alt="Ventana de edición con el aviso de que otra persona modificó al usuario mientras se editaba" width="1216" height="1300" />
+        </div>
+        <figcaption>Otra persona guardó antes: 412</figcaption>
+      </figure>
+    </div>
+  </Diapositiva>
+
+  <!-- 19 ─ La consola: cuentas y roles -->
+  <Diapositiva numero={19} total={TOTAL} seccion="Frontend" titulo="Cuentas y roles">
+    <div class="galeria">
+      <figure class="pantalla" style="--ancho-pantalla: 28cqw">
+        <div class="captura">
+          <img src="/capturas/crear-cuenta.png" alt="Formulario para crear una cuenta, con una contraseña generada visible" width="1024" height="1106" />
+        </div>
+        <figcaption>El admin crea la cuenta</figcaption>
+      </figure>
+      <div class="pantallas-apiladas">
+        <figure class="pantalla" style="--ancho-pantalla: 44cqw">
+          <div class="captura">
+            <img src="/capturas/cuentas.png" alt="Tabla de cuentas creadas, todas con rol operador" width="1576" height="904" />
+          </div>
+          <figcaption>Tabla de cuentas, solo para el admin</figcaption>
+        </figure>
+        <figure class="pantalla" style="--ancho-pantalla: 44cqw">
+          <div class="captura">
+            <img src="/capturas/operador.png" alt="Vista del operador: la barra lateral no muestra Cuentas y la sección explica que es del administrador" width="1904" height="618" />
+          </div>
+          <figcaption>El operador no ve Cuentas; la API le responde 403</figcaption>
+        </figure>
+      </div>
+    </div>
+  </Diapositiva>
+
+  <!-- 20 ─ Tests -->
   <Diapositiva
-    numero={18}
+    numero={20}
     total={TOTAL}
     seccion="Calidad"
     titulo="Cada capa tiene tests que fallan antes que la app"
@@ -378,9 +422,9 @@ GET /health  <span class="falla">→ 503</span>
     </div>
   </Diapositiva>
 
-  <!-- 19 ─ Entorno -->
+  <!-- 21 ─ Entorno -->
   <Diapositiva
-    numero={19}
+    numero={21}
     total={TOTAL}
     seccion="Entorno"
     titulo="Levantar todo el proyecto es un comando"
@@ -401,9 +445,9 @@ docker compose up</pre>
     </div>
   </Diapositiva>
 
-  <!-- 20 ─ Próximos pasos -->
+  <!-- 22 ─ Próximos pasos -->
   <Diapositiva
-    numero={20}
+    numero={22}
     total={TOTAL}
     seccion="Próximos pasos"
     titulo="Lo que haría a continuación"
@@ -424,14 +468,14 @@ docker compose up</pre>
     </div>
   </Diapositiva>
 
-  <!-- 21 ─ Cierre -->
-  <Diapositiva numero={21} total={TOTAL} clase="portada cierre">
+  <!-- 23 ─ Cierre -->
+  <Diapositiva numero={23} total={TOTAL} clase="portada cierre">
     <div class="cierre-contenido">
       <h2 id="titulo-16">Gracias. ¿Preguntas?</h2>
       <ul class="donde">
         <li><strong>README</strong>: cómo levantarlo y los diagramas de arquitectura y de flujo.</li>
         <li><strong>docs/MEJORAS.md</strong>: las 60 mejoras, con qué, por qué y sus commits.</li>
-        <li><strong>Pull Requests #1 y #2</strong>: los 79 commits, uno por decisión.</li>
+        <li><strong>Pull Requests #1 y #2</strong>: los 80 commits, uno por decisión.</li>
       </ul>
     </div>
   </Diapositiva>
@@ -751,6 +795,31 @@ docker compose up</pre>
     display: block;
     width: 100%;
     height: auto;
+  }
+
+  /* ── Galerías de capturas ─────────────────────────────────────────── */
+
+  .galeria {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 3cqw;
+  }
+
+  .pantallas-apiladas {
+    display: grid;
+    gap: 1.6cqw;
+  }
+
+  .pantalla {
+    display: grid;
+    gap: 0.8cqw;
+    width: var(--ancho-pantalla);
+  }
+
+  .pantalla figcaption {
+    font-size: 1.35cqw;
+    color: var(--tinta-suave);
   }
 
   /* ── Tests ────────────────────────────────────────────────────────── */

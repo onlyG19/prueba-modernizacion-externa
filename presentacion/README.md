@@ -8,6 +8,7 @@ pnpm dev        # http://localhost:4321
 pnpm build      # sitio estático en dist/
 pnpm preview    # sirve dist/
 pnpm diagramas  # vuelve a generar los diagramas desde el README del proyecto
+pnpm capturas   # vuelve a tomar las capturas de la app (ver abajo)
 ```
 
 ## Al presentar
@@ -35,14 +36,14 @@ Los diagramas que pide la prueba (punto 1, arquitectura; punto 2, flujos) van ca
 
 ## PDF
 
-Imprimir desde el navegador (Ctrl+P → Guardar como PDF) da 21 páginas de 1600 × 900, una por diapositiva, con los fondos incluidos. Los diagramas son vectoriales: en el PDF se puede hacer zoom sin que pierdan nitidez.
+Imprimir desde el navegador (Ctrl+P → Guardar como PDF) da 23 páginas de 1600 × 900, una por diapositiva, con los fondos incluidos. Los diagramas son vectoriales: en el PDF se puede hacer zoom sin que pierdan nitidez.
 
 ## Cómo está hecha
 
-- `src/pages/index.astro`: las 21 diapositivas, en orden.
+- `src/pages/index.astro`: las 23 diapositivas, en orden.
 - `src/components/`: la diapositiva base, los diagramas explicativos (arquitectura, recorrido de una petición y concurrencia, en HTML y CSS), la diapositiva de un diagrama del README y su visor.
 - `src/diagramas/`: los diagramas Mermaid del README del proyecto, en SVG. Los genera `scripts/diagramas.mjs`: Playwright abre Chromium con Montserrat cargada y Mermaid dibuja cada uno, así que el texto se mide con la misma fuente con la que se muestra. No se editan a mano: si cambia el README, `pnpm diagramas`.
 - `src/styles/global.css`: tokens de la marca. Las medidas van en `cqw` (centésimas del ancho de la diapositiva), así que se ve igual en un portátil, un proyector o el PDF, sin JavaScript que la escale.
-- `public/capturas/`: capturas de la app con usuarios de demostración del seed.
+- `public/capturas/`: capturas de la app con los usuarios de demostración del seed. Las toma `scripts/capturas.mjs` con Playwright, a doble resolución y recortadas a la parte de la pantalla que importa. Necesita la app corriendo (`pnpm dev --seed` en la raíz) y la contraseña del administrador: `CAPTURAS_CLAVE=<contraseña> pnpm capturas`. Crea cuentas de demostración si faltan, así que conviene correrlo contra una base de prueba. El logo admite 30 peticiones por minuto: entre dos corridas, espera un minuto.
 
 Las cifras (tests, commits, mejoras) son las del repositorio al 10 de noviembre de 2026; el detalle está en `docs/MEJORAS.md`.

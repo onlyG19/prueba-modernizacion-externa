@@ -8,6 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "diagramas": "node scripts/diagramas.mjs",
+    "capturas": "node scripts/capturas.mjs",
     "check": "astro check"
   },
   "dependencies": {

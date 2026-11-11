@@ -1,0 +1,165 @@
+---
+/** Recorrido de una petición: cada etapa y la respuesta de error que puede dar. */
+const etapas = [
+  { nombre: 'nginx', detalle: 'Asigna X-Request-Id y reenvía', errores: [] },
+  { nombre: 'helmet y CORS', detalle: 'Cabeceras de seguridad y orígenes permitidos', errores: [] },
+  {
+    nombre: 'Guards',
+    detalle: 'Límite por IP y JWT (las rutas @Public() no piden token)',
+    errores: ['429 demasiadas peticiones', '401 sin token válido'],
+  },
+  {
+    nombre: 'Validación',
+    detalle: 'DTOs: UUID, RUT con dígito verificador, cuerpo no vacío',
+    errores: ['400 con la lista de errores'],
+  },
+  {
+    nombre: 'Servicio',
+    detalle: 'Reglas de negocio y TypeORM',
+    errores: ['404 no existe', '409 RUT de otro usuario', '412 versión desactualizada'],
+  },
+];
+---
+
+<figure class="peticion" aria-label="Recorrido de una petición por la API">
+  <ol class="etapas">
+    {
+      etapas.map((etapa) => (
+        <li class="etapa">
+          <div class="caja">
+            <strong>{etapa.nombre}</strong>
+            <span>{etapa.detalle}</span>
+          </div>
+          <ul class="errores">
+            {etapa.errores.map((e) => (
+              <li>{e}</li>
+            ))}
+          </ul>
+        </li>
+      ))
+    }
+    <li class="etapa exito">
+      <div class="caja">
+        <strong>2xx</strong>
+        <span>Con el usuario, su ETag y, al crear, Location</span>
+      </div>
+    </li>
+  </ol>
+  <div class="salidas">
+    <p class="salida problema">
+      Todo error sale igual: <code>application/problem+json</code> (RFC 9457). Un 500 no expone detalles internos.
+    </p>
+    <p class="salida log">
+      pino escribe una línea por petición, con su id y sin datos personales.
+    </p>
+  </div>
+</figure>
+
+<style>
+  .peticion {
+    display: grid;
+    gap: 2.2cqw;
+  }
+
+  .etapas {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 1.6cqw;
+    padding: 0;
+    list-style: none;
+    counter-reset: etapa;
+  }
+
+  .etapa {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 1cqw;
+  }
+
+  /* Flecha hacia la etapa siguiente. */
+  .etapa:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 4cqw;
+    right: -1.35cqw;
+    width: 1.1cqw;
+    height: 1.1cqw;
+    border-top: 0.3cqw solid var(--marca-magenta);
+    border-right: 0.3cqw solid var(--marca-magenta);
+    transform: rotate(45deg);
+  }
+
+  .caja {
+    display: grid;
+    align-content: start;
+    gap: 0.4cqw;
+    min-height: 11.5cqw;
+    padding: 1.3cqw 1.3cqw;
+    font-size: 1.35cqw;
+    line-height: 1.35;
+    background: var(--hoja);
+    border: 0.12cqw solid var(--borde);
+    border-top: 0.5cqw solid var(--marca-morado);
+    border-radius: 0.7cqw;
+  }
+
+  .caja strong {
+    font-size: 1.7cqw;
+  }
+
+  .caja span {
+    color: var(--tinta-suave);
+  }
+
+  .exito .caja {
+    background: var(--ok-tenue);
+    border-top-color: var(--ok);
+  }
+
+  .exito strong {
+    color: var(--ok);
+  }
+
+  .errores {
+    display: grid;
+    align-content: start;
+    gap: 0.5cqw;
+    padding: 0;
+    list-style: none;
+  }
+
+  .errores li {
+    padding: 0.6cqw 0.9cqw;
+    font-size: 1.3cqw;
+    font-weight: 600;
+    color: var(--error);
+    background: var(--error-tenue);
+    border-radius: 0.5cqw;
+  }
+
+  .salidas {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 1.6cqw;
+  }
+
+  .salida {
+    padding: 1.4cqw 1.7cqw;
+    font-size: 1.5cqw;
+    border-radius: 0.7cqw;
+  }
+
+  .problema {
+    color: var(--hoja);
+    background: var(--marca-morado);
+  }
+
+  .problema code {
+    color: var(--marca-dorado);
+  }
+
+  .log {
+    background: var(--papel);
+  }
+</style>

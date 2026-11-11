@@ -1,0 +1,110 @@
+---
+/** Dos personas editan al mismo usuario: la segunda recibe 412 en vez de pisar. */
+const pasos = [
+  { quien: 'A', pide: 'GET /usuarios/:id', responde: '200, ETag "3"', estado: '' },
+  { quien: 'B', pide: 'GET /usuarios/:id', responde: '200, ETag "3"', estado: '' },
+  {
+    quien: 'B',
+    pide: 'PATCH con If-Match "3"',
+    responde: '200, ETag "4": se actualizó 1 fila',
+    estado: 'ok',
+  },
+  {
+    quien: 'A',
+    pide: 'PATCH con If-Match "3"',
+    responde: '412: la versión ya es 4, se actualizaron 0 filas',
+    estado: 'falla',
+  },
+];
+---
+
+<figure class="concurrencia" aria-label="Dos personas editan al mismo usuario">
+  <ol class="pasos">
+    {
+      pasos.map((paso) => (
+        <li class:list={['paso', paso.estado]}>
+          <span class:list={['persona', `persona-${paso.quien}`]}>Persona {paso.quien}</span>
+          <code class="pide">{paso.pide}</code>
+          <span class="responde">{paso.responde}</span>
+        </li>
+      ))
+    }
+  </ol>
+  <p class="desenlace">
+    El frontend le avisa a la persona A que otra persona cambió al usuario y recarga la versión vigente.
+  </p>
+</figure>
+
+<style>
+  .concurrencia {
+    display: grid;
+    gap: 1.4cqw;
+  }
+
+  .pasos {
+    display: grid;
+    gap: 0.8cqw;
+    padding: 0;
+    list-style: none;
+  }
+
+  .paso {
+    display: grid;
+    grid-template-columns: 11.5cqw 1fr 1.25fr;
+    align-items: center;
+    gap: 1.6cqw;
+    padding: 1.1cqw 1.4cqw;
+    font-size: 1.5cqw;
+    background: var(--hoja);
+    border: 0.12cqw solid var(--borde);
+    border-radius: 0.7cqw;
+  }
+
+  .persona {
+    justify-self: start;
+    padding: 0.3cqw 0.9cqw;
+    font-weight: 700;
+    color: var(--hoja);
+    border-radius: 999px;
+  }
+
+  .persona-A {
+    background: var(--accion);
+  }
+
+  .persona-B {
+    background: var(--marca-morado);
+  }
+
+  .pide {
+    font-size: 1.4cqw;
+  }
+
+  .responde {
+    color: var(--tinta-suave);
+  }
+
+  .ok {
+    border-left: 0.5cqw solid var(--ok);
+  }
+
+  .ok .responde {
+    font-weight: 600;
+    color: var(--ok);
+  }
+
+  .falla {
+    background: var(--error-tenue);
+    border-left: 0.5cqw solid var(--error);
+  }
+
+  .falla .responde {
+    font-weight: 700;
+    color: var(--error);
+  }
+
+  .desenlace {
+    font-size: 1.55cqw;
+    color: var(--tinta-suave);
+  }
+</style>

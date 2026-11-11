@@ -1,0 +1,423 @@
+/*
+ * Estilos de la presentación. La paleta y la tipografía son las de la app
+ * (marca Uno). Todas las medidas dentro de una diapositiva van en `cqw`
+ * (centésimas del ancho de la diapositiva): se ve igual en un portátil, un
+ * proyector o un PDF, sin JavaScript que la escale.
+ */
+:root {
+  --marca-cian: #00a9df;
+  --marca-magenta: #e3307d;
+  --marca-magenta-texto: #c8196a;
+  --marca-morado: #784685;
+  --marca-morado-claro: #8e569e;
+  --marca-morado-tenue: #f3ebf5;
+  --marca-dorado: #fcd75a;
+  --degradado-marca: linear-gradient(110deg, #f833b8 0%, #e033be 48%, #c333c1 100%);
+
+  --tinta: #242424;
+  --tinta-suave: #5c5c66;
+  --papel: #f6f4f8;
+  --hoja: #ffffff;
+  --borde: #e4e0e8;
+  --accion: #00719c;
+  --ok: #0f7b5f;
+  --ok-tenue: #e5f3ee;
+  --error: #b42318;
+  --error-tenue: #fdeceb;
+
+  --fuente: 'Montserrat Variable', system-ui, sans-serif;
+  --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --curva: cubic-bezier(0.2, 0, 0, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--fuente);
+  color: var(--tinta);
+  background: #2b1a30;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accion);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+
+/* ── El escenario: una diapositiva 16:9 centrada que llena la ventana ─────── */
+
+.mazo {
+  display: grid;
+  gap: 2rem;
+  justify-items: center;
+  padding: 2rem 0;
+}
+
+/* Con JavaScript se ve una diapositiva a la vez, a pantalla completa. */
+.js .mazo {
+  place-items: center;
+  height: 100dvh;
+  padding: 0;
+  overflow: hidden;
+}
+
+.js .diapositiva:not(.actual) {
+  display: none;
+}
+
+.diapositiva {
+  /*
+   * Las medidas de la diapositiva misma salen de su ancho, no de `cqw`: en el
+   * propio contenedor, `cqw` se calcula contra la ventana. En una ventana más
+   * ancha que 16:9 (lo normal, con las barras del navegador) el texto crecía
+   * más que la diapositiva y el contenido se montaba sobre el título. Sus
+   * hijos sí usan `cqw`.
+   */
+  --ancho: min(100vw, 100dvh * 16 / 9);
+  --cqw: calc(var(--ancho) / 100);
+  position: relative;
+  container-type: inline-size;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: var(--ancho);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  padding: calc(3.8 * var(--cqw)) calc(6 * var(--cqw)) calc(2.2 * var(--cqw));
+  font-size: calc(1.85 * var(--cqw));
+  line-height: 1.45;
+  background: var(--hoja);
+}
+
+/* Hilo de color arriba: la marca, en todas las diapositivas de contenido. */
+.diapositiva::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.45cqw;
+  background: var(--degradado-marca);
+}
+
+/* Portada y cierre: el degradado de la marca, como la portada de uno.cl. */
+.diapositiva.portada {
+  color: var(--hoja);
+  background: var(--degradado-marca);
+}
+
+.diapositiva.portada::before {
+  display: none;
+}
+
+/* Un halo de luz, como en la portada del sitio. */
+.diapositiva.portada::after {
+  content: '';
+  position: absolute;
+  top: -20cqw;
+  right: -12cqw;
+  width: 55cqw;
+  height: 55cqw;
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.2), transparent);
+  pointer-events: none;
+}
+
+.titulo {
+  max-width: 32ch;
+  font-size: 3.6cqw;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.bajada {
+  max-width: 62ch;
+  margin-top: 1.2cqw;
+  font-size: 1.85cqw;
+  color: var(--tinta-suave);
+}
+
+/*
+ * El contenido se centra en el alto disponible: sin un vacío abajo. Con
+ * `safe`, si algo no cabe se corta abajo en vez de subir sobre el título.
+ */
+.cuerpo {
+  display: grid;
+  align-content: safe center;
+  min-height: 0;
+  padding: 2.6cqw 0 1.6cqw;
+}
+
+.pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 1.1cqw;
+  font-size: 1.15cqw;
+  color: var(--tinta-suave);
+  border-top: 1px solid var(--borde);
+}
+
+.acento {
+  color: var(--marca-magenta);
+}
+
+/* ── Piezas reutilizables ──────────────────────────────────────────────── */
+
+.rejilla {
+  display: grid;
+  gap: 2cqw;
+}
+
+.dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tres {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tarjeta {
+  position: relative;
+  padding: 2.2cqw 2.2cqw 2.2cqw 2.9cqw;
+  background: var(--hoja);
+  border: 1px solid var(--borde);
+  border-radius: 0.8cqw;
+  box-shadow: 0 0.1cqw 0.3cqw rgb(36 36 36 / 0.06), 0 0.4cqw 1.2cqw rgb(36 36 36 / 0.06);
+}
+
+/* Barra de color a la izquierda, como las tarjetas de uno.cl. */
+.tarjeta::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.6cqw;
+  background: var(--color-barra, var(--marca-morado));
+  border-radius: 0.8cqw 0 0 0.8cqw;
+}
+
+.tarjeta h3 {
+  font-size: 1.95cqw;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.tarjeta p {
+  margin-top: 0.8cqw;
+  font-size: 1.55cqw;
+  color: var(--tinta-suave);
+}
+
+/* Para una diapositiva con pocas tarjetas: el texto crece y llena el espacio. */
+.amplia .tarjeta h3 {
+  font-size: 2.3cqw;
+}
+
+.amplia .tarjeta p {
+  margin-top: 1cqw;
+  font-size: 1.8cqw;
+}
+
+.magenta {
+  --color-barra: var(--marca-magenta);
+}
+
+.cian {
+  --color-barra: var(--marca-cian);
+}
+
+.lista {
+  display: grid;
+  gap: 1.3cqw;
+  padding: 0;
+  list-style: none;
+}
+
+.lista li {
+  position: relative;
+  padding-left: 2.3cqw;
+}
+
+.lista li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 0.85cqw;
+  height: 0.85cqw;
+  background: var(--marca-magenta);
+  border-radius: 50%;
+}
+
+.codigo {
+  padding: 2cqw 2.4cqw;
+  font-family: var(--mono);
+  font-size: 1.5cqw;
+  line-height: 1.6;
+  white-space: pre;
+  color: #f4eef6;
+  background: #2b1a30;
+  border-radius: 0.8cqw;
+}
+
+.codigo.grande {
+  font-size: 1.85cqw;
+}
+
+.codigo .comentario {
+  color: #b9a3c1;
+}
+
+.codigo .exito {
+  color: #8fe3c0;
+}
+
+.codigo .falla {
+  color: #ffa49c;
+}
+
+.cifra {
+  font-size: 4cqw;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Controles en pantalla (solo con JavaScript) ───────────────────────── */
+
+.controles {
+  display: none;
+}
+
+.js .controles {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  display: flex;
+  gap: 0.5rem;
+  /* Invisibles hasta acercar el mouse o el foco: no tapan el número. */
+  opacity: 0;
+  transition: opacity 160ms var(--curva);
+}
+
+.js .controles:hover,
+.js .controles:focus-within {
+  opacity: 1;
+}
+
+.controles button {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  font: inherit;
+  font-size: 1.25rem;
+  color: var(--hoja);
+  background: rgb(43 26 48 / 0.85);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.progreso {
+  display: none;
+}
+
+.js .progreso {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 2;
+  display: block;
+  height: 4px;
+  background: var(--degradado-marca);
+  transform-origin: left;
+  transform: scaleX(var(--avance, 0));
+  transition: transform 240ms var(--curva);
+}
+
+/* ── PDF: Imprimir → Guardar como PDF da una diapositiva por página ────── */
+
+@page {
+  size: 1600px 900px;
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: none;
+  }
+
+  .mazo,
+  .js .mazo {
+    display: block;
+    height: auto;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .diapositiva,
+  .js .diapositiva:not(.actual) {
+    --ancho: 1600px;
+    display: grid;
+    break-after: page;
+  }
+
+  /* Sin salto tras la última: si no, el PDF termina con una hoja en blanco. */
+  .diapositiva:last-of-type {
+    break-after: auto;
+  }
+
+  /* El anuncio para lectores de pantalla queda tras la última diapositiva:
+     visible al imprimir, abriría una hoja en blanco. */
+  .controles,
+  .js .controles,
+  .js .progreso,
+  [data-anuncio] {
+    display: none;
+  }
+
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

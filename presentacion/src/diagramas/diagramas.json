@@ -1,0 +1,37 @@
+[
+  {
+    "numero": "1",
+    "titulo": "Diagrama de arquitectura",
+    "archivo": "diagrama-1.svg",
+    "ancho": 2576,
+    "alto": 489
+  },
+  {
+    "numero": "2.1",
+    "titulo": "Una petición a la API",
+    "archivo": "diagrama-2-1.svg",
+    "ancho": 1234,
+    "alto": 1710
+  },
+  {
+    "numero": "2.2",
+    "titulo": "Registrar un usuario",
+    "archivo": "diagrama-2-2.svg",
+    "ancho": 1415,
+    "alto": 1096
+  },
+  {
+    "numero": "2.3",
+    "titulo": "Editar sin pisar el cambio de otra persona",
+    "archivo": "diagrama-2-3.svg",
+    "ancho": 1219,
+    "alto": 769
+  },
+  {
+    "numero": "2.4",
+    "titulo": "Logo y contador de visitas",
+    "archivo": "diagrama-2-4.svg",
+    "ancho": 988,
+    "alto": 542
+  }
+]

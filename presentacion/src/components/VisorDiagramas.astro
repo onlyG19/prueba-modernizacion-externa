@@ -1,0 +1,302 @@
+---
+/**
+ * Visor a pantalla completa para los diagramas del README: se abre con un
+ * clic en el diagrama o con la tecla Z. Empieza ajustado al ancho; los altos
+ * se recorren con la rueda o arrastrando.
+ *
+ * El SVG se mueve de la diapositiva al visor y vuelve al cerrar: nunca hay dos
+ * copias con los mismos ids en la página.
+ */
+---
+
+<dialog class="visor" aria-labelledby="visor-titulo" tabindex="-1">
+  <div class="visor-barra">
+    <h2 class="visor-titulo" id="visor-titulo"></h2>
+    <div class="visor-acciones">
+      <button type="button" data-zoom="alejar" aria-label="Alejar">−</button>
+      <button type="button" data-zoom="ajustar">Ajustar</button>
+      <button type="button" data-zoom="acercar" aria-label="Acercar">+</button>
+      <button type="button" data-cerrar aria-label="Cerrar">✕</button>
+    </div>
+  </div>
+  <div class="visor-lienzo"></div>
+  <p class="visor-ayuda">Arrastra o usa la rueda para moverte · Ctrl + rueda o +/− para el zoom · 0 ajusta · Esc cierra</p>
+</dialog>
+
+<script>
+  const visor = document.querySelector<HTMLDialogElement>('.visor');
+  const lienzo = visor?.querySelector<HTMLElement>('.visor-lienzo');
+  const titulo = visor?.querySelector<HTMLElement>('.visor-titulo');
+
+  if (visor && lienzo && titulo) {
+    const ESCALA_MIN = 0.2;
+    const ESCALA_MAX = 4;
+    /** Al abrir, a lo más el doble del tamaño original: más no aporta. */
+    const ESCALA_INICIAL_MAX = 2;
+    /** Al abrir, al menos esto: el texto de Mermaid (16 px) queda en ~14 px. */
+    const ESCALA_LEGIBLE = 0.9;
+
+    let svg: SVGSVGElement | null = null;
+    let origen: HTMLElement | null = null;
+    let ancho = 0;
+    let alto = 0;
+    let escala = 1;
+    let x = 0;
+    let y = 0;
+
+    /** Un eje: centrado si cabe; si no, sin dejar ver más allá del borde. */
+    function limitarEje(posicion: number, tamano: number, area: number) {
+      if (tamano <= area) {
+        return (area - tamano) / 2;
+      }
+      return Math.min(0, Math.max(area - tamano, posicion));
+    }
+
+    function aplicar() {
+      if (!svg || !lienzo) return;
+      const area = lienzo.getBoundingClientRect();
+      x = limitarEje(x, ancho * escala, area.width);
+      y = limitarEje(y, alto * escala, area.height);
+      // Cambia el tamaño del SVG en vez de escalarlo con transform: el
+      // navegador lo vuelve a dibujar nítido en cada zoom.
+      svg.style.width = `${ancho * escala}px`;
+      svg.style.height = `${alto * escala}px`;
+      svg.style.transform = `translate(${x}px, ${y}px)`;
+    }
+
+    /**
+     * Al ancho del visor y desde arriba: un diagrama alto se lee bajando. Uno
+     * muy ancho no se achica hasta lo ilegible: se lee recorriéndolo.
+     */
+    function ajustar() {
+      if (!lienzo) return;
+      const area = lienzo.getBoundingClientRect();
+      escala = Math.min(Math.max(area.width / ancho, ESCALA_LEGIBLE), ESCALA_INICIAL_MAX);
+      x = 0;
+      y = 0;
+      aplicar();
+    }
+
+    /** Acerca o aleja dejando quieto el punto (px, py) del visor. */
+    function zoom(factor: number, px?: number, py?: number) {
+      if (!lienzo) return;
+      const area = lienzo.getBoundingClientRect();
+      const cx = px ?? area.width / 2;
+      const cy = py ?? area.height / 2;
+      const nueva = Math.min(ESCALA_MAX, Math.max(ESCALA_MIN, escala * factor));
+      x = cx - ((cx - x) * nueva) / escala;
+      y = cy - ((cy - y) * nueva) / escala;
+      escala = nueva;
+      aplicar();
+    }
+
+    function mover(dx: number, dy: number) {
+      x += dx;
+      y += dy;
+      aplicar();
+    }
+
+    function abrir(boton: HTMLElement) {
+      const elegido = boton.querySelector<SVGSVGElement>(':scope > svg');
+      if (!elegido || !lienzo || !titulo || !visor) return;
+      svg = elegido;
+      origen = boton;
+      ({ width: ancho, height: alto } = svg.viewBox.baseVal);
+      titulo.textContent = boton.dataset.titulo ?? '';
+      lienzo.append(svg);
+      visor.showModal();
+      // El foco va al visor y no al primer botón: así no queda marcado "−".
+      visor.focus();
+      ajustar();
+    }
+
+    visor.addEventListener('close', () => {
+      if (svg && origen) {
+        svg.removeAttribute('style');
+        origen.prepend(svg);
+      }
+      svg = null;
+      origen = null;
+    });
+
+    document.addEventListener('click', (evento) => {
+      const boton = (evento.target as Element).closest<HTMLElement>('[data-ampliar]');
+      if (boton) abrir(boton);
+    });
+
+    // Z abre el diagrama de la diapositiva actual.
+    document.addEventListener('keydown', (evento) => {
+      if (visor.open || evento.key !== 'z' || evento.ctrlKey || evento.metaKey || evento.altKey) {
+        return;
+      }
+      const boton = document.querySelector<HTMLElement>('.diapositiva.actual [data-ampliar]');
+      if (boton) {
+        evento.preventDefault();
+        abrir(boton);
+      }
+    });
+
+    visor.addEventListener('click', (evento) => {
+      const control = (evento.target as Element).closest<HTMLElement>('[data-zoom], [data-cerrar]');
+      if (!control) return;
+      if (control.dataset.zoom === 'acercar') zoom(1.25);
+      if (control.dataset.zoom === 'alejar') zoom(0.8);
+      if (control.dataset.zoom === 'ajustar') ajustar();
+      if (control.hasAttribute('data-cerrar')) visor.close();
+    });
+
+    // Dentro del visor las teclas son suyas: no cambian de diapositiva.
+    visor.addEventListener('keydown', (evento) => {
+      const PASO = 80;
+      const acciones: Record<string, () => void> = {
+        '+': () => zoom(1.25),
+        '=': () => zoom(1.25),
+        '-': () => zoom(0.8),
+        '0': ajustar,
+        ArrowUp: () => mover(0, PASO),
+        ArrowDown: () => mover(0, -PASO),
+        ArrowLeft: () => mover(PASO, 0),
+        ArrowRight: () => mover(-PASO, 0),
+      };
+      const accion = acciones[evento.key];
+      if (accion) {
+        evento.preventDefault();
+        accion();
+      }
+      if (evento.key !== 'Escape' && evento.key !== 'Tab') {
+        evento.stopPropagation();
+      }
+    });
+
+    // Rueda: recorre. Con Ctrl (o el gesto de pellizcar), zoom.
+    lienzo.addEventListener(
+      'wheel',
+      (evento) => {
+        evento.preventDefault();
+        if (evento.ctrlKey || evento.metaKey) {
+          const area = lienzo.getBoundingClientRect();
+          zoom(Math.exp(-evento.deltaY * 0.002), evento.clientX - area.left, evento.clientY - area.top);
+        } else if (evento.shiftKey) {
+          mover(-evento.deltaY, 0);
+        } else {
+          mover(-evento.deltaX, -evento.deltaY);
+        }
+      },
+      { passive: false },
+    );
+
+    // Arrastrar para moverse.
+    let arrastre: { x: number; y: number } | null = null;
+    lienzo.addEventListener('pointerdown', (evento) => {
+      arrastre = { x: evento.clientX, y: evento.clientY };
+      lienzo.setPointerCapture(evento.pointerId);
+      lienzo.classList.add('arrastrando');
+    });
+    lienzo.addEventListener('pointermove', (evento) => {
+      if (!arrastre) return;
+      mover(evento.clientX - arrastre.x, evento.clientY - arrastre.y);
+      arrastre = { x: evento.clientX, y: evento.clientY };
+    });
+    const soltar = () => {
+      arrastre = null;
+      lienzo.classList.remove('arrastrando');
+    };
+    lienzo.addEventListener('pointerup', soltar);
+    lienzo.addEventListener('pointercancel', soltar);
+
+    window.addEventListener('resize', () => {
+      if (visor.open) ajustar();
+    });
+  }
+</script>
+
+<style>
+  .visor {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: var(--tinta);
+    background: var(--hoja);
+  }
+
+  .visor[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  /* El foco inicial está en el visor entero: un contorno ahí no aporta. */
+  .visor:focus {
+    outline: none;
+  }
+
+  .visor::backdrop {
+    background: #2b1a30;
+  }
+
+  .visor-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--borde);
+  }
+
+  .visor-titulo {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .visor-acciones {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .visor-acciones button {
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--borde);
+    border-radius: 0.5rem;
+    font: inherit;
+    font-weight: 600;
+    color: var(--marca-morado);
+    background: var(--hoja);
+    cursor: pointer;
+  }
+
+  .visor-acciones button:hover {
+    background: var(--marca-morado-tenue);
+  }
+
+  /* Arrastrar mueve el diagrama: no selecciona su texto. */
+  .visor-lienzo {
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .visor-lienzo.arrastrando {
+    cursor: grabbing;
+  }
+
+  .visor-lienzo :global(svg) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: none;
+  }
+
+  .visor-ayuda {
+    padding: 0.5rem 1.25rem;
+    border-top: 1px solid var(--borde);
+    font-size: 0.85rem;
+    color: var(--tinta-suave);
+  }
+</style>

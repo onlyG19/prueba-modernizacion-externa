@@ -229,5 +229,6 @@ src/                     API NestJS
 test/                    tests e2e del backend
 .github/workflows/       CI: lint, tipos y tests en cada pull request
 frontend/                SPA en React (ver frontend/README.md)
+presentacion/            diapositivas en Astro que explican los cambios
 docs/MEJORAS.md          mejoras hechas y pendientes
 ```

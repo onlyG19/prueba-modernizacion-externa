@@ -117,9 +117,13 @@ export function useActualizarUsuario() {
       cliente.setQueryData(claveDetalle(actualizado.id), actualizado);
       return cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS });
     },
-    // 412: otra persona lo cambió. Se recarga la lista para mostrar su versión.
+    // Otra persona lo cambió (412) o lo eliminó (404): se recarga la lista para
+    // mostrar su versión, o para que deje de aparecer.
     onError: (error) => {
-      if (error instanceof ApiError && error.status === 412) {
+      if (
+        error instanceof ApiError &&
+        (error.status === 412 || error.status === 404)
+      ) {
         void cliente.invalidateQueries({ queryKey: CLAVE_USUARIOS });
       }
     },

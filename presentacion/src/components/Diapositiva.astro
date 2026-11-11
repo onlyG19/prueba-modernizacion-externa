@@ -1,0 +1,45 @@
+---
+/**
+ * Una diapositiva 16:9. El título afirma la idea de la diapositiva; el
+ * contenido va en el slot. `titulo` admite HTML (para el acento magenta).
+ */
+interface Props {
+  numero: number;
+  total: number;
+  /** Tema al que pertenece, en el pie. */
+  seccion?: string;
+  titulo?: string;
+  bajada?: string;
+  /** Clases extra: `portada` para las diapositivas con el degradado. */
+  clase?: string;
+}
+
+const { numero, total, seccion, titulo, bajada, clase } = Astro.props;
+const idTitulo = `titulo-${numero}`;
+---
+
+<section
+  class:list={['diapositiva', clase]}
+  id={`d${numero}`}
+  data-numero={numero}
+  aria-labelledby={titulo ? idTitulo : undefined}
+  aria-roledescription="diapositiva"
+>
+  <header>
+    {titulo && <h2 class="titulo" id={idTitulo} set:html={titulo} />}
+    {bajada && <p class="bajada">{bajada}</p>}
+  </header>
+  <div class="cuerpo">
+    <slot />
+  </div>
+  {
+    seccion && (
+      <footer class="pie">
+        <span>{seccion}</span>
+        <span>
+          {numero} / {total}
+        </span>
+      </footer>
+    )
+  }
+</section>

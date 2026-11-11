@@ -494,6 +494,36 @@ describe('Editar usuario', () => {
     expect(juan?.nombre).toBe('Juan Pérez');
   });
 
+  it('debe sacar de la tabla al usuario que otra persona eliminó mientras se editaba (404)', async () => {
+    const api = prepararApi();
+    const { usuario } = renderizarConSesion();
+    await filas();
+
+    await usuario.click(
+      screen.getByRole('button', { name: 'Editar a Juan Pérez' }),
+    );
+    // Mientras tanto otra persona lo elimina.
+    api.estado.usuarios = api.estado.usuarios.filter(
+      (u) => u.nombre !== 'Juan Pérez',
+    );
+    const nombre = within(ventana()).getByLabelText('Nombre');
+    await usuario.clear(nombre);
+    await usuario.type(nombre, 'Juan Pablo Pérez');
+    await usuario.click(
+      screen.getByRole('button', { name: 'Guardar cambios' }),
+    );
+
+    expect(await within(ventana()).findByRole('alert')).toHaveTextContent(
+      'Este usuario ya no existe',
+    );
+    // La lista se vuelve a pedir: no queda la fila de alguien que ya no existe.
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('row', { name: /Juan Pérez/ }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
   it('debe abrir con el lápiz directo la edición y guardar solo los campos que cambiaron', async () => {
     const api = prepararApi();
     const { usuario } = renderizarConSesion();

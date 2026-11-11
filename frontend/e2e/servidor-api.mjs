@@ -9,9 +9,11 @@
  *
  * Playwright lo ejecuta (ver `webServer` en playwright.config.ts) con el puerto,
  * el secreto JWT y el usuario de prueba en el entorno. Del `.env` de la raíz
- * solo se toman las credenciales de Postgres.
+ * solo se toman las credenciales de Postgres; en CI no hay `.env` y llegan
+ * como variables de entorno del workflow.
  */
 import { execSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -20,7 +22,10 @@ const RAIZ = fileURLToPath(new URL('../../', import.meta.url));
 const BD_E2E = 'prueba_modernizacion_e2e';
 
 // No sobrescribe lo que ya definió Playwright (PORT, JWT_SECRET, AUTH_*…).
-process.loadEnvFile(join(RAIZ, '.env'));
+const ARCHIVO_ENV = join(RAIZ, '.env');
+if (existsSync(ARCHIVO_ENV)) {
+  process.loadEnvFile(ARCHIVO_ENV);
+}
 process.env.DB_NAME = BD_E2E;
 
 const { Client } = createRequire(join(RAIZ, 'package.json'))('pg');

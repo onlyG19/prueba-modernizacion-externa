@@ -1,0 +1,863 @@
+---
+import Arquitectura from '../components/Arquitectura.astro';
+import Concurrencia from '../components/Concurrencia.astro';
+import DiagramaReadme from '../components/DiagramaReadme.astro';
+import Diapositiva from '../components/Diapositiva.astro';
+import Peticion from '../components/Peticion.astro';
+import Presentacion from '../layouts/Presentacion.astro';
+import VisorDiagramas from '../components/VisorDiagramas.astro';
+
+const TOTAL = 23;
+
+const antesYAhora = [
+  { tema: 'RUT', antes: 'Solo se validaba el formato', ahora: 'Dígito verificador, único y en una sola forma' },
+  { tema: 'Acceso', antes: 'Cualquiera podía borrar usuarios', ahora: 'JWT con un guard global' },
+  { tema: 'Esquema', antes: '`synchronize` activo sin `NODE_ENV`', ahora: 'Migraciones versionadas' },
+  { tema: 'Errores', antes: 'Formatos distintos, 500 genéricos', ahora: 'Problem Details (RFC 9457)' },
+  { tema: 'Redis caído', antes: 'Tampoco se veía el logo', ahora: 'Se pierde solo el conteo' },
+  { tema: 'Tests', antes: '27 unitarios', ahora: '448 tests: unitarios, e2e y en navegador' },
+  { tema: 'Lint', antes: '22 errores', ahora: '0, revisado en cada commit' },
+  { tema: 'Frontend', antes: 'No había', ahora: 'React 19 con tipos desde OpenAPI' },
+];
+
+const codigo = (texto: string) => texto.replace(/`([^`]+)`/g, '<code>$1</code>');
+---
+
+<Presentacion
+  titulo="Modernización del registro de usuarios"
+  descripcion="Qué encontré en el código de la prueba, qué cambié y por qué."
+>
+  <!-- 1 ─ Portada -->
+  <Diapositiva numero={1} total={TOTAL} clase="portada">
+    <div class="portada-contenido">
+      <div>
+        <p class="contexto">Prueba técnica fullstack para Uno</p>
+        <h1 id="titulo-1">Modernización del registro de usuarios</h1>
+        <p class="lema">Qué encontré en el código, qué cambié y por qué.</p>
+        <p class="autor">Byron Gracia<br /><span>Noviembre de 2026</span></p>
+      </div>
+      <div class="credencial" aria-hidden="true">
+        <div class="credencial-fondo"></div>
+        <div class="credencial-frente">
+          <span class="chip"></span>
+          <div class="credencial-datos">
+            <span class="avatar">AR</span>
+            <div>
+              <strong>Ana Rojas</strong>
+              <span class="rut">12.345.678-5</span>
+              <span class="sello">✓ RUT válido</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Diapositiva>
+
+  <!-- 2 ─ Punto de partida -->
+  <Diapositiva
+    numero={2}
+    total={TOTAL}
+    seccion="Punto de partida"
+    titulo="El código funcionaba, pero no era confiable ni seguro"
+    bajada="Revisión del 9 de noviembre: 27 tests unitarios en verde, el lint con 22 errores y sin frontend. Estos eran los problemas más graves."
+  >
+    <div class="rejilla tres">
+      <article class="tarjeta magenta">
+        <h3>El RUT no validaba el dígito verificador</h3>
+        <p>Se guardaban RUT inexistentes. Tampoco era único: un duplicado respondía 500.</p>
+      </article>
+      <article class="tarjeta magenta">
+        <h3>La API no pedía autenticación</h3>
+        <p>Cualquiera podía listar, editar o borrar usuarios, y el RUT es un dato personal.</p>
+      </article>
+      <article class="tarjeta magenta">
+        <h3><code>synchronize</code> podía alterar tablas</h3>
+        <p>Quedaba activo si faltaba <code>NODE_ENV</code>. Al probarlo, proponía borrar la columna <code>rut</code>.</p>
+      </article>
+      <article class="tarjeta magenta">
+        <h3>El logo podía botar el servidor</h3>
+        <p>Se leía de una ruta relativa al directorio de trabajo, sin manejar el error del stream.</p>
+      </article>
+      <article class="tarjeta magenta">
+        <h3>Si Redis caía, no se veía el logo</h3>
+        <p>Una dependencia secundaria tumbaba la función principal.</p>
+      </article>
+      <article class="tarjeta magenta">
+        <h3>CORS aceptaba cualquier origen</h3>
+        <p>Por defecto, y también en la configuración de ejemplo.</p>
+      </article>
+    </div>
+  </Diapositiva>
+
+  <!-- 3 ─ Enfoque -->
+  <Diapositiva
+    numero={3}
+    total={TOTAL}
+    seccion="Enfoque"
+    titulo="Primero, lo que podía perder datos o exponerlos; después, el producto"
+  >
+    <div class="enfoque">
+      <ol class="etapas-enfoque">
+        <li>
+          <h3>Datos y seguridad</h3>
+          <p>RUT válido y único, migraciones, autenticación y CORS.</p>
+        </li>
+        <li>
+          <h3>Operación</h3>
+          <p>Configuración validada, Redis como dependencia secundaria, errores consistentes y <code>/health</code>.</p>
+        </li>
+        <li>
+          <h3>Calidad</h3>
+          <p>TypeScript estricto, lint en cada commit y tests e2e contra bases de datos reales.</p>
+        </li>
+        <li>
+          <h3>Producto</h3>
+          <p>Frontend en React, Docker completo y documentación.</p>
+        </li>
+      </ol>
+      <div class="cifras-enfoque">
+        <p><span class="cifra">80</span> commits atómicos; cada mensaje explica el porqué del cambio.</p>
+        <p><span class="cifra">47</span> mejoras hechas y 13 propuestas, en <code>docs/MEJORAS.md</code>.</p>
+      </div>
+    </div>
+  </Diapositiva>
+
+  <!-- 4 ─ Antes y ahora -->
+  <Diapositiva numero={4} total={TOTAL} seccion="Resultado" titulo="Antes y ahora">
+    <table class="comparacion">
+      <thead>
+        <tr>
+          <th scope="col"><span class="sr-only">Tema</span></th>
+          <th scope="col">Antes</th>
+          <th scope="col">Ahora</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          antesYAhora.map((fila) => (
+            <tr>
+              <th scope="row">{fila.tema}</th>
+              <td set:html={codigo(fila.antes)} />
+              <td set:html={codigo(fila.ahora)} />
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </Diapositiva>
+
+  <!-- 5 ─ Arquitectura -->
+  <Diapositiva
+    numero={5}
+    total={TOTAL}
+    seccion="Arquitectura"
+    titulo="El navegador ve un solo origen, y la API es privada por defecto"
+  >
+    <div class="con-notas">
+      <Arquitectura />
+      <ul class="notas">
+        <li>nginx sirve el frontend y reenvía <code>/api/</code>: no hay CORS de por medio. En desarrollo, Vite cumple ese papel.</li>
+        <li>Solo <code>auth</code>, <code>logo</code> y <code>health</code> son públicas; el resto exige un JWT.</li>
+        <li>Redis es secundario: si cae, la API sigue atendiendo y <code>/health</code> responde <code>degraded</code>.</li>
+      </ul>
+    </div>
+  </Diapositiva>
+
+  <!-- 6 ─ Diagrama de arquitectura (README) -->
+  <DiagramaReadme numero={6} total={TOTAL} diagrama="1" />
+
+  <!-- 7 ─ Una petición -->
+  <Diapositiva
+    numero={7}
+    total={TOTAL}
+    seccion="Arquitectura"
+    titulo="Cada petición pasa por las mismas capas, y todo error sale con el mismo formato"
+  >
+    <Peticion />
+  </Diapositiva>
+
+  <!-- 8 ─ Flujo de una petición (README) -->
+  <DiagramaReadme numero={8} total={TOTAL} diagrama="2.1" />
+
+  <!-- 9 ─ RUT -->
+  <Diapositiva
+    numero={9}
+    total={TOTAL}
+    seccion="Datos"
+    titulo="La regla del RUT se escribe una vez y se usa en todas partes"
+  >
+    <div class="rejilla dos alineado">
+      <ul class="lista">
+        <li>Un value object <code>Rut</code> con el módulo 11, en el dominio del backend.</li>
+        <li>El DTO lo valida con <code>@IsRut()</code> y guarda una sola forma: <code>12345678-K</code>.</li>
+        <li><code>UNIQUE</code> en la base de datos: un duplicado responde 409, no 500.</li>
+        <li>El frontend importa el mismo <code>Rut</code> (alias <code>@dominio</code>) y avisa qué dígito corresponde antes de enviar.</li>
+      </ul>
+      <pre class="codigo"><span class="comentario">// El mismo código en la API y en el navegador</span>
+Rut.esValido('12.345.678-5')  <span class="exito">// true</span>
+Rut.esValido('12.345.678-9')  <span class="falla">// false</span>
+Rut.calcularDv('12345678')    <span class="comentario">// '5'</span>
+
+Rut.crear('10.000.013-k').toString()
+<span class="comentario">// '10000013-K': así se guarda</span></pre>
+    </div>
+  </Diapositiva>
+
+  <!-- 10 ─ Flujo de registro (README) -->
+  <DiagramaReadme numero={10} total={TOTAL} diagrama="2.2" />
+
+  <!-- 11 ─ Concurrencia -->
+  <Diapositiva
+    numero={11}
+    total={TOTAL}
+    seccion="Datos"
+    titulo="Si dos personas editan al mismo usuario, nadie pisa el cambio del otro"
+    bajada="Cada usuario tiene una versión. La API la entrega como ETag y el frontend la devuelve en If-Match al guardar."
+  >
+    <div class="rejilla dos-uno">
+      <Concurrencia />
+      <div class="apoyo">
+        <pre class="codigo">UPDATE usuario SET …
+WHERE id = :id
+  AND version IN (3)</pre>
+        <p>La versión se compara dentro del mismo <code>UPDATE</code>, no en una lectura previa. Un test e2e lo prueba con dos <code>PATCH</code> en paralelo.</p>
+      </div>
+    </div>
+  </Diapositiva>
+
+  <!-- 12 ─ Flujo de edición concurrente (README) -->
+  <DiagramaReadme numero={12} total={TOTAL} diagrama="2.3" />
+
+  <!-- 13 ─ Seguridad -->
+  <Diapositiva
+    numero={13}
+    total={TOTAL}
+    seccion="Seguridad"
+    titulo="La API es privada por defecto y no filtra datos personales"
+  >
+    <div class="rejilla tres">
+      <article class="tarjeta">
+        <h3>JWT con un guard global</h3>
+        <p>Toda ruta exige token, salvo las marcadas con <code>@Public()</code>.</p>
+      </article>
+      <article class="tarjeta">
+        <h3>Contraseña con hash scrypt</h3>
+        <p>El administrador se configura con un hash; la contraseña nunca está en el repositorio.</p>
+      </article>
+      <article class="tarjeta">
+        <h3>Límite de peticiones por IP</h3>
+        <p>100 por minuto en general, 10 para el login y 30 para el logo.</p>
+      </article>
+      <article class="tarjeta">
+        <h3>CORS con lista de orígenes</h3>
+        <p>Los orígenes vienen de la configuración, y <code>*</code> está prohibido en producción.</p>
+      </article>
+      <article class="tarjeta">
+        <h3>Logs sin datos personales</h3>
+        <p>El token, lo buscado y cualquier RUT se enmascaran; cada petición lleva su id.</p>
+      </article>
+      <article class="tarjeta">
+        <h3>Contenedores endurecidos</h3>
+        <p>Sin root, de solo lectura y sin capacidades de Linux; los secretos vienen del <code>.env</code>.</p>
+      </article>
+    </div>
+  </Diapositiva>
+
+  <!-- 14 ─ Operación -->
+  <Diapositiva
+    numero={14}
+    total={TOTAL}
+    seccion="Operación"
+    titulo="Una dependencia caída degrada el servicio, no lo tumba"
+  >
+    <div class="rejilla dos alineado">
+      <ul class="lista">
+        <li>Con Redis caído, el logo se sigue sirviendo, sin el conteo, y cada petición responde en 2 ms en vez de esperar 10 s.</li>
+        <li>El logo se carga en memoria al iniciar: servirlo ya no puede fallar.</li>
+        <li>La configuración se valida al arrancar: si falta una variable, la API no parte con valores inventados.</li>
+        <li>Un error al arrancar se registra y el proceso termina con código 1.</li>
+      </ul>
+      <pre class="codigo"><span class="comentario">// Redis no está: la API sigue atendiendo</span>
+GET /health  <span class="exito">→ 200</span>
+&#123; "status": "degraded",
+  "database": "up", "redis": "down" &#125;
+
+<span class="comentario">// Sin base de datos, no puede atender</span>
+GET /health  <span class="falla">→ 503</span>
+&#123; "status": "error", … &#125;</pre>
+    </div>
+  </Diapositiva>
+
+  <!-- 15 ─ Flujo del logo y el contador (README) -->
+  <DiagramaReadme numero={15} total={TOTAL} diagrama="2.4" />
+
+  <!-- 16 ─ API -->
+  <Diapositiva
+    numero={16}
+    total={TOTAL}
+    seccion="API"
+    titulo="Una API REST que se puede usar sin leer el código"
+  >
+    <div class="rejilla dos alineado">
+      <ul class="lista">
+        <li>Rutas versionadas bajo <code>/api/v1</code>.</li>
+        <li>Paginación, búsqueda sin tildes o por RUT, y orden, todo en el servidor.</li>
+        <li>201 con <code>Location</code>; <code>ETag</code> e <code>If-Match</code> para editar.</li>
+        <li>DTOs de respuesta: el contrato no depende del esquema de la base.</li>
+        <li>OpenAPI en <code>/docs</code>, y el frontend genera sus tipos desde ahí.</li>
+      </ul>
+      <pre class="codigo">GET /api/v1/usuarios?buscar=perez&amp;orden=-creadoEn
+
+<span class="exito">200 OK</span>
+&#123;
+  "data": [&#123;
+    "nombre": "Juan Pérez",
+    "rut": "12345678-5",
+    "version": 3, …
+  &#125;],
+  "meta": &#123; "page": 1, "limit": 20,
+            "total": 1, "totalPages": 1 &#125;
+&#125;</pre>
+    </div>
+  </Diapositiva>
+
+  <!-- 17 ─ Frontend -->
+  <Diapositiva
+    numero={17}
+    total={TOTAL}
+    seccion="Frontend"
+    titulo="Un frontend que cierra el ciclo, con la marca de Uno"
+  >
+    <div class="frontend">
+      <figure class="captura principal">
+        <img src="/capturas/tabla-detalle.png" alt="Tabla de usuarios con la ventana de detalle de una persona abierta" width="1440" height="900" />
+      </figure>
+      <div class="frontend-lado">
+        <figure class="captura">
+          <img src="/capturas/inicio.png" alt="Portada del sitio, con el validador de RUT en vivo" width="1440" height="900" />
+        </figure>
+        <ul class="lista">
+          <li>React 19, Vite y TypeScript, con tipos generados desde OpenAPI.</li>
+          <li>Inicio, login y panel con rutas que se pueden enlazar y recargar.</li>
+          <li>Detalle y edición en una ventana <code>&lt;dialog&gt;</code> nativa.</li>
+          <li>Sin violaciones WCAG AA detectables por axe, en un navegador real.</li>
+        </ul>
+      </div>
+    </div>
+  </Diapositiva>
+
+  <!-- 18 ─ La consola: usuarios -->
+  <Diapositiva numero={18} total={TOTAL} seccion="Frontend" titulo="Usuarios">
+    <div class="galeria">
+      <figure class="pantalla" style="--ancho-pantalla: 36cqw">
+        <div class="captura">
+          <img src="/capturas/registro-dv.png" alt="Formulario de registro con el RUT 12.345.678-9: avisa que el dígito verificador debería ser 5" width="1024" height="888" />
+        </div>
+        <figcaption>Dígito verificador incorrecto, sin llamar a la API</figcaption>
+      </figure>
+      <figure class="pantalla" style="--ancho-pantalla: 30cqw">
+        <div class="captura">
+          <img src="/capturas/edicion-412.png" alt="Ventana de edición con el aviso de que otra persona modificó al usuario mientras se editaba" width="1216" height="1300" />
+        </div>
+        <figcaption>Otra persona guardó antes: 412</figcaption>
+      </figure>
+    </div>
+  </Diapositiva>
+
+  <!-- 19 ─ La consola: cuentas y roles -->
+  <Diapositiva numero={19} total={TOTAL} seccion="Frontend" titulo="Cuentas y roles">
+    <div class="galeria">
+      <figure class="pantalla" style="--ancho-pantalla: 28cqw">
+        <div class="captura">
+          <img src="/capturas/crear-cuenta.png" alt="Formulario para crear una cuenta, con una contraseña generada visible" width="1024" height="1106" />
+        </div>
+        <figcaption>El admin crea la cuenta</figcaption>
+      </figure>
+      <div class="pantallas-apiladas">
+        <figure class="pantalla" style="--ancho-pantalla: 44cqw">
+          <div class="captura">
+            <img src="/capturas/cuentas.png" alt="Tabla de cuentas creadas, todas con rol operador" width="1576" height="904" />
+          </div>
+          <figcaption>Tabla de cuentas, solo para el admin</figcaption>
+        </figure>
+        <figure class="pantalla" style="--ancho-pantalla: 44cqw">
+          <div class="captura">
+            <img src="/capturas/operador.png" alt="Vista del operador: la barra lateral no muestra Cuentas y la sección explica que es del administrador" width="1904" height="618" />
+          </div>
+          <figcaption>El operador no ve Cuentas; la API le responde 403</figcaption>
+        </figure>
+      </div>
+    </div>
+  </Diapositiva>
+
+  <!-- 20 ─ Tests -->
+  <Diapositiva
+    numero={20}
+    total={TOTAL}
+    seccion="Calidad"
+    titulo="Cada capa tiene tests que fallan antes que la app"
+  >
+    <div class="tests">
+      <div class="rejilla cuatro">
+        <div class="prueba">
+          <span class="cifra">257</span>
+          <p><strong>Unitarios del backend</strong> con Jest.</p>
+        </div>
+        <div class="prueba">
+          <span class="cifra">36</span>
+          <p><strong>e2e del backend</strong> contra Postgres y Redis desechables (Testcontainers).</p>
+        </div>
+        <div class="prueba">
+          <span class="cifra">140</span>
+          <p><strong>Del frontend</strong> con Vitest, Testing Library y una API falsa (MSW).</p>
+        </div>
+        <div class="prueba">
+          <span class="cifra">15</span>
+          <p><strong>e2e en Chromium</strong> contra el stack completo, con axe (Playwright).</p>
+        </div>
+      </div>
+      <p class="pie-tests">
+        TypeScript estricto, ESLint, oxlint y Prettier en un pre-commit. El lint pasó de 22 errores a 0.
+      </p>
+    </div>
+  </Diapositiva>
+
+  <!-- 21 ─ Entorno -->
+  <Diapositiva
+    numero={21}
+    total={TOTAL}
+    seccion="Entorno"
+    titulo="Levantar todo el proyecto es un comando"
+  >
+    <div class="rejilla dos alineado">
+      <pre class="codigo grande"><span class="comentario"># Desarrollo: Postgres, Redis,</span>
+<span class="comentario"># migraciones, datos de demo,</span>
+<span class="comentario"># API y frontend</span>
+pnpm dev --seed
+
+<span class="comentario"># El stack de producción, con nginx</span>
+docker compose up</pre>
+      <ul class="lista">
+        <li>Dockerfiles multi-etapa para la API y el frontend.</li>
+        <li>Las migraciones corren en su propio contenedor antes que la API, con healthchecks.</li>
+        <li><code>.env.example</code> documenta cada variable, y el compose no arranca si falta un secreto.</li>
+      </ul>
+    </div>
+  </Diapositiva>
+
+  <!-- 22 ─ Próximos pasos -->
+  <Diapositiva
+    numero={22}
+    total={TOTAL}
+    seccion="Próximos pasos"
+    titulo="Lo que haría a continuación"
+  >
+    <div class="rejilla tres amplia">
+      <article class="tarjeta cian">
+        <h3>Datos personales</h3>
+        <p>Borrado lógico y auditoría de quién creó, cambió o borró a cada usuario. Escaneo de dependencias.</p>
+      </article>
+      <article class="tarjeta cian">
+        <h3>Operación y producto</h3>
+        <p>Métricas con Prometheus u OpenTelemetry. Visitantes únicos con HyperLogLog, visitas por día y el contador en tiempo real.</p>
+      </article>
+      <article class="tarjeta cian">
+        <h3>Calidad</h3>
+        <p>Umbral de cobertura, tests basados en propiedades para el <code>Rut</code> y una prueba de carga del contador. ADR y versiones de herramientas fijadas.</p>
+      </article>
+    </div>
+  </Diapositiva>
+
+  <!-- 23 ─ Cierre -->
+  <Diapositiva numero={23} total={TOTAL} clase="portada cierre">
+    <div class="cierre-contenido">
+      <h2 id="titulo-16">Gracias. ¿Preguntas?</h2>
+      <ul class="donde">
+        <li><strong>README</strong>: cómo levantarlo y los diagramas de arquitectura y de flujo.</li>
+        <li><strong>docs/MEJORAS.md</strong>: las 60 mejoras, con qué, por qué y sus commits.</li>
+        <li><strong>Pull Requests #1 y #2</strong>: los 80 commits, uno por decisión.</li>
+      </ul>
+    </div>
+  </Diapositiva>
+
+  <VisorDiagramas />
+</Presentacion>
+
+<style>
+  /* ── Portada y cierre (el fondo con degradado está en global.css) ─── */
+
+  .portada-contenido {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    align-items: center;
+    gap: 4cqw;
+    height: 100%;
+  }
+
+  .contexto {
+    font-size: 1.8cqw;
+    font-weight: 600;
+  }
+
+  .portada-contenido h1 {
+    max-width: 14ch;
+    margin-top: 1.4cqw;
+    font-size: 5.6cqw;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .lema {
+    margin-top: 1.8cqw;
+    font-size: 2.3cqw;
+    font-weight: 500;
+    text-wrap: balance;
+  }
+
+  .autor {
+    margin-top: 4cqw;
+    font-size: 1.9cqw;
+    font-weight: 700;
+  }
+
+  .autor span {
+    font-weight: 500;
+  }
+
+  .credencial {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.5;
+  }
+
+  .credencial-fondo {
+    position: absolute;
+    inset: 8% -6% -4% 10%;
+    background: rgb(255 255 255 / 0.18);
+    border: 0.12cqw solid rgb(255 255 255 / 0.4);
+    border-radius: 1.4cqw;
+    transform: rotate(6deg);
+  }
+
+  .credencial-frente {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: space-between;
+    padding: 2.4cqw;
+    color: var(--tinta);
+    background: var(--hoja);
+    border-radius: 1.4cqw;
+    box-shadow: 0 2cqw 4cqw rgb(60 10 60 / 0.3);
+    transform: rotate(-4deg);
+  }
+
+  .chip {
+    width: 4cqw;
+    height: 2.8cqw;
+    background: linear-gradient(135deg, #fcd75a, #f2b632);
+    border-radius: 0.5cqw;
+  }
+
+  .credencial-datos {
+    display: flex;
+    align-items: center;
+    gap: 1.8cqw;
+  }
+
+  .credencial-datos > div {
+    display: grid;
+    gap: 0.3cqw;
+  }
+
+  .avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 6.5cqw;
+    height: 6.5cqw;
+    font-size: 2cqw;
+    font-weight: 700;
+    color: var(--hoja);
+    background: var(--degradado-marca);
+    border-radius: 50%;
+  }
+
+  .credencial strong {
+    font-size: 1.7cqw;
+  }
+
+  .rut {
+    font-size: 2.4cqw;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sello {
+    justify-self: start;
+    padding: 0.3cqw 1cqw;
+    font-size: 1.1cqw;
+    font-weight: 600;
+    color: var(--ok);
+    background: var(--ok-tenue);
+    border-radius: 999px;
+  }
+
+  .cierre-contenido {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    align-content: center;
+    gap: 3cqw;
+    height: 100%;
+  }
+
+  .cierre-contenido h2 {
+    font-size: 5.6cqw;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .donde {
+    display: grid;
+    gap: 1.2cqw;
+    max-width: 60ch;
+    padding: 0;
+    font-size: 2.1cqw;
+    list-style: none;
+  }
+
+  /* ── Enfoque ──────────────────────────────────────────────────────── */
+
+  .enfoque {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 4cqw;
+    align-items: start;
+  }
+
+  .etapas-enfoque {
+    display: grid;
+    gap: 1.4cqw;
+    padding: 0;
+    list-style: none;
+    counter-reset: etapa;
+  }
+
+  /* Es una secuencia: el número dice el orden en que se abordó. */
+  .etapas-enfoque li {
+    position: relative;
+    padding-left: 5cqw;
+    counter-increment: etapa;
+  }
+
+  .etapas-enfoque li::before {
+    content: counter(etapa);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 3.4cqw;
+    height: 3.4cqw;
+    font-weight: 700;
+    color: var(--hoja);
+    background: var(--marca-magenta-texto);
+    border-radius: 50%;
+  }
+
+  .etapas-enfoque h3 {
+    font-size: 2cqw;
+  }
+
+  .etapas-enfoque p {
+    margin-top: 0.3cqw;
+    color: var(--tinta-suave);
+  }
+
+  .cifras-enfoque {
+    display: grid;
+    gap: 2cqw;
+    padding: 2.4cqw;
+    background: var(--marca-morado-tenue);
+    border-radius: 1cqw;
+  }
+
+  .cifras-enfoque .cifra {
+    display: block;
+    margin-bottom: 0.4cqw;
+    color: var(--marca-morado);
+  }
+
+  /* ── Antes y ahora ────────────────────────────────────────────────── */
+
+  .comparacion {
+    width: 100%;
+    font-size: 1.65cqw;
+    border-collapse: collapse;
+  }
+
+  .comparacion th,
+  .comparacion td {
+    padding: 1cqw 1.4cqw;
+    text-align: left;
+    border-bottom: 1px solid var(--borde);
+  }
+
+  .comparacion thead th {
+    font-size: 1.35cqw;
+    color: var(--tinta-suave);
+  }
+
+  .comparacion tbody th {
+    width: 16%;
+    font-weight: 700;
+  }
+
+  .comparacion td:nth-child(2) {
+    width: 36%;
+    color: var(--tinta-suave);
+  }
+
+  .comparacion td:nth-child(3) {
+    font-weight: 600;
+    color: var(--marca-morado);
+  }
+
+  /* ── Arquitectura ─────────────────────────────────────────────────── */
+
+  .con-notas {
+    display: grid;
+    gap: 2.4cqw;
+  }
+
+  .notas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2cqw;
+    padding: 1.8cqw 0 0;
+    font-size: 1.5cqw;
+    color: var(--tinta-suave);
+    list-style: none;
+    border-top: 1px solid var(--borde);
+  }
+
+  /* ── Columnas con código ──────────────────────────────────────────── */
+
+  .alineado {
+    align-items: center;
+    gap: 3.5cqw;
+  }
+
+  .dos-uno {
+    grid-template-columns: 1.7fr 1fr;
+    gap: 2.4cqw;
+    align-items: start;
+  }
+
+  .apoyo {
+    display: grid;
+    gap: 1.6cqw;
+    font-size: 1.55cqw;
+    color: var(--tinta-suave);
+  }
+
+  /* ── Frontend ─────────────────────────────────────────────────────── */
+
+  .frontend {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 2.4cqw;
+    align-items: start;
+  }
+
+  .frontend-lado {
+    display: grid;
+    gap: 1.2cqw;
+  }
+
+  .frontend-lado .lista {
+    gap: 0.5cqw;
+    font-size: 1.4cqw;
+  }
+
+  .captura {
+    overflow: hidden;
+    border: 1px solid var(--borde);
+    border-radius: 0.8cqw;
+    box-shadow: 0 0.6cqw 2cqw rgb(36 36 36 / 0.14);
+  }
+
+  .captura img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ── Galerías de capturas ─────────────────────────────────────────── */
+
+  .galeria {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 3cqw;
+  }
+
+  .pantallas-apiladas {
+    display: grid;
+    gap: 1.6cqw;
+  }
+
+  .pantalla {
+    display: grid;
+    gap: 0.8cqw;
+    width: var(--ancho-pantalla);
+  }
+
+  .pantalla figcaption {
+    font-size: 1.35cqw;
+    color: var(--tinta-suave);
+  }
+
+  /* ── Tests ────────────────────────────────────────────────────────── */
+
+  .tests {
+    display: grid;
+    gap: 3cqw;
+  }
+
+  .cuatro {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .prueba {
+    display: grid;
+    align-content: start;
+    gap: 1cqw;
+    padding: 2cqw;
+    background: var(--papel);
+    border-top: 0.5cqw solid var(--marca-morado);
+    border-radius: 0.8cqw;
+  }
+
+  .prueba .cifra {
+    font-size: 5.2cqw;
+    color: var(--marca-morado);
+  }
+
+  .prueba p {
+    font-size: 1.6cqw;
+    color: var(--tinta-suave);
+  }
+
+  .prueba strong {
+    color: var(--tinta);
+  }
+
+  .pie-tests {
+    font-size: 1.85cqw;
+  }
+</style>

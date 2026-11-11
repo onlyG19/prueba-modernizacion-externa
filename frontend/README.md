@@ -159,3 +159,32 @@ Decisiones principales:
   Requiere Postgres y Redis en ejecución y el navegador de Playwright
   (`pnpm exec playwright install chromium --only-shell`). Compila el backend en
   `dist/`.
+
+### Qué prueban los e2e
+
+Lo que solo se ve con el stack real: el contrato entre la interfaz y la API,
+las restricciones de Postgres y los permisos de cada rol. El comportamiento
+fino de la interfaz (foco, validaciones locales, estados vacíos) ya lo cubren
+los tests de Vitest.
+
+| Archivo | Qué prueba |
+| --- | --- |
+| `e2e/usuarios.spec.ts` | Ciclo completo (registrar, ver, editar, buscar, recargar, eliminar); RUT único al registrar y al editar (409); paginación y orden resueltos por la API; dos personas editando a la vez (412 con `If-Match`, 404 si otra lo eliminó); un operador gestionando usuarios |
+| `e2e/cuentas.spec.ts` | El admin crea una cuenta con la que se puede ingresar, y el operador no ve ni crea cuentas (403); usuario repetido sin importar mayúsculas (409); búsqueda y orden de la tabla |
+| `e2e/sesion.spec.ts` | Enlace al panel sin sesión → login con un intento fallido → vuelve a la página pedida; cerrar sesión; un JWT manipulado para hacerse admin lo rechaza la API (401) |
+| `e2e/accesibilidad.spec.ts` | axe-core en el navegador real, contraste incluido, en todas las páginas |
+
+Cómo están armados (en `e2e/apoyo/`):
+
+- **Sesión sin pasar por el login**: la API admite 10 logins por minuto por IP y
+  la suite dura menos que eso. Una fixture inicia sesión por la API una vez por
+  worker y rol, y la deja en `sessionStorage` antes de que cargue la app. El
+  formulario de login se usa solo donde el login es lo que se prueba. Se cambia
+  con `test.use({ sesion: 'operador' })` o `test.use({ sesion: null })`.
+- **Datos por la API, acciones por la interfaz**: cada test crea lo que necesita
+  con la fixture `api` y prueba en el navegador lo que importa.
+- **Datos únicos por test** (`etiquetaUnica()`, `rutAlAzar()`): la base solo se
+  vacía al empezar, así que los tests no dependen del orden y se pueden repetir
+  (`--repeat-each`).
+- **Dos navegadores a la vez**: la fixture `otraPersona` abre otro contexto con
+  su propia sesión, para probar la concurrencia optimista de punta a punta.

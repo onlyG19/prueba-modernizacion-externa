@@ -1,0 +1,132 @@
+---
+import '@fontsource-variable/montserrat/wght.css';
+import '../styles/global.css';
+
+interface Props {
+  titulo: string;
+  descripcion: string;
+}
+
+const { titulo, descripcion } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es-CL">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={descripcion} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{titulo}</title>
+    <!-- Antes de pintar: con JavaScript se muestra una diapositiva a la vez. -->
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body>
+    <main class="mazo" aria-label={titulo}>
+      <slot />
+    </main>
+
+    <nav class="controles" aria-label="Diapositivas">
+      <button type="button" data-ir="anterior" aria-label="Diapositiva anterior">‹</button>
+      <button type="button" data-ir="siguiente" aria-label="Diapositiva siguiente">›</button>
+      <button type="button" data-ir="pantalla" aria-label="Pantalla completa">⤢</button>
+    </nav>
+    <div class="progreso" aria-hidden="true"></div>
+    <p class="sr-only" aria-live="polite" data-anuncio></p>
+
+    <script>
+      /*
+       * Navegación: flechas, Av Pág / Re Pág, espacio, Inicio / Fin y gestos.
+       * La diapositiva actual queda en la URL (#5): se puede enlazar o
+       * recargar sin perder el lugar. F alterna la pantalla completa.
+       */
+      const diapositivas = [
+        ...document.querySelectorAll<HTMLElement>('.diapositiva'),
+      ];
+      const progreso = document.querySelector<HTMLElement>('.progreso');
+      const anuncio = document.querySelector<HTMLElement>('[data-anuncio]');
+      const total = diapositivas.length;
+      let actual = 0;
+
+      function numeroDesdeUrl(): number {
+        const n = Number.parseInt(location.hash.slice(1), 10);
+        return Number.isInteger(n) && n >= 1 && n <= total ? n - 1 : 0;
+      }
+
+      function mostrar(indice: number) {
+        actual = Math.min(Math.max(indice, 0), total - 1);
+        diapositivas.forEach((d, i) => d.classList.toggle('actual', i === actual));
+        progreso?.style.setProperty('--avance', String((actual + 1) / total));
+        const titulo = diapositivas[actual].querySelector('h1, h2')?.textContent;
+        if (anuncio) {
+          anuncio.textContent = `Diapositiva ${actual + 1} de ${total}${titulo ? `: ${titulo}` : ''}`;
+        }
+        if (location.hash !== `#${actual + 1}`) {
+          history.replaceState(null, '', `#${actual + 1}`);
+        }
+      }
+
+      function pantallaCompleta() {
+        if (document.fullscreenElement) {
+          void document.exitFullscreen();
+        } else {
+          void document.documentElement.requestFullscreen();
+        }
+      }
+
+      const SIGUIENTE = new Set(['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'n']);
+      const ANTERIOR = new Set(['ArrowLeft', 'ArrowUp', 'PageUp', 'p']);
+
+      /** Con una ventana abierta (el visor de diagramas), el mazo no se mueve. */
+      const hayVentanaAbierta = () => document.querySelector('dialog[open]') !== null;
+
+      document.addEventListener('keydown', (evento) => {
+        if (evento.altKey || evento.ctrlKey || evento.metaKey || hayVentanaAbierta()) {
+          return;
+        }
+        // En un botón, Enter y espacio lo activan: no se adelanta la diapositiva.
+        if (evento.target instanceof HTMLButtonElement && evento.key === ' ') {
+          return;
+        }
+        if (SIGUIENTE.has(evento.key)) {
+          mostrar(actual + 1);
+        } else if (ANTERIOR.has(evento.key)) {
+          mostrar(actual - 1);
+        } else if (evento.key === 'Home') {
+          mostrar(0);
+        } else if (evento.key === 'End') {
+          mostrar(total - 1);
+        } else if (evento.key === 'f') {
+          pantallaCompleta();
+        } else {
+          return;
+        }
+        evento.preventDefault();
+      });
+
+      document.querySelector('.controles')?.addEventListener('click', (evento) => {
+        const boton = (evento.target as HTMLElement).closest<HTMLButtonElement>('[data-ir]');
+        if (boton?.dataset.ir === 'siguiente') mostrar(actual + 1);
+        if (boton?.dataset.ir === 'anterior') mostrar(actual - 1);
+        if (boton?.dataset.ir === 'pantalla') pantallaCompleta();
+      });
+
+      // Deslizar en pantallas táctiles.
+      let inicioX: number | null = null;
+      document.addEventListener('touchstart', (e) => (inicioX = e.touches[0].clientX), {
+        passive: true,
+      });
+      document.addEventListener('touchend', (e) => {
+        if (inicioX === null || hayVentanaAbierta()) return;
+        const delta = e.changedTouches[0].clientX - inicioX;
+        if (Math.abs(delta) > 50) mostrar(actual + (delta < 0 ? 1 : -1));
+        inicioX = null;
+      });
+
+      window.addEventListener('hashchange', () => mostrar(numeroDesdeUrl()));
+      mostrar(numeroDesdeUrl());
+    </script>
+  </body>
+</html>

@@ -1,0 +1,161 @@
+---
+/** Diagrama de arquitectura: navegador → nginx → API por capas → datos. */
+const flecha = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h16m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+---
+
+<figure class="arquitectura" aria-label="Diagrama de arquitectura">
+  <div class="columna">
+    <p class="rotulo">Navegador</p>
+    <div class="caja">
+      <strong>React 19</strong>
+      <span>Vite y TypeScript</span>
+    </div>
+  </div>
+
+  <div class="flecha" set:html={flecha} />
+
+  <div class="columna">
+    <p class="rotulo">Contenedor web</p>
+    <div class="caja">
+      <strong>nginx sin privilegios</strong>
+      <span>Sirve el frontend</span>
+      <span>Reenvía <code>/api/</code> a la API</span>
+    </div>
+  </div>
+
+  <div class="flecha" set:html={flecha} />
+
+  <div class="columna ancha">
+    <p class="rotulo">Contenedor api: NestJS 11</p>
+    <div class="api">
+      <div class="capa">Capa HTTP: helmet, CORS, rutas <code>/api/v1</code>, validación y errores como Problem Details</div>
+      <div class="capa">Guards globales: límite por IP y JWT</div>
+      <div class="modulos">
+        <span>auth</span>
+        <span class="usa-pg">usuarios</span>
+        <span class="usa-redis">logo</span>
+        <span>health</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flecha" set:html={flecha} />
+
+  <div class="columna">
+    <p class="rotulo">Datos</p>
+    <div class="base pg">
+      <strong>PostgreSQL 16</strong>
+      <span>Usuarios: RUT único, id UUID y versión</span>
+    </div>
+    <div class="base redis">
+      <strong>Redis 7</strong>
+      <span>Contador de visitas, con AOF</span>
+    </div>
+    <p class="nota">Las migraciones corren en su propio contenedor, antes que la API.</p>
+  </div>
+</figure>
+
+<style>
+  .arquitectura {
+    display: grid;
+    grid-template-columns: 1fr auto 1.25fr auto 2.3fr auto 1.45fr;
+    align-items: center;
+    gap: 1cqw;
+  }
+
+  .columna {
+    display: grid;
+    gap: 1cqw;
+  }
+
+  .rotulo {
+    font-size: 1.3cqw;
+    font-weight: 600;
+    color: var(--tinta-suave);
+  }
+
+  .caja,
+  .base {
+    display: grid;
+    gap: 0.4cqw;
+    padding: 1.4cqw 1.5cqw;
+    font-size: 1.4cqw;
+    line-height: 1.35;
+    background: var(--hoja);
+    border: 0.12cqw solid var(--borde);
+    border-radius: 0.8cqw;
+  }
+
+  .caja strong,
+  .base strong {
+    font-size: 1.65cqw;
+  }
+
+  .caja span,
+  .base span {
+    color: var(--tinta-suave);
+  }
+
+  .flecha {
+    width: 2.8cqw;
+    color: var(--marca-magenta);
+  }
+
+  .api {
+    display: grid;
+    gap: 0.7cqw;
+    padding: 1.1cqw;
+    background: var(--marca-morado-tenue);
+    border-radius: 1cqw;
+  }
+
+  .capa {
+    padding: 1cqw 1.2cqw;
+    font-size: 1.4cqw;
+    line-height: 1.35;
+    background: var(--hoja);
+    border-left: 0.4cqw solid var(--marca-morado);
+    border-radius: 0.5cqw;
+  }
+
+  .modulos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6cqw;
+  }
+
+  .modulos span {
+    padding: 1cqw 0.4cqw;
+    font-size: 1.45cqw;
+    font-weight: 700;
+    text-align: center;
+    color: var(--hoja);
+    background: var(--marca-morado);
+    border-radius: 0.5cqw;
+  }
+
+  /* El color dice qué módulo usa qué base de datos. */
+  .modulos .usa-pg,
+  .base.pg {
+    --color-dato: var(--accion);
+  }
+
+  .modulos .usa-redis,
+  .base.redis {
+    --color-dato: var(--marca-magenta-texto);
+  }
+
+  .modulos .usa-pg,
+  .modulos .usa-redis {
+    background: var(--color-dato);
+  }
+
+  .base {
+    border-left: 0.5cqw solid var(--color-dato);
+  }
+
+  .nota {
+    font-size: 1.3cqw;
+    color: var(--tinta-suave);
+  }
+</style>

@@ -1,6 +1,6 @@
 # Mejoras
 
-Respuesta al punto 3 de la prueba: 46 mejoras hechas y 13 pendientes. Las tareas marcadas llevan los commits donde se ve el cambio (`git show <hash>`). Las que no están marcadas son lo que haría a continuación.
+Respuesta al punto 3 de la prueba: 47 mejoras hechas y 13 pendientes. Las tareas marcadas llevan los commits donde se ve el cambio (`git show <hash>`). Las que no están marcadas son lo que haría a continuación.
 
 Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unitarios pasaban, el lint fallaba con 22 errores, la API no tenía autenticación y no había frontend. Se priorizó por riesgo: primero los datos y la seguridad, después la operación, la calidad y el producto.
 
@@ -159,8 +159,8 @@ Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unita
 - [x] **Tests e2e reales en el backend.** `d50317b` `443c5e8` `586e0c9`
   - **Qué:** e2e de `/usuarios`, `/auth`, `/cuentas`, `/logo` y `/health` contra Postgres y Redis desechables (Testcontainers). Usan la misma configuración HTTP que producción (`configureApp()`).
   - **Por qué:** el único e2e probaba el "Hello World" y necesitaba una base de datos preparada a mano.
-- [x] **Tests del frontend y e2e de punta a punta.** `8334d2e` `e7b5cb0`
-  - **Qué:** Vitest, Testing Library y MSW, con una API falsa que replica las reglas del backend. Playwright con un navegador real contra la API, Postgres y Redis, en una base de datos exclusiva para los tests.
+- [x] **Tests del frontend y e2e de punta a punta.** `8334d2e` `e7b5cb0` `7cd793e` `c4a1793`
+  - **Qué:** Vitest, Testing Library y MSW, con una API falsa que replica las reglas del backend. Playwright con un navegador real contra la API, Postgres y Redis, en una base de datos exclusiva para los tests. Los e2e prueban lo que solo se ve con el stack real: RUT único al registrar y al editar, paginación y orden de la API, dos personas editando al mismo usuario (412 con `If-Match`), permisos de cada rol y un JWT manipulado. Inician sesión por la API una vez por rol, porque el login admite 10 intentos por minuto. Uno de ellos encontró un bug, ya corregido: tras un 404 al guardar, la tabla seguía mostrando al usuario eliminado.
   - **Por qué:** un cambio en cualquier capa tiene que romper un test antes de llegar a quien usa la app.
 - [x] **Sin código ni dependencias sobrantes.** `586e0c9` `ea00eff`
   - **Qué:** fuera el "Hello World" de la plantilla y tres dependencias sin uso (`@types/ioredis`, `@nestjs/serve-static` y `@nestjs/mapped-types`).
@@ -183,6 +183,9 @@ Punto de partida, en la revisión del 9 de noviembre de 2026: los 27 tests unita
 - [x] **Todo el stack con Docker.** `0e06a91` `80d43f3`
   - **Qué:** Dockerfiles multi-etapa de la API y del frontend (nginx), y un compose con migraciones, API, web, Postgres y Redis, con healthchecks.
   - **Por qué:** solo la infraestructura estaba en Docker; levantar la app requería pasos a mano.
+- [x] **Integración continua con checks obligatorios.** `746ab1a`
+  - **Qué:** GitHub Actions corre en cada pull request tres jobs en paralelo, sobre el merge del PR con `master`: backend (lint, tipos, unitarios y e2e con Testcontainers), frontend (tipos, lint, formato y Vitest) y e2e con Playwright contra Postgres y Redis reales. `master` está protegida: los tres checks son obligatorios, también para el administrador del repositorio.
+  - **Por qué:** los tests solo corrían en la máquina de quien se acordaba de correrlos, y nada impedía mergear un cambio que rompiera algo.
 - [x] **Un comando para desarrollar.** `995e2da`
   - **Qué:** `pnpm dev` instala las dependencias, levanta Postgres y Redis, aplica las migraciones y arranca la API y el frontend juntos.
   - **Por qué:** probar el proyecto no debería exigir seguir una lista de pasos.
